@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Real Luxe — Politique de Confidentialité. Protection des données personnelles conforme au RGPD.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Real Luxe — Politique de Confidentialité</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --gold:#C6A55C;--gold-light:#D4B978;--gold-dark:#A88B3D;
+  --ivory:#FAF8F5;--cream:#F0EDE7;
+  --charcoal:#1A1A1A;--graphite:#2D2D2D;--slate:#6B6B6B;--mist:#9A9A9A;
+  --white:#FFFFFF;--black:#0A0A0A;
+  --sea:#1B4D5C;--sea-light:#2A7A8C;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans','Helvetica Neue',sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --gutter:clamp(20px,4vw,80px);
+  --radius:16px;--radius-lg:24px;--radius-pill:999px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{font-family:var(--font-body);font-weight:400;color:var(--charcoal);background:var(--ivory);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{text-decoration:none;color:inherit}
+
+/* ═══ HEADER ═══ */
+.pp-header{background:var(--black);padding:20px var(--gutter);display:flex;align-items:center;justify-content:space-between}
+.pp-logo{font-family:var(--font-display);font-size:20px;font-weight:400;letter-spacing:6px;text-transform:uppercase;color:var(--white)}
+.pp-logo span{color:var(--gold);font-style:italic}
+.pp-back{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--mist);transition:color .3s}
+.pp-back:hover{color:var(--gold)}
+.pp-back svg{transition:transform .3s}
+.pp-back:hover svg{transform:translateX(-4px)}
+
+/* ═══ HERO BANNER ═══ */
+.pp-hero{background:linear-gradient(135deg,var(--sea) 0%,var(--graphite) 100%);padding:clamp(60px,10vh,100px) var(--gutter) clamp(40px,6vh,60px);text-align:center}
+.pp-hero-label{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.pp-hero h1{font-family:var(--font-display);font-size:clamp(28px,5vw,48px);font-weight:400;color:var(--white);margin-bottom:12px}
+.pp-hero h1 em{color:var(--gold);font-style:italic}
+.pp-hero-date{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:1px}
+
+/* ═══ CONTENT ═══ */
+.pp-content{max-width:820px;margin:0 auto;padding:clamp(40px,6vh,80px) var(--gutter)}
+
+.pp-section{margin-bottom:48px}
+.pp-section h2{font-family:var(--font-display);font-size:clamp(20px,3vw,28px);font-weight:400;color:var(--sea);margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--gold)}
+.pp-section h3{font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin:24px 0 12px}
+.pp-section p{font-size:14px;color:var(--charcoal);line-height:1.8;margin-bottom:12px}
+.pp-section ul{list-style:none;padding:0;margin:0 0 16px}
+.pp-section ul li{position:relative;padding-left:20px;font-size:14px;line-height:1.8;margin-bottom:6px}
+.pp-section ul li::before{content:'';position:absolute;left:0;top:10px;width:6px;height:6px;background:var(--gold);border-radius:50%}
+.pp-section ul li strong{color:var(--sea)}
+.pp-note{font-size:12px;color:var(--slate);font-style:italic;padding:12px 16px;background:var(--cream);border-radius:var(--radius);border-left:3px solid var(--gold);margin:16px 0}
+
+/* ═══ TABLE ═══ */
+.pp-table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px;border-radius:var(--radius);overflow:hidden}
+.pp-table thead{background:var(--sea);color:var(--white)}
+.pp-table th{padding:12px 16px;text-align:left;font-weight:600;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.pp-table td{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.06)}
+.pp-table tbody tr:nth-child(even){background:var(--cream)}
+.pp-table tbody tr:hover{background:rgba(198,165,92,.08)}
+
+/* ═══ CONTACT BOX ═══ */
+.pp-contact{background:var(--cream);border-radius:var(--radius-lg);padding:32px;border:1px solid rgba(198,165,92,.2);margin-top:24px}
+.pp-contact p{margin-bottom:8px;font-size:14px}
+.pp-contact strong{color:var(--sea)}
+.pp-contact .pp-email{color:var(--gold);font-weight:600}
+
+/* ═══ GOLD LINE ═══ */
+.pp-gold-line{width:60px;height:2px;background:var(--gold);margin:32px auto}
+
+/* ═══ FOOTER ═══ */
+.pp-footer{background:var(--black);color:var(--white);padding:32px var(--gutter);text-align:center}
+.pp-footer-logo{font-family:var(--font-display);font-size:16px;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
+.pp-footer-logo span{color:var(--gold);font-style:italic}
+.pp-footer p{font-size:11px;color:var(--mist)}
+.pp-footer a{color:var(--gold);transition:color .3s}
+.pp-footer a:hover{color:var(--gold-light)}
+.pp-disclaimer{font-size:10px;color:var(--slate);margin-top:12px;font-style:italic}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:600px){
+  .pp-table{font-size:11px}
+  .pp-table th,.pp-table td{padding:8px 10px}
+  .pp-contact{padding:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="pp-header">
+  <a href="index.html" class="pp-logo">Real <span>Luxe</span></a>
+  <a href="index.html" class="pp-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour
+  </a>
+</div>
+
+<!-- HERO -->
+<div class="pp-hero">
+  <div class="pp-hero-label">RGPD &middot; Data Privacy</div>
+  <h1>Politique de <em>Confidentialit&eacute;</em></h1>
+  <p class="pp-hero-date">Derni&egrave;re mise &agrave; jour : 11 mars 2025 &mdash; Version 1.0</p>
+</div>
+
+<!-- CONTENT -->
+<div class="pp-content">
+
+  <!-- 1. RESPONSABLE -->
+  <div class="pp-section">
+    <h2>1. Identit&eacute; du Responsable de Traitement</h2>
+    <p>Le responsable du traitement des donn&eacute;es personnelles collect&eacute;es sur le site www.real-luxe.com (ci-apr&egrave;s &laquo; le Site &raquo;) est :</p>
+    <table class="pp-table">
+      <tbody>
+        <tr><td><strong>Soci&eacute;t&eacute;</strong></td><td>Real Luxe LLC</td></tr>
+        <tr><td><strong>Forme juridique</strong></td><td>Limited Liability Company (Wyoming, USA)</td></tr>
+        <tr><td><strong>Si&egrave;ge social</strong></td><td>Wyoming, &Eacute;tats-Unis</td></tr>
+        <tr><td><strong>E-mail de contact</strong></td><td>privacy@real-luxe.com</td></tr>
+        <tr><td><strong>DPO</strong></td><td>dpo@real-luxe.com</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. DONNEES -->
+  <div class="pp-section">
+    <h2>2. Donn&eacute;es Personnelles Collect&eacute;es</h2>
+    <p>Dans le cadre de nos services d&rsquo;immobilier de prestige, nous collectons les donn&eacute;es suivantes :</p>
+
+    <h3>Donn&eacute;es d&rsquo;identification</h3>
+    <ul>
+      <li>Nom et pr&eacute;nom</li>
+      <li>Adresse e-mail</li>
+      <li>Num&eacute;ro de t&eacute;l&eacute;phone</li>
+      <li>Pays de r&eacute;sidence</li>
+    </ul>
+
+    <h3>Donn&eacute;es de projet immobilier</h3>
+    <ul>
+      <li>Budget estim&eacute; / tranche de prix</li>
+      <li>Type de bien recherch&eacute; (villa, penthouse, domaine)</li>
+      <li>Localisation souhait&eacute;e</li>
+      <li>Message ou commentaire libre</li>
+    </ul>
+
+    <h3>Donn&eacute;es techniques</h3>
+    <ul>
+      <li>Adresse IP</li>
+      <li>Langue du navigateur</li>
+      <li>Donn&eacute;es de navigation (pages visit&eacute;es, dur&eacute;e)</li>
+    </ul>
+
+    <div class="pp-note">Nous ne collectons aucune donn&eacute;e sensible (origine ethnique, opinions politiques, donn&eacute;es de sant&eacute;, etc.).</div>
+  </div>
+
+  <!-- 3. FINALITES -->
+  <div class="pp-section">
+    <h2>3. Finalit&eacute;s du Traitement</h2>
+    <p>Vos donn&eacute;es sont collect&eacute;es pour les finalit&eacute;s suivantes :</p>
+    <table class="pp-table">
+      <thead>
+        <tr><th>Finalit&eacute;</th><th>Base l&eacute;gale (RGPD)</th><th>Conservation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>R&eacute;pondre &agrave; votre demande de contact</td>
+          <td>Art. 6.1.b &ndash; Mesures pr&eacute;contractuelles</td>
+          <td>3 ans apr&egrave;s le dernier contact</td>
+        </tr>
+        <tr>
+          <td>Envoi d&rsquo;offres immobili&egrave;res personnalis&eacute;es</td>
+          <td>Art. 6.1.a &ndash; Consentement</td>
+          <td>Jusqu&rsquo;au retrait du consentement</td>
+        </tr>
+        <tr>
+          <td>Am&eacute;lioration du Site et statistiques</td>
+          <td>Art. 6.1.f &ndash; Int&eacute;r&ecirc;t l&eacute;gitime</td>
+          <td>13 mois (cookies)</td>
+        </tr>
+        <tr>
+          <td>Acc&egrave;s au coffre-fort off-market</td>
+          <td>Art. 6.1.b &ndash; Mesures pr&eacute;contractuelles</td>
+          <td>3 ans apr&egrave;s le dernier contact</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. HEBERGEMENT -->
+  <div class="pp-section">
+    <h2>4. H&eacute;bergement et Sous-traitants</h2>
+    <p>Vos donn&eacute;es personnelles sont stock&eacute;es de mani&egrave;re s&eacute;curis&eacute;e sur la plateforme Supabase.</p>
+    <table class="pp-table">
+      <thead>
+        <tr><th>Sous-traitant</th><th>Service</th><th>Localisation</th><th>Garanties</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Supabase Inc.</td><td>Base de donn&eacute;es &amp; stockage</td><td>USA (AWS)</td><td>Clauses Contractuelles Types</td></tr>
+        <tr><td>EmailJS / Resend</td><td>E-mails transactionnels</td><td>USA</td><td>Clauses Contractuelles Types</td></tr>
+        <tr><td>Unsplash</td><td>Images du Site</td><td>USA</td><td>Pas de donn&eacute;es transmises</td></tr>
+        <tr><td>Hostinger</td><td>H&eacute;bergement du Site</td><td>UE (Lituanie)</td><td>Conforme RGPD</td></tr>
+      </tbody>
+    </table>
+    <div class="pp-note">Les donn&eacute;es transf&eacute;r&eacute;es vers les &Eacute;tats-Unis sont prot&eacute;g&eacute;es par des Clauses Contractuelles Types (CCT) approuv&eacute;es par la Commission europ&eacute;enne, conform&eacute;ment aux articles 46.2.c du RGPD.</div>
+  </div>
+
+  <!-- 5. TRANSFERTS -->
+  <div class="pp-section">
+    <h2>5. Transferts Internationaux de Donn&eacute;es</h2>
+    <p>Real Luxe LLC &eacute;tant &eacute;tablie au Wyoming (&Eacute;tats-Unis), vos donn&eacute;es sont susceptibles d&rsquo;&ecirc;tre transf&eacute;r&eacute;es en dehors de l&rsquo;EEE. Ces transferts sont encadr&eacute;s par :</p>
+    <ul>
+      <li>Le cadre <strong>EU-US Data Privacy Framework</strong> (DPF) lorsque le sous-traitant est certifi&eacute;</li>
+      <li>Des <strong>Clauses Contractuelles Types</strong> (CCT) de la Commission europ&eacute;enne</li>
+      <li>Le <strong>consentement explicite</strong> de l&rsquo;utilisateur, le cas &eacute;ch&eacute;ant</li>
+    </ul>
+  </div>
+
+  <!-- 6. VOS DROITS -->
+  <div class="pp-section">
+    <h2>6. Vos Droits (Articles 15 &agrave; 22 du RGPD)</h2>
+    <p>Conform&eacute;ment au RGPD, vous disposez des droits suivants :</p>
+    <ul>
+      <li><strong>Droit d&rsquo;acc&egrave;s (art. 15) :</strong> Obtenir la confirmation que vos donn&eacute;es sont trait&eacute;es et en recevoir une copie.</li>
+      <li><strong>Droit de rectification (art. 16) :</strong> Corriger des donn&eacute;es inexactes ou incompl&egrave;tes.</li>
+      <li><strong>Droit &agrave; l&rsquo;effacement (art. 17) :</strong> Demander la suppression de vos donn&eacute;es (&laquo; droit &agrave; l&rsquo;oubli &raquo;).</li>
+      <li><strong>Droit &agrave; la limitation (art. 18) :</strong> Limiter le traitement de vos donn&eacute;es dans certains cas.</li>
+      <li><strong>Droit &agrave; la portabilit&eacute; (art. 20) :</strong> Recevoir vos donn&eacute;es dans un format structur&eacute; et lisible.</li>
+      <li><strong>Droit d&rsquo;opposition (art. 21) :</strong> Vous opposer au traitement fond&eacute; sur l&rsquo;int&eacute;r&ecirc;t l&eacute;gitime.</li>
+      <li><strong>Droit de retrait du consentement :</strong> Retirer votre consentement &agrave; tout moment.</li>
+    </ul>
+
+    <div class="pp-gold-line"></div>
+
+    <div class="pp-contact">
+      <p><strong>Pour exercer vos droits :</strong></p>
+      <p>Envoyez un e-mail &agrave; <span class="pp-email">privacy@real-luxe.com</span> accompagn&eacute; d&rsquo;une copie de votre pi&egrave;ce d&rsquo;identit&eacute;.</p>
+      <p>Nous r&eacute;pondons sous <strong>30 jours maximum</strong>.</p>
+    </div>
+
+    <div class="pp-note">Vous disposez &eacute;galement du droit d&rsquo;introduire une r&eacute;clamation aupr&egrave;s de la CNIL (www.cnil.fr) ou de toute autorit&eacute; de contr&ocirc;le comp&eacute;tente.</div>
+  </div>
+
+  <!-- 7. COOKIES -->
+  <div class="pp-section">
+    <h2>7. Cookies et Technologies de Suivi</h2>
+    <p>Le Site utilise les cat&eacute;gories de cookies suivantes :</p>
+    <ul>
+      <li><strong>Cookies strictement n&eacute;cessaires :</strong> Enregistrement de la langue choisie, conservation de session.</li>
+      <li><strong>Cookies analytiques (avec consentement) :</strong> Google Analytics ou &eacute;quivalent pour mesurer la fr&eacute;quentation (anonymisation IP activ&eacute;e).</li>
+    </ul>
+    <p>Vous pouvez g&eacute;rer vos pr&eacute;f&eacute;rences de cookies &agrave; tout moment via le bandeau de consentement ou les param&egrave;tres de votre navigateur.</p>
+  </div>
+
+  <!-- 8. SECURITE -->
+  <div class="pp-section">
+    <h2>8. S&eacute;curit&eacute; des Donn&eacute;es</h2>
+    <p>Nous mettons en &oelig;uvre les mesures suivantes :</p>
+    <ul>
+      <li>Chiffrement <strong>TLS/SSL</strong> pour toutes les transmissions</li>
+      <li>Chiffrement au repos <strong>AES-256</strong> sur Supabase</li>
+      <li>Acc&egrave;s restreint par authentification et <strong>Row Level Security</strong></li>
+      <li>Sauvegardes automatiques et journalisation des acc&egrave;s</li>
+      <li>Politique de mots de passe forts pour les administrateurs</li>
+    </ul>
+  </div>
+
+  <!-- 9. MINEURS -->
+  <div class="pp-section">
+    <h2>9. Protection des Mineurs</h2>
+    <p>Le Site et nos services s&rsquo;adressent exclusivement &agrave; des personnes majeures (18 ans et plus). Nous ne collectons pas sciemment de donn&eacute;es de mineurs. Si nous d&eacute;couvrons qu&rsquo;un mineur nous a transmis des donn&eacute;es, celles-ci seront imm&eacute;diatement supprim&eacute;es.</p>
+  </div>
+
+  <!-- 10. MODIFICATIONS -->
+  <div class="pp-section">
+    <h2>10. Modifications de la Politique</h2>
+    <p>Nous nous r&eacute;servons le droit de modifier la pr&eacute;sente politique &agrave; tout moment. En cas de modification substantielle, un avis sera publi&eacute; sur le Site. La date de derni&egrave;re mise &agrave; jour figure en haut de ce document.</p>
+  </div>
+
+  <!-- 11. CONTACT -->
+  <div class="pp-section">
+    <h2>11. Contact</h2>
+    <p>Pour toute question relative &agrave; la pr&eacute;sente politique ou au traitement de vos donn&eacute;es personnelles :</p>
+    <div class="pp-contact">
+      <p><strong>E-mail :</strong> <span class="pp-email">privacy@real-luxe.com</span></p>
+      <p><strong>Objet :</strong> &laquo; Demande RGPD &ndash; [votre nom] &raquo;</p>
+      <p><strong>D&eacute;lai de r&eacute;ponse :</strong> 30 jours maximum</p>
+    </div>
+  </div>
+
+  <div class="pp-gold-line"></div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="pp-footer">
+  <div class="pp-footer-logo">Real <span>Luxe</span></div>
+  <p><a href="index.html">Retour au site</a> &middot; <a href="catalogue.html">Catalogue</a></p>
+  <p class="pp-disclaimer">Ce document ne constitue pas un avis juridique. Consultez un avocat sp&eacute;cialis&eacute; pour validation.</p>
+</div>
+
+</body>
+</html>

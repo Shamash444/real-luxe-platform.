@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Real Luxe — Ultra-luxury real estate in the Dominican Republic. Beachfront villas, private estates, ocean-view penthouses for UHNWI investors.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Real Luxe — Ultra-Luxury Real Estate · Dominican Republic</title>
+
+<!-- Fonts (preconnect + swap) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Preconnect to image CDN -->
+<link rel="preconnect" href="https://images.unsplash.com">
+<link rel="dns-prefetch" href="https://images.unsplash.com">
+
+<!-- Hero LCP image preload -->
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=85&auto=format" fetchpriority="high">
+
+<!-- GSAP (defer to avoid render-blocking) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" defer></script>
+
+<!-- EmailJS (defer — not needed at first paint) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+
+<!-- Leaflet Maps (lazy — only needed for property detail) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/></noscript>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+
+<!-- JSON-LD -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"RealEstateAgent","name":"Real Luxe","description":"Ultra-luxury real estate in the Dominican Republic. Beachfront villas, penthouses and private estates for discerning international investors.","url":"https://real-luxe.com","areaServed":{"@type":"Place","name":"Dominican Republic"},"priceRange":"$$$$","telephone":"+1-809-555-LUXE","email":"concierge@real-luxe.com"}
+</script>
+
+
+<!-- Global Stylesheet -->
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body data-page="index">
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="pre-logo">Real Luxe</div>
+  <div class="pre-bar"><div class="pre-fill"></div></div>
+  <div class="pre-sub">Dominican Republic</div>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor-dot" id="curDot"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- HEADER -->
+<header id="mainHeader">
+  <a href="#" class="h-logo" onclick="scrollToSection('hero');return false">Real <span>Luxe</span></a>
+  <nav id="mainNav">
+    <a href="#" class="nav-link" data-i18n="nav_0" onclick="scrollToSection('properties');closeNav();return false">Propriétés</a>
+    <a href="#" class="nav-link" data-i18n="nav_1" onclick="scrollToSection('about');closeNav();return false">À Propos</a>
+    <a href="#" class="nav-link" data-i18n="nav_2" onclick="scrollToSection('lifestyle');closeNav();return false">Lifestyle</a>
+    <a href="#" class="nav-link" data-i18n="nav_3" onclick="scrollToSection('contact');closeNav();return false">Contact</a>
+    <a href="#" class="nav-cta" onclick="scrollToSection('contact');closeNav();return false">
+      <span data-i18n="nav_cta">Consultation Privée</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </nav>
+  <div class="lang-sel" id="langSel">
+    <button class="lang-btn" onclick="toggleLangMenu(event)">
+      <span id="currentLangText">EN</span>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="lang-drop" id="langDrop">
+      <button class="lang-opt active" onclick="setLang('en')">EN</button>
+      <button class="lang-opt" onclick="setLang('fr')">FR</button>
+      <button class="lang-opt" onclick="setLang('es')">ES</button>
+      <button class="lang-opt" onclick="setLang('ru')">RU</button>
+      <button class="lang-opt" onclick="setLang('zh')">ZH</button>
+    </div>
+  </div>
+  <button class="mob-toggle" id="mobToggle" onclick="toggleNav()"><span></span><span></span><span></span></button>
+</header>
+
+<!-- ════════════════ HERO ════════════════ -->
+<section id="hero">
+  <div class="hero-bg">
+    <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=85&auto=format" alt="Villa ultra-luxe Caraïbes" id="heroBgImg" fetchpriority="high" decoding="async">
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-vignette"></div>
+
+  <div class="hero-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <span data-i18n="hero_badge">Immobilier d'Exception · Caraïbes</span>
+  </div>
+
+  <h1 class="hero-title" data-i18n="hero_title">
+    Vivez l'Exception<br><em>Sans Compromis</em>
+  </h1>
+
+  <p class="hero-sub" data-i18n="hero_sub">
+    Des propriétés d'exception en République Dominicaine, sélectionnées pour une élite exigeante. Villas pieds dans l'eau, domaines privés, penthouses avec vue océan.
+  </p>
+
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="scrollToSection('properties')">
+      <span data-i18n="hero_btn1">Découvrir les Propriétés</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <button class="btn-ghost" onclick="scrollToSection('contact')" data-i18n="hero_btn2">
+      Consultation Privée →
+    </button>
+  </div>
+
+  <div class="hero-stats">
+    <div class="h-stat"><div class="h-stat-n">$2.5M</div><div class="h-stat-l" data-i18n="stat_0">Prix moyen</div></div>
+    <div class="h-stat"><div class="h-stat-n">47</div><div class="h-stat-l" data-i18n="stat_1">Propriétés exclusives</div></div>
+    <div class="h-stat"><div class="h-stat-n">98%</div><div class="h-stat-l" data-i18n="stat_2">Satisfaction client</div></div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ════════════════ PROPERTIES ════════════════ -->
+<section class="section" id="properties">
+  <div class="props-header">
+    <div>
+      <div class="sec-label" data-i18n="props_label">Collection Exclusive</div>
+      <h2 class="sec-title" data-i18n="props_title">Propriétés <em>d'Exception</em></h2>
+      <p class="sec-sub" data-i18n="props_sub">Chaque résidence est sélectionnée avec une rigueur absolue. Seul le meilleur accède à notre portfolio.</p>
+    </div>
+    <button class="btn-primary" onclick="window.location.href='catalogue.html'">
+      <span data-i18n="props_btn">View Full Catalogue</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <div class="props-grid" id="propsGrid"></div>
+</section>
+
+<!-- ════════════════ PRIVATE VAULT ════════════════ -->
+<section class="section section-dark" id="vault" style="position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;z-index:0;">
+    <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=60&auto=format" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;filter:blur(20px) brightness(0.3);transform:scale(1.1);">
+  </div>
+  <div style="position:absolute;inset:0;z-index:1;background:repeating-conic-gradient(rgba(255,255,255,.02) 0% 25%,transparent 0% 50%) 0 0/3px 3px;"></div>
+
+  <div style="position:relative;z-index:2;max-width:680px;margin:0 auto;text-align:center;">
+    <div style="margin-bottom:32px;">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1" style="opacity:0.8;">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+
+    <div class="sec-label" data-i18n="vault_label" style="justify-content:center;color:var(--gold);">Accès Restreint</div>
+    <h2 class="sec-title" data-i18n="vault_title" style="color:var(--white);margin-bottom:24px;">Collection Privée<br><em>Off-Market</em></h2>
+    <p data-i18n="vault_sub" style="font-size:15px;color:var(--mist);line-height:1.9;max-width:520px;margin:0 auto 40px;font-weight:300;">
+      12 propriétés confidentielles réservées à notre cercle d'investisseurs qualifiés.
+      Ces biens ne sont pas listés publiquement et nécessitent une accréditation préalable.
+    </p>
+
+    <div style="display:flex;justify-content:center;gap:48px;margin-bottom:40px;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:32px;color:var(--gold);line-height:1;">12</div>
+        <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--mist);margin-top:6px;" data-i18n="vault_stat_0">Properties</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:32px;color:var(--gold);line-height:1;">$85M+</div>
+        <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--mist);margin-top:6px;" data-i18n="vault_stat_1">Total Value</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:32px;color:var(--gold);line-height:1;">NDA</div>
+        <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--mist);margin-top:6px;" data-i18n="vault_stat_2">Required</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="openVaultForm()" style="margin:0 auto;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span data-i18n="vault_btn">Request Confidential Access</span>
+    </button>
+  </div>
+</section>
+
+<!-- ════════════════ VAULT ACCESS FORM MODAL ════════════════ -->
+<div class="vault-modal-overlay" id="vaultModal">
+  <div class="vault-modal">
+    <button class="vault-modal-close" onclick="closeVaultForm()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div id="vaultFormContent">
+      <div class="vault-modal-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h3 data-i18n="vault_form_title">Enter the Circle</h3>
+      <p class="vm-sub" data-i18n="vault_form_sub">Complete this accreditation form to access our off-market collection. Your information remains strictly confidential.</p>
+      <form id="vaultAccessForm" onsubmit="submitVaultForm(event)">
+        <div class="vm-field">
+          <label data-i18n="vault_f_name">Full Name</label>
+          <input type="text" id="vaultName" required placeholder="John Doe">
+        </div>
+        <div class="vm-field">
+          <label data-i18n="vault_f_email">Email Address</label>
+          <input type="email" id="vaultEmail" required placeholder="john@example.com">
+        </div>
+        <div class="vm-field">
+          <label data-i18n="vault_f_phone">Phone Number</label>
+          <input type="tel" id="vaultPhone" required placeholder="+1 (809) 555-0000">
+        </div>
+        <div class="vm-field">
+          <label data-i18n="vault_f_budget">Investment Range</label>
+          <select id="vaultBudget" required>
+            <option value="" disabled selected data-i18n="vault_f_budget_ph">Select a range</option>
+            <option value="1-3M">$1M – $3M</option>
+            <option value="3-5M">$3M – $5M</option>
+            <option value="5-10M">$5M – $10M</option>
+            <option value="10M+">$10M+</option>
+          </select>
+        </div>
+        <div class="vm-field">
+          <label data-i18n="vault_f_msg">Message (optional)</label>
+          <textarea id="vaultMsg" rows="3" placeholder="Tell us about your investment goals..."></textarea>
+        </div>
+        <button type="submit" class="vm-submit" id="vaultSubmitBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span data-i18n="vault_f_submit">Request Access</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MARQUEE ════════════════ -->
+<div class="marquee">
+  <div class="marquee-track" id="marqueeTrack"></div>
+</div>
+
+<!-- ════════════════ ABOUT ════════════════ -->
+<section class="section section-cream" id="about">
+  <div class="about-grid">
+    <div class="about-img-wrap">
+      <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&q=80&auto=format" alt="Propriété de luxe" loading="lazy" decoding="async">
+      <div class="about-accent"></div>
+    </div>
+    <div class="about-content">
+      <div class="sec-label" data-i18n="about_label">Notre Approche</div>
+      <h2 class="sec-title" data-i18n="about_title">L'Art du<br><em>Sur-Mesure</em></h2>
+      <p class="sec-sub" data-i18n="about_sub">Depuis plus de 15 ans, nous accompagnons une clientèle internationale dans l'acquisition de biens d'exception en République Dominicaine. Chaque transaction est une œuvre d'art.</p>
+      <div class="about-features">
+        <div class="about-feat">
+          <div class="about-feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h4 data-i18n="af_0_title">Total Confidentiality</h4>
+          <p data-i18n="af_0_desc">Every file is handled with the strictest discretion.</p>
+        </div>
+        <div class="about-feat">
+          <div class="about-feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <h4 data-i18n="af_1_title">International Network</h4>
+          <p data-i18n="af_1_desc">Access to off-market properties reserved for our circle.</p>
+        </div>
+        <div class="about-feat">
+          <div class="about-feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <h4 data-i18n="af_2_title">Dedicated Concierge</h4>
+          <p data-i18n="af_2_desc">A single point of contact from A to Z for your acquisition.</p>
+        </div>
+        <div class="about-feat">
+          <div class="about-feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <h4 data-i18n="af_3_title">Virtual Tour</h4>
+          <p data-i18n="af_3_desc">Explore each property in 3D immersion from home.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ LOI CONFOTUR ════════════════ -->
+<section class="section" id="confotur">
+  <div style="text-align:center;max-width:700px;margin:0 auto;">
+    <div class="sec-label" data-i18n="confotur_label" style="justify-content:center;">Avantages Fiscaux</div>
+    <h2 class="sec-title" data-i18n="confotur_title" style="text-align:center;">Loi <em>Confotur</em></h2>
+    <p class="sec-sub" data-i18n="confotur_sub" style="text-align:center;margin:0 auto 60px;">La République Dominicaine offre un cadre fiscal exceptionnel pour les investisseurs immobiliers internationaux.</p>
+  </div>
+
+  <div class="confotur-grid">
+    <div class="confotur-card">
+      <div class="confotur-number">01</div>
+      <h3 class="confotur-title" data-i18n="cc_0_title">Tax Exemption<br><em>15 Years</em></h3>
+      <p class="confotur-desc" data-i18n="cc_0_desc">Zero income tax, capital gains or property transfer taxes for 15 years under Confotur Law 158-01.</p>
+      <div class="confotur-tags">
+        <span class="confotur-tag" data-i18n="cc_0_tag0">0% Income Tax</span>
+        <span class="confotur-tag" data-i18n="cc_0_tag1">0% Capital Gains</span>
+      </div>
+    </div>
+
+    <div class="confotur-card">
+      <div class="confotur-number">02</div>
+      <h3 class="confotur-title" data-i18n="cc_1_title">Golden Visa<br><em>& Residency</em></h3>
+      <p class="confotur-desc" data-i18n="cc_1_desc">Obtain Dominican residency through investment starting at $200,000. Fast-track process for our clients.</p>
+      <div class="confotur-tags">
+        <span class="confotur-tag" data-i18n="cc_1_tag0">Residency in 90 Days</span>
+        <span class="confotur-tag" data-i18n="cc_1_tag1">Investment $200K+</span>
+      </div>
+    </div>
+
+    <div class="confotur-card">
+      <div class="confotur-number">03</div>
+      <h3 class="confotur-title" data-i18n="cc_2_title">Rental Yield<br><em>&gt; 8% Net</em></h3>
+      <p class="confotur-desc" data-i18n="cc_2_desc">The Dominican tourist rental market offers among the highest yields in the Caribbean with occupancy rates above 75%.</p>
+      <div class="confotur-tags">
+        <span class="confotur-tag" data-i18n="cc_2_tag0">8-12% Net</span>
+        <span class="confotur-tag" data-i18n="cc_2_tag1">Occupancy 75%+</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confotur Calculator -->
+  <div class="calc-module">
+    <h3 data-i18n="calc_title">Calculateur <em>Confotur</em></h3>
+    <p data-i18n="calc_sub_text">Entrez la valeur d'un bien pour estimer vos économies fiscales sur 15 ans.</p>
+    <div class="calc-input-wrap">
+      <span>$</span>
+      <input type="text" id="calcInput" value="1,000,000" oninput="updateCalc()">
+    </div>
+    <div class="calc-results">
+      <div class="calc-result"><div class="calc-result-value" id="calcTransfer">$30,000</div><div class="calc-result-label" data-i18n="calc_l0">Taxe de Transfert</div></div>
+      <div class="calc-result"><div class="calc-result-value" id="calcProperty">$150,000</div><div class="calc-result-label" data-i18n="calc_l1">Impôt Foncier (15 ans)</div></div>
+      <div class="calc-result"><div class="calc-result-value" id="calcIncome">$324,000</div><div class="calc-result-label" data-i18n="calc_l2">Impôt Revenus Locatifs</div></div>
+      <div class="calc-result"><div class="calc-result-value" id="calcGains">$135,000</div><div class="calc-result-label" data-i18n="calc_l3">Impôt Plus-Values</div></div>
+    </div>
+    <div class="calc-total">
+      <div class="calc-total-value" id="calcTotal">$639,000</div>
+      <div class="calc-total-label" data-i18n="calc_total_label">Économies totales estimées sur 15 ans</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ LIFESTYLE ════════════════ -->
+<section class="section" id="lifestyle">
+  <div class="sec-label" data-i18n="life_label">Art de Vivre</div>
+  <h2 class="sec-title" data-i18n="life_title">Le Lifestyle<br><em>Caraïbes</em></h2>
+  <p class="sec-sub" data-i18n="life_sub">Bien plus qu'une propriété, c'est un mode de vie d'exception qui vous attend. Golf, yachting, gastronomie, bien-être.</p>
+  <div class="life-grid" id="lifeGrid"></div>
+</section>
+
+<!-- ════════════════ FAMILY OFFICE ════════════════ -->
+<section class="section section-dark" id="familyoffice">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="sec-label" data-i18n="fo_label" style="color:var(--gold);">Services Premium</div>
+    <h2 class="sec-title" data-i18n="fo_title" style="color:var(--white);">Accompagnement<br><em>Family Office</em></h2>
+    <p class="sec-sub" data-i18n="fo_sub" style="margin-bottom:60px;">Un écosystème complet de services dédiés aux investisseurs exigeants. Chaque détail est pris en charge.</p>
+
+    <div class="fo-grid">
+
+      <div class="fo-card" id="foCard1">
+        <div class="fo-card-header" onclick="toggleFO(1)">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="fo-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div>
+              <h4 class="fo-title" data-i18n="fo_0_title">Legal & Notarial Advisory</h4>
+              <span class="fo-sub" data-i18n="fo_0_sub">Due diligence · Structuring · Closing</span>
+            </div>
+          </div>
+          <svg class="fo-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="fo-card-body">
+          <p data-i18n="fo_0_body">Our partner law firm oversees every step: property title verification, optimal legal structuring (SAS, LLC, trust), term negotiation and secure closing. We also manage registration with the Title Registry.</p>
+        </div>
+      </div>
+
+      <div class="fo-card" id="foCard2">
+        <div class="fo-card-header" onclick="toggleFO(2)">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="fo-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <h4 class="fo-title" data-i18n="fo_1_title">Private Staff & Security</h4>
+              <span class="fo-sub" data-i18n="fo_1_sub">Household staff · Surveillance · Maintenance</span>
+            </div>
+          </div>
+          <svg class="fo-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="fo-card-body">
+          <p data-i18n="fo_1_body">Recruitment and management of your domestic staff: private chef, butler, housekeeper, gardener, chauffeur. 24/7 security system, connected surveillance and dedicated security company.</p>
+        </div>
+      </div>
+
+      <div class="fo-card" id="foCard3">
+        <div class="fo-card-header" onclick="toggleFO(3)">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="fo-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div>
+              <h4 class="fo-title" data-i18n="fo_2_title">Air & Maritime Concierge</h4>
+              <span class="fo-sub" data-i18n="fo_2_sub">Private jets · Yachts · VIP transfers</span>
+            </div>
+          </div>
+          <svg class="fo-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="fo-card-body">
+          <p data-i18n="fo_2_body">Complete travel arrangements: private jet charters from Europe and the Americas, crewed yacht rentals, helicopter transfers to remote properties, and luxury car concierge.</p>
+        </div>
+      </div>
+
+      <div class="fo-card" id="foCard4">
+        <div class="fo-card-header" onclick="toggleFO(4)">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="fo-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <div>
+              <h4 class="fo-title" data-i18n="fo_3_title">Wealth Management</h4>
+              <span class="fo-sub" data-i18n="fo_3_sub">Tax planning · Insurance · Rental yield</span>
+            </div>
+          </div>
+          <svg class="fo-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="fo-card-body">
+          <p data-i18n="fo_3_body">Tax optimization via the Confotur Law, premium rental management with 8-12% net yield, Caribbean-adapted property insurance, and detailed quarterly financial reporting.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ TESTIMONIAL ════════════════ -->
+<section class="section section-dark" id="testimonial">
+  <div class="sec-label" data-i18n="testi_label" style="color:var(--gold)">Témoignages</div>
+  <h2 class="sec-title" data-i18n="testi_title" style="color:var(--white)">Ce Que Disent<br><em>Nos Clients</em></h2>
+  <div class="testi-wrap">
+    <div class="testi-img">
+      <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80&auto=format" alt="Client" loading="lazy" decoding="async">
+    </div>
+    <div class="testi-content">
+      <p class="testi-quote" data-i18n="testi_quote">L'équipe Real Luxe a transformé notre rêve en réalité. Leur connaissance intime du marché dominicain et leur sens du détail sont tout simplement incomparables.</p>
+      <div class="testi-author" data-i18n="testi_author">Sophie & Laurent Dubois</div>
+      <div class="testi-role" data-i18n="testi_role">Acquéreurs · Villa Cap Cana · €3.2M</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ CONTACT ════════════════ -->
+<section class="section" id="contact">
+  <div class="sec-label" data-i18n="contact_label">Contact</div>
+  <h2 class="sec-title" data-i18n="contact_title">Votre Propriété<br><em>Vous Attend</em></h2>
+  <p class="sec-sub" data-i18n="contact_sub" style="margin-bottom:60px">Prenez rendez-vous pour une consultation privée et confidentielle. Notre équipe vous accompagne dans chaque étape.</p>
+
+  <div class="contact-grid">
+    <div class="contact-info">
+      <h3>Real Luxe · Immobilier d'Exception</h3>
+      <p>Notre équipe de conseillers experts est à votre disposition pour vous présenter les propriétés les plus exclusives de République Dominicaine.</p>
+
+      <div class="ci-item">
+        <div class="ci-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div><div class="ci-label">Téléphone</div><div class="ci-value">+1 (809) 555-LUXE</div></div>
+      </div>
+      <div class="ci-item">
+        <div class="ci-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div><div class="ci-label">Email</div><div class="ci-value">concierge@real-luxe.com</div></div>
+      </div>
+      <div class="ci-item">
+        <div class="ci-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div><div class="ci-label">Bureau</div><div class="ci-value">Blue Mall, Punta Cana<br>République Dominicaine</div></div>
+      </div>
+    </div>
+
+    <div class="form-card" id="formCard">
+      <h3 data-i18n="tunnel_title">Consultation Privée</h3>
+      <p class="form-sub" data-i18n="tunnel_sub">Un parcours personnalisé en 3 étapes</p>
+
+      <!-- Progress -->
+      <div class="tunnel-progress">
+        <div class="tunnel-dot active" id="tDot0"></div>
+        <div class="tunnel-dot" id="tDot1"></div>
+        <div class="tunnel-dot" id="tDot2"></div>
+      </div>
+
+      <!-- Step 1: Investment Horizon -->
+      <div class="tunnel-step active" id="tStep0">
+        <h4 data-i18n="t_step1_title">Quel est votre horizon d'investissement ?</h4>
+        <div class="t-options">
+          <div class="t-option" onclick="selectHorizon(this,'primary')">
+            <div class="t-option-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <h5 data-i18n="t_opt0">Résidence Principale</h5>
+            <p data-i18n="t_opt0_sub">Votre résidence principale aux Caraïbes</p>
+          </div>
+          <div class="t-option" onclick="selectHorizon(this,'secondary')">
+            <div class="t-option-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+            <h5 data-i18n="t_opt1">Résidence Secondaire</h5>
+            <p data-i18n="t_opt1_sub">Une maison de vacances de luxe</p>
+          </div>
+          <div class="t-option" onclick="selectHorizon(this,'investment')">
+            <div class="t-option-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <h5 data-i18n="t_opt2">Pur Investissement</h5>
+            <p data-i18n="t_opt2_sub">Maximisez votre ROI avec Confotur</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Budget & Confotur -->
+      <div class="tunnel-step" id="tStep1">
+        <h4 data-i18n="t_step2_title">Votre gamme de budget</h4>
+        <div class="f-group">
+          <label>Budget</label>
+          <select id="tBudget">
+            <option value="500k-1m">$500K — $1M</option>
+            <option value="1m-3m">$1M — $3M</option>
+            <option value="3m-5m">$3M — $5M</option>
+            <option value="5m-10m">$5M — $10M</option>
+            <option value="10m+">$10M+</option>
+          </select>
+        </div>
+        <label class="t-check" for="tConfotur">
+          <input type="checkbox" id="tConfotur">
+          <span data-i18n="t_step2_confotur">Je suis intéressé par les avantages fiscaux Confotur (exonération 15 ans)</span>
+        </label>
+      </div>
+
+      <!-- Step 3: Contact Details -->
+      <div class="tunnel-step" id="tStep2">
+        <h4 data-i18n="t_step3_title">Vos coordonnées sécurisées</h4>
+        <form id="leadForm" onsubmit="submitTunnel(event)">
+          <div class="f-row">
+            <div class="f-group"><label data-i18n="t_lbl0">Prénom</label><input type="text" id="tFirstName" required placeholder="Jean"></div>
+            <div class="f-group"><label data-i18n="t_lbl1">Nom</label><input type="text" id="tLastName" required placeholder="Dupont"></div>
+          </div>
+          <div class="f-group"><label data-i18n="t_lbl2">Email</label><input type="email" id="tEmail" required placeholder="jean@example.com"></div>
+          <div class="f-group"><label data-i18n="t_lbl3">Téléphone</label><input type="tel" id="tPhone" placeholder="+33 6 12 34 56 78"></div>
+        </form>
+      </div>
+
+      <!-- Tunnel Navigation -->
+      <div class="t-nav" id="tNav">
+        <button class="btn-ghost" id="tBackBtn" style="display:none" onclick="tunnelPrev()">
+          <span data-i18n="t_back">Retour</span>
+        </button>
+        <div style="flex:1"></div>
+        <button class="btn-primary" id="tNextBtn" onclick="tunnelNext()">
+          <span data-i18n="t_next" id="tNextText">Suivant</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Success -->
+      <div class="form-success" id="formSuccess">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <h4 data-i18n="t_success_title">Demande Envoyée</h4>
+        <p data-i18n="t_success_msg">Merci pour votre intérêt. Un conseiller Real Luxe vous contactera dans les 24 heures pour une consultation personnalisée et confidentielle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ PARTNERS ════════════════ -->
+<section class="section section-cream" id="partners">
+  <div style="text-align:center;max-width:700px;margin:0 auto;">
+    <div class="sec-label" data-i18n="partners_label" style="justify-content:center;">Privileged Partners</div>
+    <h2 class="sec-title" data-i18n="partners_title" style="text-align:center;">A Network of<br><em>Excellence</em></h2>
+    <p class="partners-sub" data-i18n="partners_sub">We collaborate with the most prestigious brands in hospitality, real estate, and luxury services to deliver an unparalleled experience.</p>
+  </div>
+
+  <div class="partners-grid">
+    <div class="partner-logo">Cap<br>Cana</div>
+    <div class="partner-logo">Ritz-Carlton<small>Reserve</small></div>
+    <div class="partner-logo">Christie's<small>International Real Estate</small></div>
+    <div class="partner-logo">Four<br>Seasons</div>
+    <div class="partner-logo">Casa de<br>Campo</div>
+    <div class="partner-logo">Sotheby's<small>Realty</small></div>
+    <div class="partner-logo">Aman<small>Resorts</small></div>
+    <div class="partner-logo">Eden Rock<small>Cap Cana</small></div>
+  </div>
+
+  <div class="partners-services">
+    <div class="partner-svc">
+      <div class="partner-svc-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h4 data-i18n="psvc_0_title">Legal & Tax Advisory</h4>
+      <p data-i18n="psvc_0_desc">Specialized attorneys and tax advisors ensuring full Confotur compliance and optimal fiscal structuring for international investors.</p>
+    </div>
+    <div class="partner-svc">
+      <div class="partner-svc-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h4 data-i18n="psvc_1_title">Property Management</h4>
+      <p data-i18n="psvc_1_desc">Turnkey rental management, maintenance, and concierge services delivering premium yields with zero owner involvement.</p>
+    </div>
+    <div class="partner-svc">
+      <div class="partner-svc-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <h4 data-i18n="psvc_2_title">Architecture & Design</h4>
+      <p data-i18n="psvc_2_desc">Award-winning Caribbean architects and interior designers crafting bespoke residences that blend luxury with tropical soul.</p>
+    </div>
+    <div class="partner-svc">
+      <div class="partner-svc-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <h4 data-i18n="psvc_3_title">Residency & Immigration</h4>
+      <p data-i18n="psvc_3_desc">Fast-track Dominican residency programs, investor visa coordination, and dual citizenship advisory for UHNWI clients.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer>
+  <div class="ft-top">
+    <div>
+      <div class="ft-logo">Real <span>Luxe</span></div>
+      <p class="ft-desc" data-i18n="ft_desc">Ultra-luxury real estate in the Dominican Republic. Villas, penthouses and private estates for a discerning international clientele.</p>
+    </div>
+    <div class="ft-col">
+      <h5 data-i18n="ft_nav">Navigation</h5>
+      <a href="#" data-i18n="nav_0" onclick="scrollToSection('properties');return false">Properties</a>
+      <a href="#" data-i18n="nav_1" onclick="scrollToSection('about');return false">About</a>
+      <a href="#" data-i18n="nav_2" onclick="scrollToSection('lifestyle');return false">Lifestyle</a>
+      <a href="#" data-i18n="nav_3" onclick="scrollToSection('contact');return false">Contact</a>
+    </div>
+    <div class="ft-col">
+      <h5 data-i18n="ft_svc">Services</h5>
+      <a href="#" data-i18n="ft_svc_0">Personalized Search</a>
+      <a href="#" data-i18n="ft_svc_1">Rental Management</a>
+      <a href="#" data-i18n="ft_svc_2">VIP Concierge</a>
+      <a href="#" data-i18n="ft_svc_3">Legal Advisory</a>
+    </div>
+    <div class="ft-col">
+      <h5 data-i18n="ft_dest">Destinations</h5>
+      <a href="#">Cap Cana</a>
+      <a href="#">Casa de Campo</a>
+      <a href="#">Punta Cana</a>
+      <a href="#">Las Terrenas</a>
+      <a href="#">Samaná</a>
+    </div>
+  </div>
+  <div class="ft-bottom">
+    <span class="ft-copy">© 2025 Real Luxe — All rights reserved · Legal Notice · <a href="privacy.html" style="color:var(--gold);transition:color .3s" data-i18n="ft_privacy">Privacy Policy</a></span>
+    <div class="ft-socials">
+      <a href="#" class="ft-social"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+      <a href="#" class="ft-social"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+      <a href="#" class="ft-social"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════════ PROPERTY DETAIL OVERLAY ════════════════ -->
+<div class="pd-overlay" id="pdOverlay">
+  <div class="pd-container">
+    <!-- Close button -->
+    <button class="pd-close" onclick="closePropertyDetail()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Gallery -->
+    <div class="pd-gallery" id="pdGallery">
+      <div class="pd-gallery-main" id="pdMainImg"></div>
+      <div class="pd-gallery-thumbs" id="pdThumbs"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="pd-content">
+      <div class="pd-header">
+        <div>
+          <div class="pd-tag" id="pdTag"></div>
+          <h2 class="pd-name" id="pdName"></h2>
+          <div class="pd-location" id="pdLocation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span></span>
+          </div>
+        </div>
+        <div class="pd-price" id="pdPrice"></div>
+      </div>
+
+      <!-- Key specs -->
+      <div class="pd-specs" id="pdSpecs"></div>
+
+      <!-- Description -->
+      <div class="pd-description" id="pdDesc"></div>
+
+      <!-- Investment & Tax Data -->
+      <div class="pd-data-grid" id="pdDataGrid"></div>
+
+      <!-- Confotur Badge -->
+      <div class="pd-confotur-badge" id="pdConfoturBadge" style="display:none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span id="pdConfoturText"></span>
+      </div>
+
+      <!-- Amenities -->
+      <h3 class="pd-section-title" data-i18n-pd="pd_amenities_title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Amenities &amp; Features
+      </h3>
+      <div class="pd-amenities" id="pdAmenities"></div>
+
+      <!-- Concierge Services -->
+      <h3 class="pd-section-title" data-i18n-pd="pd_concierge_title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Lifestyle Concierge
+      </h3>
+      <div class="pd-concierge-list" id="pdConcierge"></div>
+
+      <!-- Map -->
+      <h3 class="pd-section-title" data-i18n-pd="pd_location_title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Location
+      </h3>
+      <div class="pd-map" id="pdMap"></div>
+
+      <!-- CTA -->
+      <div class="pd-cta">
+        <button class="btn-primary pd-cta-btn" onclick="closePropertyDetail();scrollToSection('contact')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span data-i18n="pd_cta_visit">Schedule a Private Viewing</span>
+        </button>
+        <a href="https://wa.me/18095551234" target="_blank" rel="noopener" class="btn-ghost pd-cta-btn" style="color:var(--charcoal);border-color:var(--cream);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+          <span data-i18n="pd_cta_whatsapp">Contact on WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- WHATSAPP CONCIERGE -->
+<a href="https://wa.me/18095551234?text=Bonjour%2C%20je%20suis%20intéressé%20par%20vos%20propriétés%20d%27exception%20en%20République%20Dominicaine." class="wa-btn" id="waBtn" target="_blank" rel="noopener">
+  <div class="wa-pulse"></div>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+  <span class="wa-text" data-i18n="wa_text">Expertise Privée</span>
+</a>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════ -->
+
+<!-- Unified JavaScript -->
+<script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Real Luxe Catalogue — Browse our full collection of ultra-luxury properties in the Dominican Republic.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Real Luxe — Property Catalogue · Dominican Republic</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════════════════════
+     ORDRE DE CHARGEMENT CRITIQUE :
+     1. Supabase SDK   (synchrone — crée window.supabase)
+     2. GSAP + plugins (defer — UI animations)
+     3. supabase-client.js (en bas du body, après le SDK)
+     4. script.js          (en bas du body, après le client)
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- ① Supabase SDK v2 — DOIT charger EN PREMIER, SANS defer -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ② GSAP (defer OK — les animations sont lancées par JS après fetch) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
+<!-- Global Stylesheet -->
+<link rel="stylesheet" href="style.css">
+
+<!-- Loading state CSS (pendant le fetch Supabase) -->
+<style>
+  /* ─── Skeleton loader pour le catalogue ─── */
+  .props-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    gap: 16px;
+  }
+  .props-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--cream, #F0EDE7);
+    border-top-color: var(--gold, #C6A55C);
+    border-radius: 50%;
+    animation: rl-spin 0.8s linear infinite;
+  }
+  @keyframes rl-spin {
+    to { transform: rotate(360deg); }
+  }
+  .props-loading-text {
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+    font-size: 14px;
+    color: var(--slate, #6B6B6B);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  /* ─── Message d'erreur ─── */
+  .props-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--slate, #6B6B6B);
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+  }
+  .props-error-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+  .props-error-msg {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .props-retry-btn {
+    margin-top: 20px;
+    padding: 10px 28px;
+    background: var(--gold, #C6A55C);
+    color: var(--white, #fff);
+    border: none;
+    border-radius: var(--radius-pill, 999px);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+  .props-retry-btn:hover { opacity: 0.85; }
+</style>
+
+</head>
+<body data-page="catalogue">
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor-dot" id="curDot"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- HEADER -->
+<header class="cat-header" id="catHeader">
+  <a href="index.html" class="h-logo">REAL <span>Luxe</span></a>
+  <div class="cat-header-center" data-i18n="cat_label">Full Collection</div>
+  <div class="cat-header-right">
+    <div class="lang-sel" id="langSel">
+      <button class="lang-btn" onclick="toggleLangMenu(event)">
+        <span id="currentLangText">EN</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="lang-drop" id="langDrop">
+        <button class="lang-opt active" onclick="setLang('en')">EN</button>
+        <button class="lang-opt" onclick="setLang('fr')">FR</button>
+        <button class="lang-opt" onclick="setLang('es')">ES</button>
+        <button class="lang-opt" onclick="setLang('ru')">RU</button>
+        <button class="lang-opt" onclick="setLang('zh')">ZH</button>
+      </div>
+    </div>
+    <a href="index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span data-i18n="back_home">Back</span>
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="cat-hero" id="catHero">
+  <div class="cat-hero-content">
+    <div class="cat-hero-label" data-i18n="cat_label">Full Collection</div>
+    <h1 class="cat-hero-title" data-i18n="cat_title">Our <em>Properties</em></h1>
+    <p class="cat-hero-sub" data-i18n="cat_sub">Explore our complete collection of luxury properties in the Dominican Republic.</p>
+    <div class="cat-hero-stats" data-i18n="cat_stats_line">5 Properties &middot; 3 Locations &middot; From $1.95M</div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" id="filterBar">
+  <div class="filter-bar-inner" id="filterBarInner">
+    <!-- Location filters -->
+    <button class="filter-chip active" data-filter="all" onclick="filterByLocation('all',this)" data-i18n-filter="filter_all">All</button>
+    <button class="filter-chip" data-filter="Cap Cana" onclick="filterByLocation('Cap Cana',this)">Cap Cana</button>
+    <button class="filter-chip" data-filter="Punta Cana" onclick="filterByLocation('Punta Cana',this)">Punta Cana</button>
+    <button class="filter-chip" data-filter="Las Terrenas" onclick="filterByLocation('Las Terrenas',this)">Las Terrenas</button>
+    <button class="filter-chip" data-filter="Bayah&iacute;be" onclick="filterByLocation('Bayah\u00EDbe',this)">Bayah&iacute;be</button>
+    <div class="filter-separator"></div>
+    <!-- Sort buttons -->
+    <button class="sort-chip" id="sortAsc" onclick="sortByPrice('asc',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      <span data-i18n="filter_price_asc">Price: Low to High</span>
+    </button>
+    <button class="sort-chip" id="sortDesc" onclick="sortByPrice('desc',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      <span data-i18n="filter_price_desc">Price: High to Low</span>
+    </button>
+  </div>
+</div>
+
+<!-- PROPERTIES GRID -->
+<section class="props-section">
+  <div class="props-container">
+    <div class="props-grid" id="propsGrid">
+      <!-- État de chargement (remplacé par les cartes après fetch) -->
+      <div class="props-loading" id="propsLoader">
+        <div class="props-loading-spinner"></div>
+        <div class="props-loading-text">Loading properties...</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="cat-footer">
+  <div class="cat-footer-inner">
+    <div class="cat-footer-copy" data-i18n="footer_rights">&copy; 2024 Real Luxe. All rights reserved.</div>
+    <div class="cat-footer-links">
+      <a href="index.html" class="cat-footer-link" data-i18n="back_home">Back</a>
+      <a href="https://wa.me/18095551234" target="_blank" rel="noopener" class="cat-footer-wa">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ③ Supabase Client (connexion + helpers) — APRÈS le SDK -->
+<script src="supabase-client.js"></script>
+
+<!-- ④ Unified JavaScript (logique catalogue + GSAP) — EN DERNIER -->
+<script src="script.js"></script>
+</body>
+</html>
