@@ -1091,12 +1091,13 @@ function openPropertyDetail(slug, clickEvent) {
     }
   }
 
-  // Fill gallery
+  // Fill gallery (fallback si pas d'images)
+  var gallery = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
   var mainImg = document.getElementById('pdMainImg');
-  mainImg.innerHTML = '<img src="' + p.gallery[0] + '" alt="' + p.name + '">';
+  mainImg.innerHTML = '<img src="' + gallery[0] + '" alt="' + p.name + '">';
 
   var thumbs = document.getElementById('pdThumbs');
-  thumbs.innerHTML = p.gallery.map(function(img, i){
+  thumbs.innerHTML = gallery.map(function(img, i){
     return '<div class="pd-thumb ' + (i===0?'active':'') + '" onclick="switchGalleryImg(' + i + ',event)"><img src="' + img + '" alt="' + p.name + ' - ' + (i+1) + '" loading="lazy"></div>';
   }).join('');
 
@@ -1124,7 +1125,7 @@ function openPropertyDetail(slug, clickEvent) {
 
   // ── Data-Rich Sections: Investment ROI + Technical Specs ──
   var dataHtml = '';
-  if (p.roi) {
+  if (p.roi && p.roi.rentalYield) {
     dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Investment ROI</h4>';
     dataHtml += '<div class="pd-data-item"><span class="label">Rental Yield</span><span class="value">' + p.roi.rentalYield + '</span></div>';
     dataHtml += '<div class="pd-data-item"><span class="label">Occupancy Rate</span><span class="value">' + p.roi.occupancyRate + '</span></div>';
@@ -1265,7 +1266,8 @@ function switchGalleryImg(idx, e) {
     opacity: 0,
     duration: 0.25,
     onComplete: () => {
-      img.src = p.gallery[idx];
+      var gal = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
+      img.src = gal[idx] || gal[0];
       gsap.to(img, { opacity: 1, duration: 0.4 });
     }
   });
@@ -1320,7 +1322,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   var urlParams = new URLSearchParams(window.location.search);
   var propSlug = urlParams.get('property');
   if (propSlug) {
-    setTimeout(function(){ openPropertyDetail(propSlug); }, 1200);
+    setTimeout(async function(){
+      // Si la propriété n'est pas dans le tableau hardcodé, la chercher dans Supabase
+      var found = PROPERTIES.find(function(pr){ return pr.slug === propSlug; });
+      if (!found && typeof fetchPublishedProperties === 'function') {
+        try {
+          var allProps = await fetchPublishedProperties();
+          var match = allProps.find(function(pr){ return pr.slug === propSlug; });
+          if (match) {
+            PROPERTIES.push(normalizeProperty(match));
+          }
+        } catch(e) { console.error('[Real Luxe] Fetch for deep-link failed:', e); }
+      }
+      openPropertyDetail(propSlug);
+    }, 1200);
     // Clean URL
     if (window.history.replaceState) {
       window.history.replaceState({}, document.title, window.location.pathname);
