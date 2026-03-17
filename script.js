@@ -6,6 +6,43 @@
 var PAGE_TYPE = document.body.getAttribute('data-page') || 'index';
 
 /* ═══════════════════════════════════════════════════════════════
+   PAGE TRANSITION (shared across all pages)
+   ═══════════════════════════════════════════════════════════════ */
+(function() {
+  // Fade in on page load
+  var pt = document.getElementById('pageTransition');
+  if (pt && pt.classList.contains('active')) {
+    requestAnimationFrame(function() { pt.classList.remove('active'); });
+  }
+
+  // Intercept internal links for smooth page transitions
+  function navigateWithTransition(url) {
+    var pt = document.getElementById('pageTransition');
+    if (!pt) { window.location.href = url; return; }
+    pt.classList.add('active');
+    setTimeout(function() { window.location.href = url; }, 400);
+  }
+
+  // Delegate click on internal <a> links
+  document.addEventListener('click', function(e) {
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+    // Only intercept internal page navigations (not anchors, external, WhatsApp)
+    if (href.indexOf('index.html') === 0 || href.indexOf('catalogue.html') === 0 || href.indexOf('privacy.html') === 0) {
+      // Skip if modifier key pressed (open in new tab)
+      if (e.metaKey || e.ctrlKey || e.shiftKey || link.target === '_blank') return;
+      e.preventDefault();
+      navigateWithTransition(href);
+    }
+  });
+
+  // Override button onclick navigations (e.g., "window.location.href = 'catalogue.html'")
+  window.navigateWithTransition = navigateWithTransition;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
    INDEX PAGE
    ═══════════════════════════════════════════════════════════════ */
 if (PAGE_TYPE === 'index') {
@@ -640,7 +677,7 @@ function setLang(lang) {
   const waBtn = document.getElementById('waBtn');
   if (waBtn && t.wa_text) {
     const msg = I18N[lang === 'fr' ? 'fr' : lang === 'es' ? 'es' : lang === 'ru' ? 'ru' : lang === 'zh' ? 'zh' : 'en'];
-    waBtn.href = 'https://wa.me/18095551234?text=' + encodeURIComponent(msg.hero_sub || '');
+    waBtn.href = 'https://wa.me/61436007811?text=' + encodeURIComponent(msg.hero_sub || '');
   }
 }
 function toggleLangMenu(e) {
@@ -1125,14 +1162,19 @@ function openPropertyDetail(slug, clickEvent) {
 
     requestAnimationFrame(function(){
       var targetRect = galleryMain.getBoundingClientRect();
+      var dx = targetRect.left - cardRect.left;
+      var dy = targetRect.top - cardRect.top;
+      var sx = targetRect.width / cardRect.width;
+      var sy = targetRect.height / cardRect.height;
+      clone.style.transformOrigin = 'top left';
       gsap.to(clone, {
-        left: targetRect.left, top: targetRect.top,
-        width: targetRect.width, height: targetRect.height,
+        x: dx, y: dy,
+        scaleX: sx, scaleY: sy,
         borderRadius: 'var(--radius-lg)',
         duration: 0.65, ease: 'power3.inOut',
         onComplete: function(){
           galleryMain.style.opacity = '1';
-          gsap.from(galleryMain, {opacity:0, duration:0.2});
+          gsap.fromTo(galleryMain, {opacity:0}, {opacity:1, duration:0.2});
           clone.remove();
         }
       });
@@ -1579,7 +1621,19 @@ var I18N = {
     cat_view_details:'Voir les D\u00E9tails',
     cat_stats_line:'5 Propri\u00E9t\u00E9s \u00B7 3 Emplacements \u00B7 \u00C0 partir de $1.95M',
     footer_rights:'\u00A9 2024 Real Luxe. Tous droits r\u00E9serv\u00E9s.',
-    cat_photos:'photos'
+    cat_photos:'photos',
+    cat_request_visit:'Solliciter une Visite',
+    lead_title:'Consultation Priv\u00E9e',
+    lead_sub:'Notre \u00E9quipe vous contactera sous 24h pour une exp\u00E9rience personnalis\u00E9e.',
+    lead_name:'Nom complet',
+    lead_email:'Email',
+    lead_phone:'T\u00E9l\u00E9phone',
+    lead_message:'Message (optionnel)',
+    lead_send:'Envoyer la Demande',
+    lead_success_title:'Demande VIP Transmise',
+    lead_success_sub:'Notre \u00E9quipe concierge a \u00E9t\u00E9 notifi\u00E9e et vous contactera dans les plus brefs d\u00E9lais.',
+    lead_wa_cta:'R\u00E9ponse Imm\u00E9diate sur WhatsApp',
+    lead_close:'Fermer'
   },
   en: {
     cat_label:'Full Collection', cat_title:'Our <em>Properties</em>', cat_sub:'Explore our complete collection of luxury properties in the Dominican Republic.',
@@ -1591,7 +1645,19 @@ var I18N = {
     cat_view_details:'View Details',
     cat_stats_line:'5 Properties \u00B7 3 Locations \u00B7 From $1.95M',
     footer_rights:'\u00A9 2024 Real Luxe. All rights reserved.',
-    cat_photos:'photos'
+    cat_photos:'photos',
+    cat_request_visit:'Request a Visit',
+    lead_title:'Private Consultation',
+    lead_sub:'Our team will contact you within 24 hours for a personalized experience.',
+    lead_name:'Full Name',
+    lead_email:'Email',
+    lead_phone:'Phone',
+    lead_message:'Message (optional)',
+    lead_send:'Send Request',
+    lead_success_title:'VIP Request Transmitted',
+    lead_success_sub:'Our concierge team has been notified and will contact you shortly.',
+    lead_wa_cta:'Immediate Response on WhatsApp',
+    lead_close:'Close'
   },
   es: {
     cat_label:'Colecci\u00F3n Completa', cat_title:'Nuestras <em>Propiedades</em>', cat_sub:'Explore nuestra colecci\u00F3n completa de propiedades de lujo en Rep\u00FAblica Dominicana.',
@@ -1603,7 +1669,19 @@ var I18N = {
     cat_view_details:'Ver Detalles',
     cat_stats_line:'5 Propiedades \u00B7 3 Ubicaciones \u00B7 Desde $1.95M',
     footer_rights:'\u00A9 2024 Real Luxe. Todos los derechos reservados.',
-    cat_photos:'fotos'
+    cat_photos:'fotos',
+    cat_request_visit:'Solicitar una Visita',
+    lead_title:'Consulta Privada',
+    lead_sub:'Nuestro equipo le contactar\u00E1 en 24 horas para una experiencia personalizada.',
+    lead_name:'Nombre completo',
+    lead_email:'Email',
+    lead_phone:'Tel\u00E9fono',
+    lead_message:'Mensaje (opcional)',
+    lead_send:'Enviar Solicitud',
+    lead_success_title:'Solicitud VIP Transmitida',
+    lead_success_sub:'Nuestro equipo concierge ha sido notificado y le contactar\u00E1 en breve.',
+    lead_wa_cta:'Respuesta Inmediata por WhatsApp',
+    lead_close:'Cerrar'
   },
   ru: {
     cat_label:'\u041F\u043E\u043B\u043D\u0430\u044F \u041A\u043E\u043B\u043B\u0435\u043A\u0446\u0438\u044F', cat_title:'\u041D\u0430\u0448\u0438 <em>\u041E\u0431\u044A\u0435\u043A\u0442\u044B</em>', cat_sub:'\u041E\u0437\u043D\u0430\u043A\u043E\u043C\u044C\u0442\u0435\u0441\u044C \u0441 \u043F\u043E\u043B\u043D\u043E\u0439 \u043A\u043E\u043B\u043B\u0435\u043A\u0446\u0438\u0435\u0439 \u044D\u043B\u0438\u0442\u043D\u043E\u0439 \u043D\u0435\u0434\u0432\u0438\u0436\u0438\u043C\u043E\u0441\u0442\u0438 \u0432 \u0414\u043E\u043C\u0438\u043D\u0438\u043A\u0430\u043D\u0441\u043A\u043E\u0439 \u0420\u0435\u0441\u043F\u0443\u0431\u043B\u0438\u043A\u0435.',
@@ -1615,7 +1693,19 @@ var I18N = {
     cat_view_details:'\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435',
     cat_stats_line:'5 \u041E\u0431\u044A\u0435\u043A\u0442\u043E\u0432 \u00B7 3 \u041B\u043E\u043A\u0430\u0446\u0438\u0438 \u00B7 \u041E\u0442 $1.95M',
     footer_rights:'\u00A9 2024 Real Luxe. \u0412\u0441\u0435 \u043F\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043D\u044B.',
-    cat_photos:'\u0444\u043E\u0442\u043E'
+    cat_photos:'\u0444\u043E\u0442\u043E',
+    cat_request_visit:'\u0417\u0430\u043F\u0440\u043E\u0441\u0438\u0442\u044C \u043F\u043E\u0441\u0435\u0449\u0435\u043D\u0438\u0435',
+    lead_title:'\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u0430\u044F \u041A\u043E\u043D\u0441\u0443\u043B\u044C\u0442\u0430\u0446\u0438\u044F',
+    lead_sub:'\u041D\u0430\u0448\u0430 \u043A\u043E\u043C\u0430\u043D\u0434\u0430 \u0441\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0442\u0435\u0447\u0435\u043D\u0438\u0435 24 \u0447\u0430\u0441\u043E\u0432.',
+    lead_name:'\u0424\u0418\u041E',
+    lead_email:'Email',
+    lead_phone:'\u0422\u0435\u043B\u0435\u0444\u043E\u043D',
+    lead_message:'\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 (\u043D\u0435\u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E)',
+    lead_send:'\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C',
+    lead_success_title:'VIP \u0417\u0430\u043F\u0440\u043E\u0441 \u041F\u0435\u0440\u0435\u0434\u0430\u043D',
+    lead_success_sub:'\u041D\u0430\u0448 \u043A\u043E\u043D\u0441\u044C\u0435\u0440\u0436 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D \u0438 \u0441\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0435 \u0432\u0440\u0435\u043C\u044F.',
+    lead_wa_cta:'\u041C\u0433\u043D\u043E\u0432\u0435\u043D\u043D\u044B\u0439 \u043E\u0442\u0432\u0435\u0442 \u0432 WhatsApp',
+    lead_close:'\u0417\u0430\u043A\u0440\u044B\u0442\u044C'
   },
   zh: {
     cat_label:'\u5B8C\u6574\u6536\u85CF', cat_title:'\u6211\u4EEC\u7684<em>\u623F\u4EA7</em>', cat_sub:'\u63A2\u7D22\u6211\u4EEC\u5728\u591A\u7C73\u5C3C\u52A0\u5171\u548C\u56FD\u7684\u5B8C\u6574\u8C6A\u534E\u623F\u4EA7\u6536\u85CF\u3002',
@@ -1627,8 +1717,32 @@ var I18N = {
     cat_view_details:'\u67E5\u770B\u8BE6\u60C5',
     cat_stats_line:'5 \u623F\u4EA7 \u00B7 3 \u5730\u70B9 \u00B7 \u4ECE $1.95M \u8D77',
     footer_rights:'\u00A9 2024 Real Luxe. \u4FDD\u7559\u6240\u6709\u6743\u5229\u3002',
-    cat_photos:'\u7167\u7247'
+    cat_photos:'\u7167\u7247',
+    cat_request_visit:'\u9884\u7EA6\u53C2\u89C2',
+    lead_title:'\u79C1\u4EBA\u54A8\u8BE2',
+    lead_sub:'\u6211\u4EEC\u7684\u56E2\u961F\u5C06\u572824\u5C0F\u65F6\u5185\u4E0E\u60A8\u8054\u7CFB\u3002',
+    lead_name:'\u59D3\u540D',
+    lead_email:'\u7535\u5B50\u90AE\u4EF6',
+    lead_phone:'\u7535\u8BDD',
+    lead_message:'\u7559\u8A00\uFF08\u53EF\u9009\uFF09',
+    lead_send:'\u53D1\u9001\u8BF7\u6C42',
+    lead_success_title:'VIP\u8BF7\u6C42\u5DF2\u53D1\u9001',
+    lead_success_sub:'\u6211\u4EEC\u7684\u793C\u5BBE\u670D\u52A1\u56E2\u961F\u5DF2\u6536\u5230\u901A\u77E5\uFF0C\u5C06\u5C3D\u5FEB\u4E0E\u60A8\u8054\u7CFB\u3002',
+    lead_wa_cta:'WhatsApp\u5373\u65F6\u56DE\u590D',
+    lead_close:'\u5173\u95ED'
   }
+};
+
+/* ===================================================================
+   PARTNER AGENCY MAPPING
+   =================================================================== */
+var PARTNER_AGENCIES = {
+  'Cap Cana':       { name: 'Cap Cana Real Estate', email: 'sales@capcana.com' },
+  'Punta Cana':     { name: 'Punta Cana Realty', email: 'info@puntacanarealty.com' },
+  'Las Terrenas':   { name: 'Las Terrenas Properties', email: 'contact@lasterrenasproperties.com' },
+  'Bayah\u00EDbe': { name: 'Bayah\u00EDbe Estates', email: 'info@bayahibeestates.com' },
+  'Saman\u00E1':   { name: 'Saman\u00E1 Properties', email: 'info@samanaproperties.com' },
+  'Casa de Campo':  { name: 'Casa de Campo Real Estate', email: 'realestate@casadecampo.com' }
 };
 
 /* ===================================================================
@@ -1660,6 +1774,7 @@ function renderCards(animate) {
   var bedsLabel = t.card_beds || 'Beds';
   var bathsLabel = t.card_baths || 'Baths';
   var viewLabel = t.cat_view_details || 'View Details';
+  var visitLabel = t.cat_request_visit || 'Request a Visit';
   var photosLabel = t.cat_photos || 'photos';
   var html = '';
 
@@ -1719,6 +1834,10 @@ function renderCards(animate) {
               '<span>' + viewLabel + '</span>' +
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
             '</a>' +
+            '<button class="cat-card-btn cat-card-btn-visit" onclick="event.preventDefault();event.stopPropagation();openLeadModal(\'' + p.slug + '\')">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+              '<span>' + visitLabel + '</span>' +
+            '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -1980,5 +2099,233 @@ document.addEventListener('DOMContentLoaded', function() {
   loadPropertiesFromSupabase();
 });
 
+
+/* ===================================================================
+   LEAD CAPTURE MODAL
+   =================================================================== */
+var _leadLastSubmit = 0;
+
+function openLeadModal(slug) {
+  var p = null;
+  for (var i = 0; i < PROPERTIES.length; i++) {
+    if (PROPERTIES[i].slug === slug) { p = PROPERTIES[i]; break; }
+  }
+  if (!p) return;
+
+  // Populate hidden fields
+  document.getElementById('leadPropertySlug').value = p.slug;
+  document.getElementById('leadPropertyLocation').value = p.location;
+  document.getElementById('leadPropertyName').textContent = p.name + ' — ' + p.location;
+
+  // Reset to form state
+  document.getElementById('leadFormState').style.display = '';
+  document.getElementById('leadSuccessState').style.display = 'none';
+  document.getElementById('leadCaptureForm').reset();
+  document.getElementById('leadSubmitBtn').classList.remove('sending');
+
+  // Update i18n labels
+  var t = I18N[currentLang] || I18N.en;
+  var modal = document.getElementById('leadModal');
+  var i18nEls = modal.querySelectorAll('[data-i18n]');
+  for (var j = 0; j < i18nEls.length; j++) {
+    var key = i18nEls[j].getAttribute('data-i18n');
+    if (t[key] !== undefined) i18nEls[j].innerHTML = t[key];
+  }
+
+  // Show modal with GSAP
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var box = modal.querySelector('.lead-modal');
+  if (typeof gsap !== 'undefined') {
+    gsap.fromTo(box, {y: 30, scale: 0.97, opacity: 0}, {y: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'power3.out'});
+  }
+}
+
+function closeLeadModal() {
+  var modal = document.getElementById('leadModal');
+  var box = modal.querySelector('.lead-modal');
+  if (typeof gsap !== 'undefined') {
+    gsap.to(box, {y: 20, opacity: 0, duration: 0.3, ease: 'power3.in', onComplete: function() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }});
+  } else {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function submitLeadForm(e) {
+  e.preventDefault();
+
+  // Rate limiting (10s)
+  var now = Date.now();
+  if (now - _leadLastSubmit < 10000) {
+    var btn = document.getElementById('leadSubmitBtn');
+    if (typeof gsap !== 'undefined') {
+      gsap.fromTo(btn, {x: -4}, {x: 4, duration: 0.08, repeat: 5, yoyo: true, ease: 'power2.inOut', onComplete: function() { gsap.set(btn, {x: 0}); }});
+    }
+    return false;
+  }
+  _leadLastSubmit = now;
+
+  var btn = document.getElementById('leadSubmitBtn');
+  btn.classList.add('sending');
+
+  // Gather form data
+  var leadData = {
+    name: document.getElementById('leadName').value.trim(),
+    email: document.getElementById('leadEmail').value.trim(),
+    phone: document.getElementById('leadPhone').value.trim(),
+    message: document.getElementById('leadMessage').value.trim(),
+    property_slug: document.getElementById('leadPropertySlug').value,
+    property_location: document.getElementById('leadPropertyLocation').value,
+    property_name: document.getElementById('leadPropertyName').textContent,
+    language: currentLang,
+    source: 'catalogue',
+    created_at: new Date().toISOString()
+  };
+
+  // Get partner agency info
+  var agency = PARTNER_AGENCIES[leadData.property_location] || null;
+  leadData.partner_agency = agency ? agency.name : 'N/A';
+  leadData.partner_email = agency ? agency.email : '';
+
+  // 1. Save to Supabase
+  saveLeadToSupabase(leadData);
+
+  // 2. Send email notifications (EmailJS)
+  sendLeadEmails(leadData);
+
+  // 3. Show success after delay (simulates processing)
+  setTimeout(function() { showLeadSuccess(leadData); }, 1500);
+
+  return false;
+}
+
+function saveLeadToSupabase(data) {
+  // Check if Supabase client is available
+  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
+    console.warn('[Real Luxe] Supabase non disponible — lead stocké localement');
+    storeLeadLocally(data);
+    return;
+  }
+
+  try {
+    var client = window.supabase.createClient(
+      'https://bfwygmxebrlspimhobpa.supabase.co',
+      'sb_publishable_E6Nd4RBpNblUEpWZvvcUhw_AycOMKnB'
+    );
+
+    client.from('leads').insert([{
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      message: data.message,
+      property_slug: data.property_slug,
+      property_name: data.property_name,
+      property_location: data.property_location,
+      partner_agency: data.partner_agency,
+      partner_email: data.partner_email,
+      language: data.language,
+      source: data.source,
+      created_at: data.created_at
+    }]).then(function(result) {
+      if (result.error) {
+        console.error('[Real Luxe] Supabase insert error:', result.error.message);
+        storeLeadLocally(data);
+      } else {
+        console.log('[Real Luxe] Lead saved to Supabase');
+      }
+    });
+  } catch (err) {
+    console.error('[Real Luxe] Supabase error:', err.message);
+    storeLeadLocally(data);
+  }
+}
+
+function storeLeadLocally(data) {
+  try {
+    var stored = JSON.parse(localStorage.getItem('rl-leads-pending') || '[]');
+    stored.push(data);
+    localStorage.setItem('rl-leads-pending', JSON.stringify(stored));
+    console.log('[Real Luxe] Lead stored locally (pending sync)');
+  } catch (e) { /* silent */ }
+}
+
+function sendLeadEmails(data) {
+  // EmailJS integration — set to true after configuring
+  if (typeof emailjs !== 'undefined' && false) {
+    emailjs.init('YOUR_PUBLIC_KEY');
+
+    // Email to Tony
+    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+      to_email: 'tony@realluxeestates.com',
+      from_name: data.name,
+      from_email: data.email,
+      phone: data.phone,
+      message: data.message,
+      property: data.property_name,
+      partner_agency: data.partner_agency
+    });
+
+    // Email to partner agency (if available)
+    if (data.partner_email) {
+      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_PARTNER_ID', {
+        to_email: data.partner_email,
+        from_name: data.name,
+        from_email: data.email,
+        phone: data.phone,
+        message: data.message,
+        property: data.property_name,
+        agency_name: data.partner_agency
+      });
+    }
+  } else {
+    console.log('[Real Luxe] EmailJS non configuré — emails simulés');
+    console.log('[Real Luxe] → tony@realluxeestates.com', data);
+    if (data.partner_email) {
+      console.log('[Real Luxe] → ' + data.partner_email, data);
+    }
+  }
+}
+
+function showLeadSuccess(data) {
+  document.getElementById('leadFormState').style.display = 'none';
+  var success = document.getElementById('leadSuccessState');
+  success.style.display = '';
+
+  // Set WhatsApp link with pre-filled message
+  var waMsg = 'Bonjour, je viens de soumettre une demande VIP pour ' + data.property_name + '. Mon nom: ' + data.name;
+  document.getElementById('leadWhatsAppLink').href = 'https://wa.me/61436007811?text=' + encodeURIComponent(waMsg);
+
+  // Update i18n for success state
+  var t = I18N[currentLang] || I18N.en;
+  var i18nEls = success.querySelectorAll('[data-i18n]');
+  for (var j = 0; j < i18nEls.length; j++) {
+    var key = i18nEls[j].getAttribute('data-i18n');
+    if (t[key] !== undefined) i18nEls[j].innerHTML = t[key];
+  }
+
+  // GSAP entrance
+  if (typeof gsap !== 'undefined') {
+    gsap.fromTo('.lead-success', {opacity: 0, y: 15}, {opacity: 1, y: 0, duration: 0.5, ease: 'power3.out'});
+    gsap.fromTo('.lead-success > svg', {scale: 0}, {scale: 1, duration: 0.6, delay: 0.2, ease: 'back.out(1.7)'});
+    gsap.fromTo('.lead-wa-btn', {opacity: 0, y: 10}, {opacity: 1, y: 0, duration: 0.4, delay: 0.5, ease: 'power3.out'});
+    gsap.fromTo('.lead-close-btn', {opacity: 0}, {opacity: 1, duration: 0.3, delay: 0.7, ease: 'power3.out'});
+  }
+}
+
+// Close on overlay click
+document.getElementById('leadModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLeadModal();
+});
+
+// Close on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('leadModal').classList.contains('active')) {
+    closeLeadModal();
+  }
+});
 
 } // end CATALOGUE
