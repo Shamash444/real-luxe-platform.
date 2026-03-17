@@ -12,190 +12,95 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- GSAP -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<!-- ═══════════════════════════════════════════════════════════
+     ORDRE DE CHARGEMENT CRITIQUE :
+     1. Supabase SDK   (synchrone — crée window.supabase)
+     2. GSAP + plugins (defer — UI animations)
+     3. supabase-client.js (en bas du body, après le SDK)
+     4. script.js          (en bas du body, après le client)
+     ═══════════════════════════════════════════════════════════ -->
 
+<!-- ① Supabase SDK v2 — DOIT charger EN PREMIER, SANS defer -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ② EmailJS (notifications email lead) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+
+<!-- ③ GSAP (defer OK — les animations sont lancées par JS après fetch) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
+<!-- Global Stylesheet -->
+<link rel="stylesheet" href="style.css">
+
+<!-- Loading state CSS (pendant le fetch Supabase) -->
 <style>
-/* ===================================================================
-   REAL LUXE CATALOGUE — ULTRA-LUXURY DESIGN SYSTEM
-   =================================================================== */
-:root{
-  --gold:#C6A55C;
-  --gold-light:#D4B978;
-  --gold-dark:#A88B3D;
-  --ivory:#FAF8F5;
-  --cream:#F0EDE7;
-  --charcoal:#1A1A1A;
-  --graphite:#2D2D2D;
-  --slate:#6B6B6B;
-  --mist:#9A9A9A;
-  --white:#FFFFFF;
-  --black:#0A0A0A;
-  --sea:#1B4D5C;
-  --sea-light:#2A7A8C;
-  --coral:#D4725C;
-  --font-display:'Playfair Display',Georgia,serif;
-  --font-body:'DM Sans','Helvetica Neue',sans-serif;
-  --ease:cubic-bezier(.22,1,.36,1);
-  --ease-out:cubic-bezier(.16,1,.3,1);
-  --gutter:clamp(20px,4vw,80px);
-  --radius:16px;
-  --radius-lg:24px;
-  --radius-pill:999px;
-}
-
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
-body{font-family:var(--font-body);font-weight:400;color:var(--charcoal);background:var(--ivory);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-img{display:block;max-width:100%;height:auto}
-button{border:none;background:none;cursor:pointer;font-family:inherit}
-a{text-decoration:none;color:inherit}
-
-/* === CURSOR === */
-.cursor-dot{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:10000;mix-blend-mode:difference;transition:transform .15s var(--ease)}
-.cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;pointer-events:none;z-index:10000;mix-blend-mode:difference;transition:transform .3s var(--ease),width .3s,height .3s,border-color .3s}
-.cursor-ring.hover{width:64px;height:64px;border-color:var(--gold)}
-@property --cursor-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
-.cursor-ring{border:none;background:conic-gradient(from var(--cursor-angle),var(--gold),var(--gold-light),#E8D5A0,#C9B87A,var(--gold)) border-box;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 1.5px),#fff calc(100% - 1.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 1.5px),#fff calc(100% - 1.5px));animation:cursorShimmer 3s linear infinite}
-@keyframes cursorShimmer{to{--cursor-angle:360deg}}
-.cursor-ring.hover{background:conic-gradient(from var(--cursor-angle),var(--gold),#fff,var(--gold-light),var(--gold)) border-box}
-
-/* === HEADER === */
-.cat-header{position:fixed;top:0;left:0;right:0;z-index:200;height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--gutter);transition:all .5s var(--ease)}
-.cat-header.scrolled{background:rgba(10,10,10,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(255,255,255,.04)}
-
-.h-logo{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--white);letter-spacing:6px;text-transform:uppercase;transition:color .4s;flex-shrink:0}
-.h-logo span{color:var(--gold);font-style:italic;letter-spacing:2px}
-
-.cat-header-center{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,.5);transition:color .4s;white-space:nowrap}
-
-.cat-header-right{display:flex;align-items:center;gap:16px;flex-shrink:0}
-
-.back-link{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7);transition:color .3s;display:flex;align-items:center;gap:6px}
-.back-link:hover{color:var(--gold)}
-.back-link svg{transition:transform .3s}
-.back-link:hover svg{transform:translateX(-3px)}
-
-/* === LANGUAGE SELECTOR === */
-.lang-sel{position:relative;z-index:201}
-.lang-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-pill);font-size:11px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,.85);transition:all .3s;cursor:pointer}
-.lang-btn:hover{border-color:var(--gold);color:var(--gold)}
-.lang-btn svg{transition:transform .3s}
-.lang-sel.open .lang-btn svg{transform:rotate(180deg)}
-.lang-drop{position:absolute;top:calc(100% + 8px);right:0;background:var(--white);border:1px solid var(--cream);border-radius:var(--radius);box-shadow:0 12px 40px rgba(0,0,0,.1);padding:6px;min-width:56px;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .3s var(--ease);z-index:210}
-.lang-sel.open .lang-drop{opacity:1;visibility:visible;transform:translateY(0)}
-.lang-opt{display:block;width:100%;padding:8px 12px;border:none;background:none;font-size:11px;font-weight:600;letter-spacing:2px;color:var(--charcoal);cursor:pointer;border-radius:8px;text-align:center;transition:all .2s;font-family:var(--font-body)}
-.lang-opt:hover,.lang-opt.active{background:rgba(198,165,92,.1);color:var(--gold)}
-
-/* === HERO === */
-.cat-hero{position:relative;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:var(--black);overflow:hidden;padding:70px var(--gutter) 0}
-.cat-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(198,165,92,.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(27,77,92,.08) 0%,transparent 50%),linear-gradient(180deg,rgba(10,10,10,1) 0%,rgba(26,26,26,.95) 100%);z-index:1}
-.cat-hero-content{position:relative;z-index:2}
-
-.cat-hero-label{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
-.cat-hero-label::before{content:'';width:32px;height:1px;background:var(--gold)}
-
-.cat-hero-title{font-family:var(--font-display);font-size:clamp(36px,6vw,72px);font-weight:400;color:var(--white);line-height:1.1;letter-spacing:-1px;margin-bottom:20px}
-.cat-hero-title em{font-style:italic;color:var(--gold)}
-
-.cat-hero-sub{font-size:clamp(14px,1.3vw,17px);color:var(--mist);line-height:1.8;max-width:560px;margin:0 auto 24px;font-weight:300}
-
-.cat-hero-stats{font-size:13px;font-weight:500;letter-spacing:2px;color:rgba(255,255,255,.5)}
-
-/* === FILTER BAR === */
-.filter-bar{position:sticky;top:70px;z-index:150;background:var(--ivory);border-bottom:1px solid var(--cream);padding:0 var(--gutter);transition:box-shadow .3s}
-.filter-bar.shadow{box-shadow:0 4px 20px rgba(0,0,0,.04)}
-.filter-bar-inner{display:flex;align-items:center;gap:10px;padding:16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
-.filter-bar-inner::-webkit-scrollbar{display:none}
-
-.filter-chip{padding:8px 20px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--slate);border:1px solid var(--cream);background:var(--white);cursor:pointer;transition:all .35s var(--ease);white-space:nowrap;flex-shrink:0}
-.filter-chip:hover{border-color:var(--gold-light);color:var(--gold-dark)}
-.filter-chip.active{background:var(--gold);border-color:var(--gold);color:var(--black)}
-
-.filter-separator{width:1px;height:24px;background:var(--cream);flex-shrink:0;margin:0 4px}
-
-.sort-chip{padding:8px 20px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;letter-spacing:1px;color:var(--slate);border:1px solid var(--cream);background:var(--white);cursor:pointer;transition:all .35s var(--ease);white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px}
-.sort-chip:hover{border-color:var(--gold-light);color:var(--gold-dark)}
-.sort-chip.active{border-color:var(--gold);color:var(--gold-dark);background:rgba(198,165,92,.06)}
-.sort-chip svg{width:12px;height:12px;flex-shrink:0}
-
-/* === PROPERTIES GRID === */
-.props-section{padding:clamp(40px,6vh,80px) var(--gutter) clamp(60px,8vh,120px)}
-.props-container{max-width:1200px;margin:0 auto}
-.props-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}
-
-/* === PROPERTY CARD === */
-.cat-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--cream);transition:all .4s var(--ease)}
-.cat-card:hover{border-color:var(--gold);box-shadow:0 20px 60px rgba(198,165,92,.1);transform:translateY(-6px)}
-
-.cat-card-gallery{position:relative;height:320px;overflow:hidden}
-.cat-card-gallery img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
-.cat-card:hover .cat-card-gallery img{transform:scale(1.05)}
-
-.cat-card-tag{position:absolute;top:16px;left:16px;padding:5px 14px;background:rgba(198,165,92,.92);backdrop-filter:blur(6px);border-radius:var(--radius-pill);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);z-index:2}
-
-.cat-card-count{position:absolute;bottom:16px;right:16px;padding:5px 12px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border-radius:var(--radius-pill);font-size:11px;color:var(--white);display:flex;align-items:center;gap:5px;z-index:2}
-.cat-card-count svg{width:14px;height:14px;flex-shrink:0}
-
-.cat-card-thumbs{display:flex;gap:4px;padding:4px 0 0}
-.cat-card-thumbs img{flex:1;height:56px;object-fit:cover;border-radius:6px;opacity:.55;transition:opacity .3s;cursor:pointer}
-.cat-card-thumbs img:hover{opacity:1}
-
-.cat-card-body{padding:24px 24px 28px}
-.cat-card-loc{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:6px}
-.cat-card-name{font-family:var(--font-display);font-size:clamp(20px,1.8vw,24px);color:var(--charcoal);margin-bottom:10px;font-weight:400;line-height:1.2}
-.cat-card-desc{font-size:13px;color:var(--slate);line-height:1.7;margin-bottom:18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.cat-card-stats{display:flex;gap:16px;padding-top:16px;border-top:1px solid var(--cream);flex-wrap:wrap;margin-bottom:18px}
-.cat-card-stat{font-size:12px;color:var(--slate);display:flex;align-items:center;gap:5px}
-.cat-card-stat strong{color:var(--charcoal);font-weight:600}
-.cat-card-stat svg{width:14px;height:14px;color:var(--mist);flex-shrink:0}
-.cat-card-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.cat-card-price{font-family:var(--font-display);font-size:22px;color:var(--gold-dark);font-weight:400}
-.cat-card-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:var(--charcoal);color:var(--white);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border-radius:var(--radius-pill);transition:all .4s var(--ease);border:1px solid var(--charcoal)}
-.cat-card-btn:hover{background:var(--gold);border-color:var(--gold);color:var(--black);transform:scale(1.03)}
-.cat-card-btn svg{transition:transform .3s}
-.cat-card-btn:hover svg{transform:translateX(3px)}
-
-/* === FOOTER === */
-.cat-footer{background:var(--charcoal);padding:clamp(40px,5vh,60px) var(--gutter);color:var(--white)}
-.cat-footer-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
-.cat-footer-copy{font-size:12px;color:rgba(255,255,255,.35);letter-spacing:1px}
-.cat-footer-links{display:flex;align-items:center;gap:24px}
-.cat-footer-link{font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);transition:color .3s}
-.cat-footer-link:hover{color:var(--gold)}
-.cat-footer-wa{display:flex;align-items:center;gap:8px;padding:10px 20px;background:#25D366;color:var(--white);border-radius:var(--radius-pill);font-size:11px;font-weight:600;letter-spacing:1px;transition:all .3s}
-.cat-footer-wa:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,.35)}
-.cat-footer-wa svg{flex-shrink:0}
-
-/* === RESPONSIVE === */
-@media(max-width:900px){
-  .props-grid{grid-template-columns:1fr}
-  .cat-card-gallery{height:260px}
-  .cat-header-center{display:none}
-  .cat-hero{height:350px}
-  .cat-footer-inner{flex-direction:column;text-align:center}
-  .cat-footer-links{flex-direction:column;gap:16px}
-}
-@media(max-width:600px){
-  .cat-card-gallery{height:240px}
-  .cat-card-thumbs img{height:44px}
-  .cat-card-body{padding:20px 20px 24px}
-  .cat-card-bottom{flex-direction:column;align-items:flex-start}
-  .cat-card-btn{width:100%;justify-content:center}
-  .cat-hero{height:320px;padding-top:70px}
-  .cat-hero-title{font-size:clamp(28px,8vw,48px)}
-  .back-link span{display:none}
-}
-@media(pointer:coarse){
-  .cursor-dot,.cursor-ring{display:none!important}
-}
-@media(max-width:480px){
-  .cursor-dot,.cursor-ring{display:none!important}
-}
+  /* ─── Skeleton loader pour le catalogue ─── */
+  .props-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    gap: 16px;
+  }
+  .props-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--cream, #F0EDE7);
+    border-top-color: var(--gold, #C6A55C);
+    border-radius: 50%;
+    animation: rl-spin 0.8s linear infinite;
+  }
+  @keyframes rl-spin {
+    to { transform: rotate(360deg); }
+  }
+  .props-loading-text {
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+    font-size: 14px;
+    color: var(--slate, #6B6B6B);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  /* ─── Message d'erreur ─── */
+  .props-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--slate, #6B6B6B);
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+  }
+  .props-error-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+  .props-error-msg {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .props-retry-btn {
+    margin-top: 20px;
+    padding: 10px 28px;
+    background: var(--gold, #C6A55C);
+    color: var(--white, #fff);
+    border: none;
+    border-radius: var(--radius-pill, 999px);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+  .props-retry-btn:hover { opacity: 0.85; }
 </style>
+
 </head>
-<body>
+<body data-page="catalogue">
+
+<!-- PAGE TRANSITION OVERLAY -->
+<div class="page-transition" id="pageTransition"></div>
 
 <!-- CUSTOM CURSOR -->
 <div class="cursor-dot" id="curDot"></div>
@@ -262,15 +167,80 @@ a{text-decoration:none;color:inherit}
 <section class="props-section">
   <div class="props-container">
     <div class="props-grid" id="propsGrid">
-      <!-- Cards rendered by JS -->
+      <!-- État de chargement (remplacé par les cartes après fetch) -->
+      <div class="props-loading" id="propsLoader">
+        <div class="props-loading-spinner"></div>
+        <div class="props-loading-text">Loading properties...</div>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- CONTACT MODAL (Lead Capture) -->
+<div class="lead-modal-overlay" id="leadModal">
+  <div class="lead-modal">
+    <button class="lead-modal-close" onclick="closeLeadModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+
+    <!-- FORM STATE -->
+    <div id="leadFormState">
+      <div class="lead-modal-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <h3 id="leadModalTitle" data-i18n="lead_title">Private Consultation</h3>
+      <p class="lead-modal-sub" id="leadModalSub" data-i18n="lead_sub">Our team will contact you within 24 hours for a personalized experience.</p>
+      <p class="lead-modal-property" id="leadPropertyName"></p>
+
+      <form id="leadCaptureForm" onsubmit="return submitLeadForm(event)">
+        <input type="hidden" id="leadPropertySlug" value="">
+        <input type="hidden" id="leadPropertyLocation" value="">
+        <div class="vm-field">
+          <label data-i18n="lead_name">Full Name</label>
+          <input type="text" id="leadName" required autocomplete="name" placeholder="">
+        </div>
+        <div class="vm-field">
+          <label data-i18n="lead_email">Email</label>
+          <input type="email" id="leadEmail" required autocomplete="email" placeholder="">
+        </div>
+        <div class="vm-field">
+          <label data-i18n="lead_phone">Phone</label>
+          <input type="tel" id="leadPhone" required autocomplete="tel" placeholder="">
+        </div>
+        <div class="vm-field">
+          <label data-i18n="lead_message">Message</label>
+          <textarea id="leadMessage" rows="3" placeholder=""></textarea>
+        </div>
+        <button type="submit" class="lead-submit" id="leadSubmitBtn">
+          <span data-i18n="lead_send">Send Request</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="leadSuccessState" style="display:none">
+      <div class="lead-success">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h4 data-i18n="lead_success_title">VIP Request Transmitted</h4>
+        <p data-i18n="lead_success_sub">Our concierge team has been notified and will contact you shortly.</p>
+        <a id="leadWhatsAppLink" href="#" target="_blank" rel="noopener" class="lead-wa-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+          <span data-i18n="lead_wa_cta">Immediate Response on WhatsApp</span>
+        </a>
+        <button class="lead-close-btn" onclick="closeLeadModal()" data-i18n="lead_close">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer class="cat-footer">
   <div class="cat-footer-inner">
-    <div class="cat-footer-copy" data-i18n="footer_rights">&copy; 2025 Real Luxe. All rights reserved.</div>
+    <div class="cat-footer-copy" data-i18n="footer_rights">&copy; 2024 Real Luxe. All rights reserved.</div>
     <div class="cat-footer-links">
       <a href="index.html" class="cat-footer-link" data-i18n="back_home">Back</a>
       <a href="https://wa.me/61436007811" target="_blank" rel="noopener" class="cat-footer-wa">
@@ -281,518 +251,11 @@ a{text-decoration:none;color:inherit}
   </div>
 </footer>
 
-<script>
-/* ===================================================================
-   DATA
-   =================================================================== */
-var PROPERTIES = [
-  {
-    slug:'villa-oceana',name:'Villa Oceana',location:'Cap Cana',price:'$4,200,000',tag:'Exclusive',beds:6,baths:7,sqm:850,
-    img:'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80&auto=format',featured:true,
-    lot:2200,
-    gallery:[
-      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1200&q=85&auto=format'
-    ],
-    description:'An architectural triumph perched on the coral cliffs of Cap Cana, Villa Oceana commands sweeping 180\u00B0 panoramas of the Caribbean Sea.'
-  },
-  {
-    slug:'villa-palma',name:'Villa Palma Real',location:'Punta Cana',price:'$2,800,000',tag:'New',beds:5,baths:5,sqm:620,
-    img:'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80&auto=format',
-    lot:1800,
-    gallery:[
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509782-20d39509f26d?w=1200&q=85&auto=format'
-    ],
-    description:'Set within the most coveted gated enclave of Punta Cana, Villa Palma Real redefines tropical elegance for the modern connoisseur.'
-  },
-  {
-    slug:'penthouse-marina',name:'Penthouse Marina',location:'Cap Cana',price:'$1,950,000',tag:'Sea View',beds:4,baths:4,sqm:380,
-    img:'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80&auto=format',
-    lot:0,
-    gallery:[
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&auto=format'
-    ],
-    description:'Suspended above the most prestigious marina in the Caribbean, this crown-jewel penthouse offers a front-row seat to nautical luxury.'
-  },
-  {
-    slug:'domaine-samana',name:'Domaine Saman\u00E1',location:'Las Terrenas',price:'$5,500,000',tag:'Private Estate',beds:8,baths:9,sqm:1200,
-    img:'https://images.unsplash.com/photo-1602343168117-bb8bbe693f0d?w=800&q=80&auto=format',
-    lot:8500,
-    gallery:[
-      'https://images.unsplash.com/photo-1602343168117-bb8bbe693f0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509782-20d39509f26d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format'
-    ],
-    description:'A 8,500 m\u00B2 private estate where virgin jungle cascades to turquoise waters \u2014 the Caribbean\'s most exclusive retreat.'
-  },
-  {
-    slug:'villa-coral',name:'Villa Coral Bay',location:'Bayah\u00EDbe',price:'$3,100,000',beds:5,baths:6,sqm:720,
-    img:'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80&auto=format',
-    lot:3200,
-    gallery:[
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=1200&q=85&auto=format'
-    ],
-    description:'Carved into the ancient coral cliffs of Bayah\u00EDbe, overlooking the protected waters of the East National Park.'
-  }
-];
 
-/* ===================================================================
-   i18n
-   =================================================================== */
-var I18N = {
-  fr: {
-    cat_label:'Collection Compl\u00E8te', cat_title:'Nos <em>Propri\u00E9t\u00E9s</em>', cat_sub:'Explorez notre collection compl\u00E8te de propri\u00E9t\u00E9s de luxe en R\u00E9publique Dominicaine.',
-    card_beds:'Ch.', card_baths:'SdB',
-    back_home:'Retour',
-    filter_all:'Toutes',
-    filter_price_asc:'Prix croissant',
-    filter_price_desc:'Prix d\u00E9croissant',
-    cat_view_details:'Voir les D\u00E9tails',
-    cat_stats_line:'5 Propri\u00E9t\u00E9s \u00B7 3 Emplacements \u00B7 \u00C0 partir de $1.95M',
-    footer_rights:'\u00A9 2025 Real Luxe. Tous droits r\u00E9serv\u00E9s.',
-    cat_photos:'photos'
-  },
-  en: {
-    cat_label:'Full Collection', cat_title:'Our <em>Properties</em>', cat_sub:'Explore our complete collection of luxury properties in the Dominican Republic.',
-    card_beds:'Beds', card_baths:'Baths',
-    back_home:'Back',
-    filter_all:'All',
-    filter_price_asc:'Price: Low to High',
-    filter_price_desc:'Price: High to Low',
-    cat_view_details:'View Details',
-    cat_stats_line:'5 Properties \u00B7 3 Locations \u00B7 From $1.95M',
-    footer_rights:'\u00A9 2025 Real Luxe. All rights reserved.',
-    cat_photos:'photos'
-  },
-  es: {
-    cat_label:'Colecci\u00F3n Completa', cat_title:'Nuestras <em>Propiedades</em>', cat_sub:'Explore nuestra colecci\u00F3n completa de propiedades de lujo en Rep\u00FAblica Dominicana.',
-    card_beds:'Hab.', card_baths:'Ba\u00F1os',
-    back_home:'Volver',
-    filter_all:'Todas',
-    filter_price_asc:'Precio: menor a mayor',
-    filter_price_desc:'Precio: mayor a menor',
-    cat_view_details:'Ver Detalles',
-    cat_stats_line:'5 Propiedades \u00B7 3 Ubicaciones \u00B7 Desde $1.95M',
-    footer_rights:'\u00A9 2025 Real Luxe. Todos los derechos reservados.',
-    cat_photos:'fotos'
-  },
-  ru: {
-    cat_label:'\u041F\u043E\u043B\u043D\u0430\u044F \u041A\u043E\u043B\u043B\u0435\u043A\u0446\u0438\u044F', cat_title:'\u041D\u0430\u0448\u0438 <em>\u041E\u0431\u044A\u0435\u043A\u0442\u044B</em>', cat_sub:'\u041E\u0437\u043D\u0430\u043A\u043E\u043C\u044C\u0442\u0435\u0441\u044C \u0441 \u043F\u043E\u043B\u043D\u043E\u0439 \u043A\u043E\u043B\u043B\u0435\u043A\u0446\u0438\u0435\u0439 \u044D\u043B\u0438\u0442\u043D\u043E\u0439 \u043D\u0435\u0434\u0432\u0438\u0436\u0438\u043C\u043E\u0441\u0442\u0438 \u0432 \u0414\u043E\u043C\u0438\u043D\u0438\u043A\u0430\u043D\u0441\u043A\u043E\u0439 \u0420\u0435\u0441\u043F\u0443\u0431\u043B\u0438\u043A\u0435.',
-    card_beds:'\u0421\u043F\u0430\u043B\u0435\u043D', card_baths:'\u0412\u0430\u043D\u043D\u044B\u0445',
-    back_home:'\u041D\u0430\u0437\u0430\u0434',
-    filter_all:'\u0412\u0441\u0435',
-    filter_price_asc:'\u0426\u0435\u043D\u0430: \u043F\u043E \u0432\u043E\u0437\u0440\u0430\u0441\u0442\u0430\u043D\u0438\u044E',
-    filter_price_desc:'\u0426\u0435\u043D\u0430: \u043F\u043E \u0443\u0431\u044B\u0432\u0430\u043D\u0438\u044E',
-    cat_view_details:'\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435',
-    cat_stats_line:'5 \u041E\u0431\u044A\u0435\u043A\u0442\u043E\u0432 \u00B7 3 \u041B\u043E\u043A\u0430\u0446\u0438\u0438 \u00B7 \u041E\u0442 $1.95M',
-    footer_rights:'\u00A9 2025 Real Luxe. \u0412\u0441\u0435 \u043F\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043D\u044B.',
-    cat_photos:'\u0444\u043E\u0442\u043E'
-  },
-  zh: {
-    cat_label:'\u5B8C\u6574\u6536\u85CF', cat_title:'\u6211\u4EEC\u7684<em>\u623F\u4EA7</em>', cat_sub:'\u63A2\u7D22\u6211\u4EEC\u5728\u591A\u7C73\u5C3C\u52A0\u5171\u548C\u56FD\u7684\u5B8C\u6574\u8C6A\u534E\u623F\u4EA7\u6536\u85CF\u3002',
-    card_beds:'\u5367\u5BA4', card_baths:'\u6D74\u5BA4',
-    back_home:'\u8FD4\u56DE',
-    filter_all:'\u5168\u90E8',
-    filter_price_asc:'\u4EF7\u683C: \u4F4E\u5230\u9AD8',
-    filter_price_desc:'\u4EF7\u683C: \u9AD8\u5230\u4F4E',
-    cat_view_details:'\u67E5\u770B\u8BE6\u60C5',
-    cat_stats_line:'5 \u623F\u4EA7 \u00B7 3 \u5730\u70B9 \u00B7 \u4ECE $1.95M \u8D77',
-    footer_rights:'\u00A9 2025 Real Luxe. \u4FDD\u7559\u6240\u6709\u6743\u5229\u3002',
-    cat_photos:'\u7167\u7247'
-  }
-};
+<!-- ③ Supabase Client (connexion + helpers) — APRÈS le SDK -->
+<script src="supabase-client.js"></script>
 
-/* ===================================================================
-   STATE
-   =================================================================== */
-var currentLang = localStorage.getItem('rl-lang') || 'en';
-var activeFilter = 'all';
-var activeSort = null;
-var displayedProperties = PROPERTIES.slice();
-
-/* ===================================================================
-   HELPERS
-   =================================================================== */
-function parsePriceNumber(priceStr) {
-  return parseInt(priceStr.replace(/[^0-9]/g, ''), 10);
-}
-
-function getT(key) {
-  var t = I18N[currentLang];
-  return (t && t[key] !== undefined) ? t[key] : (I18N.en[key] || '');
-}
-
-/* ===================================================================
-   RENDER CARDS
-   =================================================================== */
-function renderCards(animate) {
-  var grid = document.getElementById('propsGrid');
-  var t = I18N[currentLang] || I18N.en;
-  var bedsLabel = t.card_beds || 'Beds';
-  var bathsLabel = t.card_baths || 'Baths';
-  var viewLabel = t.cat_view_details || 'View Details';
-  var photosLabel = t.cat_photos || 'photos';
-  var html = '';
-
-  for (var i = 0; i < displayedProperties.length; i++) {
-    var p = displayedProperties[i];
-    var thumbsHtml = '';
-    var thumbCount = Math.min(4, p.gallery.length);
-    for (var j = 0; j < thumbCount; j++) {
-      thumbsHtml = thumbsHtml + '<img src="' + p.gallery[j].replace('w=1200', 'w=200').replace('q=85', 'q=60') + '" alt="' + p.name + ' ' + (j + 1) + '" loading="lazy">';
-    }
-
-    var tagHtml = '';
-    if (p.tag) {
-      tagHtml = '<div class="cat-card-tag">' + p.tag + '</div>';
-    }
-
-    var lotHtml = '';
-    if (p.lot && p.lot > 0) {
-      lotHtml = '<span class="cat-card-stat">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>' +
-        '<strong>' + p.lot.toLocaleString() + '</strong> m\u00B2 lot</span>';
-    }
-
-    html = html +
-      '<div class="cat-card" data-slug="' + p.slug + '" data-location="' + p.location + '">' +
-        '<div class="cat-card-gallery">' +
-          '<img src="' + p.img + '" alt="' + p.name + '" loading="lazy">' +
-          tagHtml +
-          '<div class="cat-card-count">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
-            p.gallery.length + ' ' + photosLabel +
-          '</div>' +
-        '</div>' +
-        '<div class="cat-card-thumbs">' + thumbsHtml + '</div>' +
-        '<div class="cat-card-body">' +
-          '<div class="cat-card-loc">' + p.location + '</div>' +
-          '<h3 class="cat-card-name">' + p.name + '</h3>' +
-          '<p class="cat-card-desc">' + p.description + '</p>' +
-          '<div class="cat-card-stats">' +
-            '<span class="cat-card-stat">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v11a2 2 0 002 2h14a2 2 0 002-2V7"/><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/></svg>' +
-              '<strong>' + p.beds + '</strong> ' + bedsLabel +
-            '</span>' +
-            '<span class="cat-card-stat">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16a1 1 0 011 1v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a1 1 0 011-1z"/><path d="M6 12V5a2 2 0 012-2h3a1 1 0 011 1v8"/></svg>' +
-              '<strong>' + p.baths + '</strong> ' + bathsLabel +
-            '</span>' +
-            '<span class="cat-card-stat">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>' +
-              '<strong>' + p.sqm + '</strong> m\u00B2' +
-            '</span>' +
-            lotHtml +
-          '</div>' +
-          '<div class="cat-card-bottom">' +
-            '<div class="cat-card-price">' + p.price + '</div>' +
-            '<a href="index.html?property=' + p.slug + '" class="cat-card-btn">' +
-              '<span>' + viewLabel + '</span>' +
-              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
-            '</a>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-  }
-
-  grid.innerHTML = html;
-
-  if (animate) {
-    var cards = grid.querySelectorAll('.cat-card');
-    gsap.fromTo(cards, {
-      opacity: 0,
-      y: 40
-    }, {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      stagger: 0.1,
-      ease: 'power3.out',
-      clearProps: 'all'
-    });
-  }
-
-  // Re-bind hover for custom cursor
-  initCursorHovers();
-}
-
-/* ===================================================================
-   FILTER & SORT
-   =================================================================== */
-function filterByLocation(location, btn) {
-  // Update active chip
-  var chips = document.querySelectorAll('.filter-chip');
-  for (var i = 0; i < chips.length; i++) {
-    chips[i].classList.remove('active');
-  }
-  btn.classList.add('active');
-  activeFilter = location;
-  applyFilterSort(true);
-}
-
-function sortByPrice(direction, btn) {
-  // Toggle sort
-  var sortChips = document.querySelectorAll('.sort-chip');
-  var wasActive = btn.classList.contains('active');
-  for (var i = 0; i < sortChips.length; i++) {
-    sortChips[i].classList.remove('active');
-  }
-  if (wasActive) {
-    activeSort = null;
-  } else {
-    btn.classList.add('active');
-    activeSort = direction;
-  }
-  applyFilterSort(true);
-}
-
-function applyFilterSort(animate) {
-  // Filter
-  var filtered = [];
-  for (var i = 0; i < PROPERTIES.length; i++) {
-    if (activeFilter === 'all' || PROPERTIES[i].location === activeFilter) {
-      filtered.push(PROPERTIES[i]);
-    }
-  }
-
-  // Sort
-  if (activeSort === 'asc') {
-    filtered.sort(function(a, b) {
-      return parsePriceNumber(a.price) - parsePriceNumber(b.price);
-    });
-  } else if (activeSort === 'desc') {
-    filtered.sort(function(a, b) {
-      return parsePriceNumber(b.price) - parsePriceNumber(a.price);
-    });
-  }
-
-  displayedProperties = filtered;
-
-  if (animate) {
-    var grid = document.getElementById('propsGrid');
-    var cards = grid.querySelectorAll('.cat-card');
-    gsap.to(cards, {
-      opacity: 0,
-      y: -20,
-      duration: 0.3,
-      stagger: 0.05,
-      ease: 'power2.in',
-      onComplete: function() {
-        renderCards(true);
-      }
-    });
-  } else {
-    renderCards(false);
-  }
-}
-
-/* ===================================================================
-   LANGUAGE
-   =================================================================== */
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('rl-lang', lang);
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
-  document.getElementById('currentLangText').textContent = lang.toUpperCase();
-
-  // Update active state in dropdown
-  var opts = document.querySelectorAll('.lang-opt');
-  for (var i = 0; i < opts.length; i++) {
-    if (opts[i].textContent.trim().toLowerCase() === lang) {
-      opts[i].classList.add('active');
-    } else {
-      opts[i].classList.remove('active');
-    }
-  }
-
-  // Close dropdown
-  document.getElementById('langSel').classList.remove('open');
-
-  // Update all data-i18n elements
-  var t = I18N[lang];
-  if (!t) t = I18N.en;
-  var els = document.querySelectorAll('[data-i18n]');
-  for (var i = 0; i < els.length; i++) {
-    var key = els[i].getAttribute('data-i18n');
-    if (t[key] !== undefined) {
-      els[i].innerHTML = t[key];
-    }
-  }
-
-  // Update filter "All" chip text
-  var allChip = document.querySelector('[data-i18n-filter="filter_all"]');
-  if (allChip && t.filter_all) {
-    allChip.textContent = t.filter_all;
-  }
-
-  // Re-render cards with new language
-  renderCards(false);
-}
-
-function toggleLangMenu(e) {
-  if (e) e.stopPropagation();
-  document.getElementById('langSel').classList.toggle('open');
-}
-
-/* ===================================================================
-   HEADER SCROLL
-   =================================================================== */
-function handleScroll() {
-  var header = document.getElementById('catHeader');
-  var filterBar = document.getElementById('filterBar');
-  if (window.scrollY > 50) {
-    header.classList.add('scrolled');
-  } else {
-    header.classList.remove('scrolled');
-  }
-  if (window.scrollY > 400) {
-    filterBar.classList.add('shadow');
-  } else {
-    filterBar.classList.remove('shadow');
-  }
-}
-
-/* ===================================================================
-   CUSTOM CURSOR
-   =================================================================== */
-function initCursor() {
-  if (window.matchMedia('(pointer:fine)').matches === false) return;
-
-  var dot = document.getElementById('curDot');
-  var ring = document.getElementById('curRing');
-  if (!dot || !ring) return;
-
-  var mx = -100, my = -100;
-  var dx = -100, dy = -100;
-  var rx = -100, ry = -100;
-
-  document.addEventListener('mousemove', function(e) {
-    mx = e.clientX;
-    my = e.clientY;
-  });
-
-  function render() {
-    dx += (mx - dx) * 0.2;
-    dy += (my - dy) * 0.2;
-    rx += (mx - rx) * 0.08;
-    ry += (my - ry) * 0.08;
-    dot.style.transform = 'translate(' + (dx - 4) + 'px,' + (dy - 4) + 'px)';
-    ring.style.transform = 'translate(' + (rx - 20) + 'px,' + (ry - 20) + 'px)';
-    requestAnimationFrame(render);
-  }
-  render();
-
-  initCursorHovers();
-}
-
-function initCursorHovers() {
-  var ring = document.getElementById('curRing');
-  if (!ring) return;
-  if (window.matchMedia('(pointer:fine)').matches === false) return;
-
-  var hoverEls = document.querySelectorAll('a,button,.cat-card,.filter-chip,.sort-chip,.lang-opt');
-  for (var i = 0; i < hoverEls.length; i++) {
-    hoverEls[i].addEventListener('mouseenter', function() { ring.classList.add('hover'); });
-    hoverEls[i].addEventListener('mouseleave', function() { ring.classList.remove('hover'); });
-  }
-}
-
-/* ===================================================================
-   CLOSE LANG ON OUTSIDE CLICK
-   =================================================================== */
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.lang-sel')) {
-    var langSel = document.getElementById('langSel');
-    if (langSel) langSel.classList.remove('open');
-  }
-});
-
-/* ===================================================================
-   GSAP ENTRANCE ANIMATIONS
-   =================================================================== */
-function initAnimations() {
-  // Hero content
-  gsap.from('.cat-hero-label', {opacity: 0, y: 20, duration: 0.8, delay: 0.2, ease: 'power3.out'});
-  gsap.from('.cat-hero-title', {opacity: 0, y: 30, duration: 0.9, delay: 0.35, ease: 'power3.out'});
-  gsap.from('.cat-hero-sub', {opacity: 0, y: 20, duration: 0.8, delay: 0.5, ease: 'power3.out'});
-  gsap.from('.cat-hero-stats', {opacity: 0, y: 15, duration: 0.7, delay: 0.65, ease: 'power3.out'});
-
-  // Filter bar
-  gsap.from('.filter-bar', {opacity: 0, y: -10, duration: 0.6, delay: 0.7, ease: 'power3.out'});
-
-  // Header elements
-  gsap.from('.h-logo', {opacity: 0, x: -20, duration: 0.6, delay: 0.1, ease: 'power3.out'});
-  gsap.from('.cat-header-center', {opacity: 0, y: -10, duration: 0.5, delay: 0.3, ease: 'power3.out'});
-  gsap.from('.cat-header-right', {opacity: 0, x: 20, duration: 0.6, delay: 0.2, ease: 'power3.out'});
-}
-
-/* ===================================================================
-   INIT
-   =================================================================== */
-document.addEventListener('DOMContentLoaded', function() {
-  // Set language
-  setLang(currentLang);
-
-  // Render properties
-  renderCards(true);
-
-  // Scroll listener
-  window.addEventListener('scroll', handleScroll, {passive: true});
-  handleScroll();
-
-  // Custom cursor
-  initCursor();
-
-  // GSAP animations
-  initAnimations();
-
-  // Register ScrollTrigger for footer
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.from('.cat-footer', {
-    scrollTrigger: {
-      trigger: '.cat-footer',
-      start: 'top 95%',
-      toggleActions: 'play none none none'
-    },
-    opacity: 0,
-    y: 30,
-    duration: 0.8,
-    ease: 'power3.out'
-  });
-});
-</script>
-
+<!-- ④ Unified JavaScript (logique catalogue + GSAP) — EN DERNIER -->
+<script src="script.js"></script>
 </body>
 </html>

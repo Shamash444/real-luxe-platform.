@@ -436,8 +436,8 @@ const I18N = {
   }
 };
 
-// ─── DATA ───
-const PROPERTIES = [
+// ─── DATA (fallback — overwritten by Supabase fetch) ───
+var PROPERTIES = [
   {
     slug:'villa-oceana',name:'Villa Oceana',location:'Cap Cana',price:'$4,200,000',tag:'Exclusive',beds:6,baths:7,sqm:850,
     img:'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80&auto=format',featured:true,
@@ -782,19 +782,29 @@ function submitTunnel(e) {
     language: currentLang
   };
 
-  // ── EmailJS Integration ──
-  // Replace these with your actual EmailJS credentials:
-  // 1. Sign up at https://emailjs.com
-  // 2. Create a service & template
-  // 3. Replace YOUR_PUBLIC_KEY, YOUR_SERVICE_ID, YOUR_TEMPLATE_ID
-  if (typeof emailjs !== 'undefined' && false) { // Set to true after configuring
-    emailjs.init('YOUR_PUBLIC_KEY');
-    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', leadData)
-      .then(function(){ showTunnelSuccess(); })
-      .catch(function(){ showTunnelSuccess(); });
-  } else {
-    setTimeout(showTunnelSuccess, 1800);
-  }
+  /* ══════════════════════════════════════════════════════════
+     LEAD GUARD TUNNEL — Enregistrement Supabase AVANT succès
+     ══════════════════════════════════════════════════════════ */
+  insertLeadFromTunnel(leadData, function(err, result) {
+    if (err) {
+      console.warn('[Real Luxe] Tunnel Lead Guard : erreur Supabase, lead sauvegardé localement');
+    }
+    leadData.commission_id = result ? result.commission_id : 'LOCAL';
+    console.log('[Real Luxe] ✓ Tunnel lead enregistré — commission_id:', leadData.commission_id);
+
+    // EmailJS notification
+    sendLeadEmails({
+      nom: leadData.firstName + ' ' + leadData.lastName,
+      email: leadData.email,
+      tel: leadData.phone,
+      property_name: 'Consultation Privée (' + leadData.horizon + ')',
+      villa_interet: 'general-inquiry',
+      commission_id: leadData.commission_id,
+      source: 'tunnel'
+    });
+
+    showTunnelSuccess();
+  });
 }
 
 function showTunnelSuccess() {
@@ -848,15 +858,31 @@ function submitVaultForm(e) {
   btn.classList.add('sending');
   btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke-dasharray="31 31"/></svg> Sending...';
 
-  var vaultData = { name:name, email:email, phone:phone, budget:budget, message:msg, source:'Vault_Access_Request', language:currentLang };
+  var vaultData = { name:name, email:email, phone:phone, budget:budget, message:msg, source:'vault', language:currentLang };
 
-  if (typeof emailjs !== 'undefined' && false) {
-    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', vaultData)
-      .then(function(){ showVaultSuccess(); })
-      .catch(function(){ showVaultSuccess(); });
-  } else {
-    setTimeout(showVaultSuccess, 1500);
-  }
+  /* ══════════════════════════════════════════════════════════
+     LEAD GUARD VAULT — Enregistrement Supabase AVANT succès
+     ══════════════════════════════════════════════════════════ */
+  insertLeadFromVault(vaultData, function(err, result) {
+    if (err) {
+      console.warn('[Real Luxe] Vault Lead Guard : erreur Supabase, lead sauvegardé localement');
+    }
+    vaultData.commission_id = result ? result.commission_id : 'LOCAL';
+    console.log('[Real Luxe] ✓ Vault lead enregistré — commission_id:', vaultData.commission_id);
+
+    // EmailJS notification
+    sendLeadEmails({
+      nom: vaultData.name,
+      email: vaultData.email,
+      tel: vaultData.phone,
+      property_name: 'Collection Off-Market',
+      villa_interet: 'vault-access',
+      commission_id: vaultData.commission_id,
+      source: 'vault'
+    });
+
+    showVaultSuccess();
+  });
 }
 function showVaultSuccess() {
   var content = document.getElementById('vaultFormContent');
@@ -2174,16 +2200,15 @@ function submitLeadForm(e) {
 
   // Gather form data
   var leadData = {
-    name: document.getElementById('leadName').value.trim(),
+    nom: document.getElementById('leadName').value.trim(),
     email: document.getElementById('leadEmail').value.trim(),
-    phone: document.getElementById('leadPhone').value.trim(),
+    tel: document.getElementById('leadPhone').value.trim(),
     message: document.getElementById('leadMessage').value.trim(),
-    property_slug: document.getElementById('leadPropertySlug').value,
+    villa_interet: document.getElementById('leadPropertySlug').value,
     property_location: document.getElementById('leadPropertyLocation').value,
     property_name: document.getElementById('leadPropertyName').textContent,
     language: currentLang,
-    source: 'catalogue',
-    created_at: new Date().toISOString()
+    source: 'catalogue'
   };
 
   // Get partner agency info
@@ -2191,101 +2216,84 @@ function submitLeadForm(e) {
   leadData.partner_agency = agency ? agency.name : 'N/A';
   leadData.partner_email = agency ? agency.email : '';
 
-  // 1. Save to Supabase
-  saveLeadToSupabase(leadData);
+  /* ══════════════════════════════════════════════════════════
+     LEAD GUARD : WhatsApp s'active UNIQUEMENT après confirmation
+     Supabase. Pas de fuite de lead possible.
+     ══════════════════════════════════════════════════════════ */
+  insertLead(leadData, function(err, result) {
+    if (err) {
+      console.warn('[Real Luxe] Lead Guard : erreur Supabase mais lead sauvegardé localement');
+    }
+    // Injecter le commission_id dans les données pour le suivi
+    leadData.commission_id = result ? result.commission_id : 'LOCAL';
 
-  // 2. Send email notifications (EmailJS)
-  sendLeadEmails(leadData);
+    // EmailJS notification
+    sendLeadEmails(leadData);
 
-  // 3. Show success after delay (simulates processing)
-  setTimeout(function() { showLeadSuccess(leadData); }, 1500);
+    // MAINTENANT on peut afficher le succès + activer WhatsApp
+    showLeadSuccess(leadData);
+  });
 
   return false;
 }
 
-function saveLeadToSupabase(data) {
-  // Check if Supabase client is available
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
-    console.warn('[Real Luxe] Supabase non disponible — lead stocké localement');
-    storeLeadLocally(data);
-    return;
-  }
-
-  try {
-    var client = window.supabase.createClient(
-      'https://bfwygmxebrlspimhobpa.supabase.co',
-      'sb_publishable_E6Nd4RBpNblUEpWZvvcUhw_AycOMKnB'
-    );
-
-    client.from('leads').insert([{
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      message: data.message,
-      property_slug: data.property_slug,
-      property_name: data.property_name,
-      property_location: data.property_location,
-      partner_agency: data.partner_agency,
-      partner_email: data.partner_email,
-      language: data.language,
-      source: data.source,
-      created_at: data.created_at
-    }]).then(function(result) {
-      if (result.error) {
-        console.error('[Real Luxe] Supabase insert error:', result.error.message);
-        storeLeadLocally(data);
-      } else {
-        console.log('[Real Luxe] Lead saved to Supabase');
-      }
-    });
-  } catch (err) {
-    console.error('[Real Luxe] Supabase error:', err.message);
-    storeLeadLocally(data);
-  }
-}
-
-function storeLeadLocally(data) {
-  try {
-    var stored = JSON.parse(localStorage.getItem('rl-leads-pending') || '[]');
-    stored.push(data);
-    localStorage.setItem('rl-leads-pending', JSON.stringify(stored));
-    console.log('[Real Luxe] Lead stored locally (pending sync)');
-  } catch (e) { /* silent */ }
-}
+/* saveLeadToSupabase / storeLeadLocally → déplacés dans supabase-client.js (insertLead) */
 
 function sendLeadEmails(data) {
-  // EmailJS integration — set to true after configuring
-  if (typeof emailjs !== 'undefined' && false) {
-    emailjs.init('YOUR_PUBLIC_KEY');
+  /* ═══════════════════════════════════════════════════════════════
+     EmailJS — NOTIFICATION IMMÉDIATE
+     ─────────────────────────────────
+     CONFIGURATION (à faire UNE SEULE FOIS) :
+       1. Crée un compte sur https://emailjs.com (gratuit 200 emails/mois)
+       2. Crée un "Service" (Gmail, Outlook, etc.)
+       3. Crée un "Template" avec les variables : {{from_name}}, {{from_email}},
+          {{phone}}, {{message}}, {{property}}, {{commission_id}}, {{partner_agency}}
+       4. Remplace les 3 constantes ci-dessous par tes vraies valeurs
+     ═══════════════════════════════════════════════════════════════ */
+  var EMAILJS_PUBLIC_KEY    = 'WSlEoSspq66Rm1iN-';
+  var EMAILJS_SERVICE_ID    = 'service_hphj9bc';
+  var EMAILJS_TEMPLATE_ID   = 'template_708shzk';
+  var EMAILJS_TEMPLATE_PARTNER = 'YOUR_TEMPLATE_PARTNER_ID'; // ← Remplacer (optionnel)
+  var EMAILJS_CONFIGURED    = (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY');
 
-    // Email to Tony
-    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-      to_email: 'tony@realluxeestates.com',
-      from_name: data.name,
+  if (typeof emailjs !== 'undefined' && EMAILJS_CONFIGURED) {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+
+    // Email à Tony (notification lead + commission_id)
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: 'anthony.adlun@gmail.com',
+      from_name: data.nom || data.name || '',
       from_email: data.email,
-      phone: data.phone,
-      message: data.message,
-      property: data.property_name,
-      partner_agency: data.partner_agency
+      phone: data.tel || data.phone || '',
+      message: data.message || '',
+      property: data.property_name || data.villa_interet || '',
+      commission_id: data.commission_id || 'N/A',
+      partner_agency: data.partner_agency || '',
+      source: data.source || 'website'
+    }).then(function() {
+      console.log('[Real Luxe] ✓ Email notification envoyée');
+    }).catch(function(err) {
+      console.error('[Real Luxe] ✗ EmailJS erreur :', err);
     });
 
-    // Email to partner agency (if available)
-    if (data.partner_email) {
-      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_PARTNER_ID', {
+    // Email à l'agence partenaire
+    if (data.partner_email && EMAILJS_TEMPLATE_PARTNER !== 'YOUR_TEMPLATE_PARTNER_ID') {
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_PARTNER, {
         to_email: data.partner_email,
-        from_name: data.name,
+        from_name: data.nom || data.name || '',
         from_email: data.email,
-        phone: data.phone,
-        message: data.message,
-        property: data.property_name,
-        agency_name: data.partner_agency
+        phone: data.tel || data.phone || '',
+        message: data.message || '',
+        property: data.property_name || '',
+        agency_name: data.partner_agency || ''
       });
     }
   } else {
-    console.log('[Real Luxe] EmailJS non configuré — emails simulés');
-    console.log('[Real Luxe] → tony@realluxeestates.com', data);
+    console.log('[Real Luxe] EmailJS non configuré — notification simulée');
+    console.log('[Real Luxe] → Lead :', data.email, '| Commission ID :', data.commission_id);
+    console.log('[Real Luxe] → Villa :', data.property_name || data.villa_interet);
     if (data.partner_email) {
-      console.log('[Real Luxe] → ' + data.partner_email, data);
+      console.log('[Real Luxe] → Agence :', data.partner_agency, data.partner_email);
     }
   }
 }
@@ -2295,8 +2303,10 @@ function showLeadSuccess(data) {
   var success = document.getElementById('leadSuccessState');
   success.style.display = '';
 
-  // Set WhatsApp link with pre-filled message
-  var waMsg = 'Bonjour, je viens de soumettre une demande VIP pour ' + data.property_name + '. Mon nom: ' + data.name;
+  // Set WhatsApp link with pre-filled message + commission_id pour traçabilité
+  var waMsg = 'Bonjour, je viens de soumettre une demande VIP pour ' + data.property_name +
+    '. Mon nom: ' + (data.nom || data.name || '') +
+    ' | Réf: ' + (data.commission_id || 'N/A');
   document.getElementById('leadWhatsAppLink').href = 'https://wa.me/61436007811?text=' + encodeURIComponent(waMsg);
 
   // Update i18n for success state
