@@ -43,6 +43,254 @@ var PAGE_TYPE = document.body.getAttribute('data-page') || 'index';
 })();
 
 /* ═══════════════════════════════════════════════════════════════
+   PROPERTY DETAIL (shared across index + catalogue)
+   ═══════════════════════════════════════════════════════════════ */
+let pdMap = null;
+let currentGalleryIdx = 0;
+let currentProperty = null;
+
+function openPropertyDetail(slug, clickEvent) {
+  const p = PROPERTIES.find(function(pr){ return pr.slug === slug; });
+  if (!p) return;
+  currentProperty = p;
+  currentGalleryIdx = 0;
+
+  // ── Shared Element Transition: capture source card rect ──
+  var cardRect = null;
+  if (clickEvent) {
+    var srcCard = clickEvent.currentTarget || clickEvent.target.closest('.prop-card, .cat-card');
+    if (srcCard) {
+      var imgEl = srcCard.querySelector('.prop-img, .cat-card-img');
+      if (imgEl) cardRect = imgEl.getBoundingClientRect();
+    }
+  }
+
+  // Fill gallery (fallback si pas d'images)
+  var gallery = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
+  var mainImg = document.getElementById('pdMainImg');
+  mainImg.innerHTML = '<img src="' + gallery[0] + '" alt="' + p.name + '">';
+
+  var thumbs = document.getElementById('pdThumbs');
+  thumbs.innerHTML = gallery.map(function(img, i){
+    return '<div class="pd-thumb ' + (i===0?'active':'') + '" onclick="switchGalleryImg(' + i + ',event)"><img src="' + img + '" alt="' + p.name + ' - ' + (i+1) + '" loading="lazy"></div>';
+  }).join('');
+
+  // Fill header
+  document.getElementById('pdTag').textContent = p.tag || p.location;
+  document.getElementById('pdName').textContent = p.name;
+  document.getElementById('pdLocation').querySelector('span').textContent = p.location + ', Dominican Republic';
+  document.getElementById('pdPrice').textContent = p.price;
+
+  // Fill specs
+  var specs = [
+    { value: p.beds, label: 'Bedrooms' },
+    { value: p.baths, label: 'Bathrooms' },
+    { value: p.sqm + ' m\u00B2', label: 'Living Area' },
+    { value: p.lot ? p.lot.toLocaleString() + ' m\u00B2' : '\u2014', label: 'Land' },
+    { value: p.pool || '\u2014', label: 'Pool' },
+    { value: p.year || '\u2014', label: 'Year' }
+  ];
+  document.getElementById('pdSpecs').innerHTML = specs.map(function(s){
+    return '<div class="pd-spec"><div class="pd-spec-value">' + s.value + '</div><div class="pd-spec-label">' + s.label + '</div></div>';
+  }).join('');
+
+  // Fill description
+  document.getElementById('pdDesc').textContent = p.description;
+
+  // ── Data-Rich Sections: Investment ROI + Technical Specs ──
+  var dataHtml = '';
+  if (p.roi && p.roi.rentalYield) {
+    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Investment ROI</h4>';
+    dataHtml += '<div class="pd-data-item"><span class="label">Rental Yield</span><span class="value">' + p.roi.rentalYield + '</span></div>';
+    dataHtml += '<div class="pd-data-item"><span class="label">Occupancy Rate</span><span class="value">' + p.roi.occupancyRate + '</span></div>';
+    dataHtml += '<div class="pd-data-item"><span class="label">Projected Appreciation</span><span class="value">' + p.roi.projectedAppreciation + '</span></div>';
+    dataHtml += '<div class="pd-data-item"><span class="label">Cap Rate</span><span class="value">' + p.roi.capRate + '</span></div>';
+    dataHtml += '</div>';
+  }
+  if (p.techSpecs) {
+    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Technical Specs</h4>';
+    var specKeys = {construction:'Construction',energy:'Energy',water:'Water',smart:'Smart Home',security:'Security'};
+    for (var key in specKeys) {
+      if (p.techSpecs[key]) {
+        dataHtml += '<div class="pd-data-item"><span class="label">' + specKeys[key] + '</span><span class="value">' + p.techSpecs[key] + '</span></div>';
+      }
+    }
+    dataHtml += '</div>';
+  }
+  document.getElementById('pdDataGrid').innerHTML = dataHtml;
+
+  // Confotur badge
+  var confoturEl = document.getElementById('pdConfoturBadge');
+  if (p.confoturBenefits) {
+    document.getElementById('pdConfoturText').textContent = p.confoturBenefits;
+    confoturEl.style.display = 'flex';
+  } else {
+    confoturEl.style.display = 'none';
+  }
+
+  // Fill amenities
+  document.getElementById('pdAmenities').innerHTML = p.amenities.map(function(a){
+    return '<div class="pd-amenity"><div class="pd-amenity-dot"></div>' + a + '</div>';
+  }).join('');
+
+  // Fill concierge services
+  var conciergeHtml = '';
+  if (p.conciergeServices) {
+    conciergeHtml = p.conciergeServices.map(function(s){
+      return '<div class="pd-concierge-item">' + s + '</div>';
+    }).join('');
+  }
+  document.getElementById('pdConcierge').innerHTML = conciergeHtml;
+
+  // Show overlay
+  var overlay = document.getElementById('pdOverlay');
+  overlay.classList.add('active');
+  overlay.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+
+  // ── Shared Element Transition animation ──
+  if (cardRect) {
+    var galleryMain = document.getElementById('pdMainImg');
+    var clone = document.createElement('div');
+    clone.className = 'prop-card-clone';
+    clone.innerHTML = '<img src="' + (p.gallery && p.gallery[0] ? p.gallery[0] : p.img) + '" alt="">';
+    clone.style.left = cardRect.left + 'px';
+    clone.style.top = cardRect.top + 'px';
+    clone.style.width = cardRect.width + 'px';
+    clone.style.height = cardRect.height + 'px';
+    document.body.appendChild(clone);
+    galleryMain.style.opacity = '0';
+
+    requestAnimationFrame(function(){
+      var targetRect = galleryMain.getBoundingClientRect();
+      var dx = targetRect.left - cardRect.left;
+      var dy = targetRect.top - cardRect.top;
+      var sx = targetRect.width / cardRect.width;
+      var sy = targetRect.height / cardRect.height;
+      clone.style.transformOrigin = 'top left';
+      gsap.to(clone, {
+        x: dx, y: dy,
+        scaleX: sx, scaleY: sy,
+        borderRadius: 'var(--radius-lg)',
+        duration: 0.65, ease: 'power3.inOut',
+        onComplete: function(){
+          galleryMain.style.opacity = '1';
+          gsap.fromTo(galleryMain, {opacity:0}, {opacity:1, duration:0.2});
+          clone.remove();
+        }
+      });
+    });
+  }
+
+  // Kill any previous property detail tweens to prevent conflicts
+  gsap.killTweensOf('.pd-thumb, .pd-header, .pd-spec, .pd-description, .pd-data-card, .pd-confotur-badge, .pd-amenity, .pd-concierge-item, .pd-map, .pd-cta');
+
+  // Reset all elements to their visible final state first
+  gsap.set(['.pd-thumb','.pd-header','.pd-spec','.pd-description','.pd-data-card','.pd-confotur-badge','.pd-amenity','.pd-concierge-item','.pd-map','.pd-cta'], {clearProps:'opacity,y,transform'});
+
+  // GSAP entrance — above-fold elements animate in with timeline
+  var thumbs = document.querySelectorAll('.pd-gallery-thumbs .pd-thumb');
+  var tl = gsap.timeline({delay: cardRect ? 0.5 : 0.15});
+  tl.fromTo(thumbs, {opacity:0, y:15}, {opacity:0.5, y:0, stagger:0.06, duration:0.4, ease:'power3.out', onComplete:function(){ thumbs.forEach(function(t){t.removeAttribute('style');}); }})
+    .fromTo('.pd-header', {opacity:0, y:25}, {opacity:1, y:0, duration:0.5, ease:'power3.out', clearProps:'all'}, '<+0.1')
+    .fromTo('.pd-spec', {opacity:0, y:15}, {opacity:1, y:0, stagger:0.05, duration:0.35, ease:'power3.out', clearProps:'all'}, '<+0.1')
+    .fromTo('.pd-description', {opacity:0, y:15}, {opacity:1, y:0, duration:0.4, ease:'power3.out', clearProps:'all'}, '<+0.1');
+
+  // Below-fold sections: simple delayed entrance (no ScrollTrigger on overlay)
+  var belowFoldItems = [
+    {sel:'.pd-data-card', stagger:0.1, y:20, delay:0.8},
+    {sel:'.pd-confotur-badge', stagger:0, y:15, delay:0.9},
+    {sel:'.pd-amenity', stagger:0.02, y:12, delay:1.0},
+    {sel:'.pd-concierge-item', stagger:0.03, y:12, delay:1.1},
+    {sel:'.pd-map', stagger:0, y:15, delay:1.2},
+    {sel:'.pd-cta', stagger:0, y:15, delay:1.3}
+  ];
+  belowFoldItems.forEach(function(item){
+    var els = document.querySelectorAll(item.sel);
+    if (!els.length) return;
+    gsap.fromTo(els, {opacity:0, y:item.y}, {opacity:1, y:0, stagger:item.stagger, duration:0.5, ease:'power3.out', delay:item.delay, clearProps:'all'});
+  });
+
+  // Init map
+  setTimeout(function(){ initPropertyMap(p); }, 350);
+}
+
+function closePropertyDetail() {
+  const overlay = document.getElementById('pdOverlay');
+  gsap.to(overlay, {
+    opacity: 0,
+    duration: 0.4,
+    ease: 'power3.inOut',
+    onComplete: () => {
+      overlay.classList.remove('active');
+      overlay.style.opacity = '';
+      document.body.style.overflow = '';
+      if (pdMap) { pdMap.remove(); pdMap = null; }
+    }
+  });
+}
+
+function switchGalleryImg(idx, e) {
+  if (e) e.stopPropagation();
+  currentGalleryIdx = idx;
+  const p = currentProperty;
+  const mainImg = document.getElementById('pdMainImg');
+  const img = mainImg.querySelector('img');
+  gsap.to(img, {
+    opacity: 0,
+    duration: 0.25,
+    onComplete: () => {
+      var gal = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
+      img.src = gal[idx] || gal[0];
+      gsap.to(img, { opacity: 1, duration: 0.4 });
+    }
+  });
+  document.querySelectorAll('.pd-thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+}
+
+function initPropertyMap(p) {
+  const mapEl = document.getElementById('pdMap');
+  if (pdMap) { pdMap.remove(); pdMap = null; }
+
+  pdMap = L.map(mapEl, {
+    scrollWheelZoom: false,
+    zoomControl: true,
+    attributionControl: true
+  }).setView([p.lat, p.lng], 14);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '\u00a9 OpenStreetMap \u00b7 CartoDB',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(pdMap);
+
+  // Custom gold marker
+  const goldIcon = L.divIcon({
+    className: 'pd-marker',
+    html: '<div style="width:20px;height:20px;background:var(--gold);border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3);"></div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
+
+  L.marker([p.lat, p.lng], { icon: goldIcon })
+    .addTo(pdMap)
+    .bindPopup(`<strong style="font-family:'Playfair Display',serif;">${p.name}</strong><br><span style="color:#6B6B6B;font-size:12px;">${p.location}</span><br><span style="color:#C6A55C;font-weight:600;">${p.price}</span>`);
+
+  // Fix map sizing
+  setTimeout(() => pdMap.invalidateSize(), 100);
+}
+
+// Close property detail on Escape (shared)
+document.addEventListener('keydown', (e) => {
+  var pdOv = document.getElementById('pdOverlay');
+  if (e.key === 'Escape' && pdOv && pdOv.classList.contains('active')) {
+    closePropertyDetail();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
    INDEX PAGE
    ═══════════════════════════════════════════════════════════════ */
 if (PAGE_TYPE === 'index') {
@@ -1070,244 +1318,6 @@ function toggleFO(n) {
   if (!isOpen) card.classList.add('open');
 }
 
-// ─── PROPERTY DETAIL ───
-let pdMap = null;
-let currentGalleryIdx = 0;
-let currentProperty = null;
-
-function openPropertyDetail(slug, clickEvent) {
-  const p = PROPERTIES.find(function(pr){ return pr.slug === slug; });
-  if (!p) return;
-  currentProperty = p;
-  currentGalleryIdx = 0;
-
-  // ── Shared Element Transition: capture source card rect ──
-  var cardRect = null;
-  if (clickEvent) {
-    var srcCard = clickEvent.currentTarget || clickEvent.target.closest('.prop-card');
-    if (srcCard) {
-      var imgEl = srcCard.querySelector('.prop-img');
-      if (imgEl) cardRect = imgEl.getBoundingClientRect();
-    }
-  }
-
-  // Fill gallery (fallback si pas d'images)
-  var gallery = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
-  var mainImg = document.getElementById('pdMainImg');
-  mainImg.innerHTML = '<img src="' + gallery[0] + '" alt="' + p.name + '">';
-
-  var thumbs = document.getElementById('pdThumbs');
-  thumbs.innerHTML = gallery.map(function(img, i){
-    return '<div class="pd-thumb ' + (i===0?'active':'') + '" onclick="switchGalleryImg(' + i + ',event)"><img src="' + img + '" alt="' + p.name + ' - ' + (i+1) + '" loading="lazy"></div>';
-  }).join('');
-
-  // Fill header
-  document.getElementById('pdTag').textContent = p.tag || p.location;
-  document.getElementById('pdName').textContent = p.name;
-  document.getElementById('pdLocation').querySelector('span').textContent = p.location + ', Dominican Republic';
-  document.getElementById('pdPrice').textContent = p.price;
-
-  // Fill specs
-  var specs = [
-    { value: p.beds, label: 'Bedrooms' },
-    { value: p.baths, label: 'Bathrooms' },
-    { value: p.sqm + ' m\u00B2', label: 'Living Area' },
-    { value: p.lot ? p.lot.toLocaleString() + ' m\u00B2' : '\u2014', label: 'Land' },
-    { value: p.pool || '\u2014', label: 'Pool' },
-    { value: p.year || '\u2014', label: 'Year' }
-  ];
-  document.getElementById('pdSpecs').innerHTML = specs.map(function(s){
-    return '<div class="pd-spec"><div class="pd-spec-value">' + s.value + '</div><div class="pd-spec-label">' + s.label + '</div></div>';
-  }).join('');
-
-  // Fill description
-  document.getElementById('pdDesc').textContent = p.description;
-
-  // ── Data-Rich Sections: Investment ROI + Technical Specs ──
-  var dataHtml = '';
-  if (p.roi && p.roi.rentalYield) {
-    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Investment ROI</h4>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Rental Yield</span><span class="value">' + p.roi.rentalYield + '</span></div>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Occupancy Rate</span><span class="value">' + p.roi.occupancyRate + '</span></div>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Projected Appreciation</span><span class="value">' + p.roi.projectedAppreciation + '</span></div>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Cap Rate</span><span class="value">' + p.roi.capRate + '</span></div>';
-    dataHtml += '</div>';
-  }
-  if (p.techSpecs) {
-    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Technical Specs</h4>';
-    var specKeys = {construction:'Construction',energy:'Energy',water:'Water',smart:'Smart Home',security:'Security'};
-    for (var key in specKeys) {
-      if (p.techSpecs[key]) {
-        dataHtml += '<div class="pd-data-item"><span class="label">' + specKeys[key] + '</span><span class="value">' + p.techSpecs[key] + '</span></div>';
-      }
-    }
-    dataHtml += '</div>';
-  }
-  document.getElementById('pdDataGrid').innerHTML = dataHtml;
-
-  // Confotur badge
-  var confoturEl = document.getElementById('pdConfoturBadge');
-  if (p.confoturBenefits) {
-    document.getElementById('pdConfoturText').textContent = p.confoturBenefits;
-    confoturEl.style.display = 'flex';
-  } else {
-    confoturEl.style.display = 'none';
-  }
-
-  // Fill amenities
-  document.getElementById('pdAmenities').innerHTML = p.amenities.map(function(a){
-    return '<div class="pd-amenity"><div class="pd-amenity-dot"></div>' + a + '</div>';
-  }).join('');
-
-  // Fill concierge services
-  var conciergeHtml = '';
-  if (p.conciergeServices) {
-    conciergeHtml = p.conciergeServices.map(function(s){
-      return '<div class="pd-concierge-item">' + s + '</div>';
-    }).join('');
-  }
-  document.getElementById('pdConcierge').innerHTML = conciergeHtml;
-
-  // Show overlay
-  var overlay = document.getElementById('pdOverlay');
-  overlay.classList.add('active');
-  overlay.scrollTop = 0;
-  document.body.style.overflow = 'hidden';
-
-  // ── Shared Element Transition animation ──
-  if (cardRect) {
-    var galleryMain = document.getElementById('pdMainImg');
-    var clone = document.createElement('div');
-    clone.className = 'prop-card-clone';
-    clone.innerHTML = '<img src="' + p.gallery[0] + '" alt="">';
-    clone.style.left = cardRect.left + 'px';
-    clone.style.top = cardRect.top + 'px';
-    clone.style.width = cardRect.width + 'px';
-    clone.style.height = cardRect.height + 'px';
-    document.body.appendChild(clone);
-    galleryMain.style.opacity = '0';
-
-    requestAnimationFrame(function(){
-      var targetRect = galleryMain.getBoundingClientRect();
-      var dx = targetRect.left - cardRect.left;
-      var dy = targetRect.top - cardRect.top;
-      var sx = targetRect.width / cardRect.width;
-      var sy = targetRect.height / cardRect.height;
-      clone.style.transformOrigin = 'top left';
-      gsap.to(clone, {
-        x: dx, y: dy,
-        scaleX: sx, scaleY: sy,
-        borderRadius: 'var(--radius-lg)',
-        duration: 0.65, ease: 'power3.inOut',
-        onComplete: function(){
-          galleryMain.style.opacity = '1';
-          gsap.fromTo(galleryMain, {opacity:0}, {opacity:1, duration:0.2});
-          clone.remove();
-        }
-      });
-    });
-  }
-
-  // Kill any previous property detail tweens to prevent conflicts
-  gsap.killTweensOf('.pd-thumb, .pd-header, .pd-spec, .pd-description, .pd-data-card, .pd-confotur-badge, .pd-amenity, .pd-concierge-item, .pd-map, .pd-cta');
-
-  // Reset all elements to their visible final state first
-  gsap.set(['.pd-thumb','.pd-header','.pd-spec','.pd-description','.pd-data-card','.pd-confotur-badge','.pd-amenity','.pd-concierge-item','.pd-map','.pd-cta'], {clearProps:'opacity,y,transform'});
-
-  // GSAP entrance — above-fold elements animate in with timeline
-  var thumbs = document.querySelectorAll('.pd-gallery-thumbs .pd-thumb');
-  var tl = gsap.timeline({delay: cardRect ? 0.5 : 0.15});
-  tl.fromTo(thumbs, {opacity:0, y:15}, {opacity:0.5, y:0, stagger:0.06, duration:0.4, ease:'power3.out', onComplete:function(){ thumbs.forEach(function(t){t.removeAttribute('style');}); }})
-    .fromTo('.pd-header', {opacity:0, y:25}, {opacity:1, y:0, duration:0.5, ease:'power3.out', clearProps:'all'}, '<+0.1')
-    .fromTo('.pd-spec', {opacity:0, y:15}, {opacity:1, y:0, stagger:0.05, duration:0.35, ease:'power3.out', clearProps:'all'}, '<+0.1')
-    .fromTo('.pd-description', {opacity:0, y:15}, {opacity:1, y:0, duration:0.4, ease:'power3.out', clearProps:'all'}, '<+0.1');
-
-  // Below-fold sections: simple delayed entrance (no ScrollTrigger on overlay)
-  var belowFoldItems = [
-    {sel:'.pd-data-card', stagger:0.1, y:20, delay:0.8},
-    {sel:'.pd-confotur-badge', stagger:0, y:15, delay:0.9},
-    {sel:'.pd-amenity', stagger:0.02, y:12, delay:1.0},
-    {sel:'.pd-concierge-item', stagger:0.03, y:12, delay:1.1},
-    {sel:'.pd-map', stagger:0, y:15, delay:1.2},
-    {sel:'.pd-cta', stagger:0, y:15, delay:1.3}
-  ];
-  belowFoldItems.forEach(function(item){
-    var els = document.querySelectorAll(item.sel);
-    if (!els.length) return;
-    gsap.fromTo(els, {opacity:0, y:item.y}, {opacity:1, y:0, stagger:item.stagger, duration:0.5, ease:'power3.out', delay:item.delay, clearProps:'all'});
-  });
-
-  // Init map
-  setTimeout(function(){ initPropertyMap(p); }, 350);
-}
-
-function closePropertyDetail() {
-  const overlay = document.getElementById('pdOverlay');
-  gsap.to(overlay, {
-    opacity: 0,
-    duration: 0.4,
-    ease: 'power3.inOut',
-    onComplete: () => {
-      overlay.classList.remove('active');
-      overlay.style.opacity = '';
-      document.body.style.overflow = '';
-      if (pdMap) { pdMap.remove(); pdMap = null; }
-    }
-  });
-}
-
-function switchGalleryImg(idx, e) {
-  if (e) e.stopPropagation();
-  currentGalleryIdx = idx;
-  const p = currentProperty;
-  const mainImg = document.getElementById('pdMainImg');
-  const img = mainImg.querySelector('img');
-  gsap.to(img, {
-    opacity: 0,
-    duration: 0.25,
-    onComplete: () => {
-      var gal = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
-      img.src = gal[idx] || gal[0];
-      gsap.to(img, { opacity: 1, duration: 0.4 });
-    }
-  });
-  document.querySelectorAll('.pd-thumb').forEach((t, i) => {
-    t.classList.toggle('active', i === idx);
-  });
-}
-
-function initPropertyMap(p) {
-  const mapEl = document.getElementById('pdMap');
-  if (pdMap) { pdMap.remove(); pdMap = null; }
-
-  pdMap = L.map(mapEl, {
-    scrollWheelZoom: false,
-    zoomControl: true,
-    attributionControl: true
-  }).setView([p.lat, p.lng], 14);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap · CartoDB',
-    subdomains: 'abcd',
-    maxZoom: 19
-  }).addTo(pdMap);
-
-  // Custom gold marker
-  const goldIcon = L.divIcon({
-    className: 'pd-marker',
-    html: '<div style="width:20px;height:20px;background:var(--gold);border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3);"></div>',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-  });
-
-  L.marker([p.lat, p.lng], { icon: goldIcon })
-    .addTo(pdMap)
-    .bindPopup(`<strong style="font-family:'Playfair Display',serif;">${p.name}</strong><br><span style="color:#6B6B6B;font-size:12px;">${p.location}</span><br><span style="color:#C6A55C;font-weight:600;">${p.price}</span>`);
-
-  // Fix map sizing
-  setTimeout(() => pdMap.invalidateSize(), 100);
-}
-
 // ─── INIT ───
 document.addEventListener('DOMContentLoaded',()=>{
   renderProperties();
@@ -1381,12 +1391,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     scrollTrigger: { trigger: '.partners-services', start: 'top 88%' }
   });
 
-  // Close property detail on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('pdOverlay').classList.contains('active')) {
-      closePropertyDetail();
-    }
-  });
 });
 
 
@@ -1871,7 +1875,7 @@ function renderCards(animate) {
           '</div>' +
           '<div class="cat-card-bottom">' +
             '<div class="cat-card-price">' + p.price + '</div>' +
-            '<a href="index.html?property=' + p.slug + '" class="cat-card-btn">' +
+            '<a href="#" class="cat-card-btn" onclick="event.preventDefault();event.stopPropagation();openPropertyDetail(\'' + p.slug + '\',event)">' +
               '<span>' + viewLabel + '</span>' +
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
             '</a>' +
