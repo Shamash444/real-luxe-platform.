@@ -336,6 +336,7 @@ function checkRateLimit() {
 
 // ═══ i18n TRANSLATIONS ═══
 let currentLang = localStorage.getItem('rl-lang') || 'en';
+if (!['en','fr','es'].includes(currentLang)) { currentLang = 'en'; localStorage.setItem('rl-lang','en'); }
 const I18N = {
   fr: {
     nav_0:'Propriétés', nav_1:'À Propos', nav_2:'Lifestyle', nav_3:'Contact', nav_cta:'Consultation Privée',
@@ -543,144 +544,6 @@ const I18N = {
     ft_nav:'Navegación', ft_svc:'Servicios', ft_dest:'Destinos',
     ft_svc_0:'Búsqueda Personalizada', ft_svc_1:'Gestión Locativa', ft_svc_2:'Concierge VIP', ft_svc_3:'Asesoría Legal',
     ft_privacy:'Política de Privacidad'
-  },
-  ru: {
-    nav_0:'Недвижимость', nav_1:'О Нас', nav_2:'Стиль Жизни', nav_3:'Контакт', nav_cta:'Частная Консультация',
-    hero_badge:'Элитная Недвижимость · Карибы',
-    hero_title:'Живите Исключительно<br><em>Без Компромиссов</em>',
-    hero_sub:'Исключительная недвижимость в Доминиканской Республике для взыскательной элиты.',
-    hero_btn1:'Смотреть Объекты', hero_btn2:'Частная Консультация →',
-    stat_0:'Средняя Цена', stat_1:'Эксклюзивных Объектов', stat_2:'Довольных Клиентов',
-    props_label:'Эксклюзивная Коллекция', props_title:'Исключительная <em>Недвижимость</em>',
-    props_sub:'Каждая резиденция отобрана с абсолютной строгостью.',
-    props_btn:'Полный Каталог',
-    vault_label:'Ограниченный Доступ', vault_title:'Частная Коллекция<br><em>Off-Market</em>',
-    vault_sub:'12 конфиденциальных объектов для нашего круга квалифицированных инвесторов.',
-    vault_stat_0:'Объектов', vault_stat_1:'Общая стоимость', vault_stat_2:'Требуется',
-    vault_btn:'Запросить Доступ',
-    about_label:'Наш Подход', about_title:'Искусство<br><em>Индивидуальности</em>',
-    about_sub:'Более 15 лет мы сопровождаем международных клиентов в приобретении исключительной недвижимости.',
-    confotur_label:'Налоговые Преимущества', confotur_title:'Закон <em>Конфотур</em>',
-    confotur_sub:'Доминиканская Республика предлагает исключительный налоговый режим для инвесторов.',
-    calc_title:'Калькулятор <em>Конфотур</em>', calc_sub_text:'Введите стоимость для расчёта налоговой экономии за 15 лет.',
-    calc_l0:'Налог Передачи', calc_l1:'Налог на Имущество (15 лет)', calc_l2:'Налог с Аренды', calc_l3:'Налог с Прироста',
-    calc_total_label:'Общая экономия за 15 лет',
-    life_label:'Стиль Жизни', life_title:'Карибский<br><em>Стиль Жизни</em>',
-    life_sub:'Больше чем недвижимость — исключительный образ жизни.',
-    fo_label:'Премиум Сервисы', fo_title:'Поддержка<br><em>Family Office</em>',
-    fo_sub:'Полная экосистема услуг для взыскательных инвесторов.',
-    testi_label:'Отзывы', testi_title:'Что Говорят<br><em>Наши Клиенты</em>',
-    testi_quote:'Команда Real Luxe воплотила нашу мечту в реальность. Их знание рынка и внимание к деталям несравнимы.',
-    testi_author:'Софи и Лоран Дюбуа', testi_role:'Покупатели · Вилла Кап Кана · €3.2M',
-    contact_label:'Контакт', contact_title:'Ваша Недвижимость<br><em>Ждёт Вас</em>',
-    contact_sub:'Запланируйте частную и конфиденциальную консультацию.',
-    tunnel_title:'Частная Консультация', tunnel_sub:'Персонализированный путь в 3 шага',
-    t_step1_title:'Каков ваш инвестиционный горизонт?',
-    t_opt0:'Основная Резиденция', t_opt0_sub:'Ваш основной дом в Карибском бассейне',
-    t_opt1:'Вторичная Резиденция', t_opt1_sub:'Роскошный загородный дом',
-    t_opt2:'Чистая Инвестиция', t_opt2_sub:'Максимизируйте ROI с Конфотур',
-    t_step2_title:'Ваш бюджетный диапазон',
-    t_step2_confotur:'Мне интересны налоговые льготы Конфотур (освобождение 15 лет)',
-    t_step3_title:'Ваши контактные данные',
-    t_lbl0:'Имя', t_lbl1:'Фамилия', t_lbl2:'Email', t_lbl3:'Телефон',
-    t_back:'Назад', t_next:'Далее', t_submit:'Отправить Запрос',
-    t_success_title:'Запрос Отправлен',
-    t_success_msg:'Спасибо. Консультант Real Luxe свяжется с вами в течение 24 часов.',
-    partners_label:'Привилегированные Партнёры', partners_title:'Сеть<br><em>Совершенства</em>',
-    wa_text:'Экспертиза',
-    card_beds:'Спален', card_baths:'Ванных', pd_cta_visit:'Записаться на Просмотр', pd_cta_whatsapp:'Написать в WhatsApp',
-    cat_label:'Полная Коллекция', cat_title:'Наши <em>Объекты</em>', cat_sub:'Ознакомьтесь с полной коллекцией элитной недвижимости в Доминиканской Республике.',
-    vault_form_title:'Вступить в Круг', vault_form_sub:'Заполните эту форму аккредитации для доступа к нашей off-market коллекции. Ваша информация строго конфиденциальна.',
-    vault_f_name:'Полное Имя', vault_f_email:'Email', vault_f_phone:'Телефон', vault_f_budget:'Диапазон Инвестиций', vault_f_budget_ph:'Выберите диапазон', vault_f_msg:'Сообщение (необязательно)', vault_f_submit:'Запросить Доступ',
-    partners_sub:'Мы сотрудничаем с самыми престижными брендами в гостиничном бизнесе, недвижимости и премиум-сервисах.',
-    psvc_0_title:'Юридический & Налоговый Консалтинг', psvc_0_desc:'Специализированные юристы и налоговые консультанты для оптимальной фискальной структуры.',
-    psvc_1_title:'Управление Недвижимостью', psvc_1_desc:'Управление арендой под ключ, обслуживание и консьерж-сервис с премиальной доходностью.',
-    psvc_2_title:'Архитектура & Дизайн', psvc_2_desc:'Отмеченные наградами карибские архитекторы и дизайнеры интерьеров.',
-    psvc_3_title:'Резиденция & Иммиграция', psvc_3_desc:'Ускоренные программы доминиканского резидентства и координация инвесторских виз.',
-    af_0_title:'Полная Конфиденциальность', af_0_desc:'Каждое дело обрабатывается с максимальной секретностью.',
-    af_1_title:'Международная Сеть', af_1_desc:'Доступ к эксклюзивной недвижимости вне рынка для нашего круга.',
-    af_2_title:'Персональный Консьерж', af_2_desc:'Единый координатор от А до Я для вашей покупки.',
-    af_3_title:'Виртуальный Тур', af_3_desc:'Исследуйте каждый объект в 3D с комфортом из дома.',
-    cc_0_title:'Налоговое Освобождение<br><em>15 Лет</em>', cc_0_desc:'Нулевой подоходный налог, налог на прирост капитала и передачу собственности в течение 15 лет по Закону Конфотур 158-01.', cc_0_tag0:'0% Подоходный Налог', cc_0_tag1:'0% Прирост Капитала',
-    cc_1_title:'Golden Visa<br><em>& Резиденция</em>', cc_1_desc:'Получите доминиканское резидентство через инвестиции от $200,000. Ускоренный процесс для наших клиентов.', cc_1_tag0:'Резиденция за 90 дней', cc_1_tag1:'Инвестиции $200K+',
-    cc_2_title:'Арендная Доходность<br><em>&gt; 8% Чистыми</em>', cc_2_desc:'Доминиканский рынок туристической аренды предлагает одну из самых высоких доходностей в Карибском бассейне с заполняемостью более 75%.', cc_2_tag0:'8-12% Чистыми', cc_2_tag1:'Заполняемость 75%+',
-    fo_0_title:'Юридический & Нотариальный Консалтинг', fo_0_sub:'Due diligence · Структурирование · Закрытие', fo_0_body:'Наша партнёрская юридическая фирма контролирует каждый этап: проверка прав собственности, оптимальная юридическая структура, переговоры и безопасное закрытие.',
-    fo_1_title:'Персонал & Безопасность', fo_1_sub:'Домашний персонал · Охрана · Обслуживание', fo_1_body:'Подбор и управление домашним персоналом: шеф-повар, дворецкий, горничная, садовник, водитель. Охранная система 24/7 и видеонаблюдение.',
-    fo_2_title:'Авиа & Морской Консьерж', fo_2_sub:'Частные джеты · Яхты · VIP-трансферы', fo_2_body:'Полная организация поездок: чартер частных джетов, аренда яхт с экипажем, вертолётные трансферы и автомобильный консьерж-сервис.',
-    fo_3_title:'Управление Капиталом', fo_3_sub:'Налоги · Страхование · Арендная доходность', fo_3_body:'Налоговая оптимизация по Закону Конфотур, премиальное управление арендой с доходностью 8-12% нетто, страхование недвижимости и квартальная финансовая отчётность.',
-    ft_desc:'Элитная недвижимость в Доминиканской Республике. Виллы, пентхаусы и частные поместья для взыскательной международной клиентуры.',
-    ft_nav:'Навигация', ft_svc:'Сервисы', ft_dest:'Направления',
-    ft_svc_0:'Персональный Поиск', ft_svc_1:'Управление Арендой', ft_svc_2:'VIP Консьерж', ft_svc_3:'Юридические Услуги',
-    ft_privacy:'Политика Конфиденциальности'
-  },
-  zh: {
-    nav_0:'房产', nav_1:'关于', nav_2:'生活方式', nav_3:'联系', nav_cta:'私人咨询',
-    hero_badge:'卓越房地产 · 加勒比',
-    hero_title:'体验卓越<br><em>毫不妥协</em>',
-    hero_sub:'多米尼加共和国精选顶级物业，专为尊贵精英打造。',
-    hero_btn1:'探索房产', hero_btn2:'私人咨询 →',
-    stat_0:'平均价格', stat_1:'独家房产', stat_2:'客户满意度',
-    props_label:'独家收藏', props_title:'卓越<em>房产</em>',
-    props_sub:'每处住宅都经过严格筛选。只有最优质的才能进入我们的投资组合。',
-    props_btn:'查看完整目录',
-    vault_label:'限制访问', vault_title:'私人收藏<br><em>非公开</em>',
-    vault_sub:'12处机密房产，仅面向合格投资者。',
-    vault_stat_0:'房产', vault_stat_1:'总价值', vault_stat_2:'需签署',
-    vault_btn:'申请机密访问',
-    about_label:'我们的方法', about_title:'定制<br><em>艺术</em>',
-    about_sub:'15年来，我们陪伴国际客户在多米尼加共和国收购卓越房产。',
-    confotur_label:'税收优惠', confotur_title:'Confotur <em>法案</em>',
-    confotur_sub:'多米尼加共和国为国际投资者提供卓越的税收框架。',
-    calc_title:'Confotur <em>计算器</em>', calc_sub_text:'输入房产价值，查看15年预估税收节省。',
-    calc_l0:'转让税节省', calc_l1:'房产税 (15年)', calc_l2:'租赁所得税', calc_l3:'资本利得税',
-    calc_total_label:'15年总预估节省',
-    life_label:'生活艺术', life_title:'加勒比<br><em>生活方式</em>',
-    life_sub:'不仅是房产，卓越的生活方式等待着您。',
-    fo_label:'高端服务', fo_title:'家族办公室<br><em>支持</em>',
-    fo_sub:'为高端投资者打造的完整服务生态系统。',
-    testi_label:'客户证言', testi_title:'客户<br><em>评价</em>',
-    testi_quote:'Real Luxe团队将我们的梦想变为现实。他们对多米尼加市场的深入了解无与伦比。',
-    testi_author:'Sophie & Laurent Dubois', testi_role:'买家 · Cap Cana别墅 · €3.2M',
-    contact_label:'联系', contact_title:'您的房产<br><em>等待您</em>',
-    contact_sub:'预约私人保密咨询。',
-    tunnel_title:'私人咨询', tunnel_sub:'3步个性化旅程',
-    t_step1_title:'您的投资目标是什么？',
-    t_opt0:'主要住宅', t_opt0_sub:'您在加勒比的主要住所',
-    t_opt1:'度假住宅', t_opt1_sub:'豪华度假别墅',
-    t_opt2:'纯投资', t_opt2_sub:'利用Confotur最大化回报',
-    t_step2_title:'您的预算范围',
-    t_step2_confotur:'我对Confotur税收优惠感兴趣（15年免税）',
-    t_step3_title:'您的安全联系方式',
-    t_lbl0:'名', t_lbl1:'姓', t_lbl2:'邮箱', t_lbl3:'电话',
-    t_back:'返回', t_next:'下一步', t_submit:'提交申请',
-    t_success_title:'申请已发送',
-    t_success_msg:'感谢您的关注。顾问将在24小时内与您联系。',
-    partners_label:'特权合作伙伴', partners_title:'卓越<br><em>网络</em>',
-    wa_text:'私人专家',
-    card_beds:'卧室', card_baths:'浴室', pd_cta_visit:'预约私人看房', pd_cta_whatsapp:'WhatsApp联系',
-    cat_label:'完整收藏', cat_title:'我们的<em>房产</em>', cat_sub:'探索我们在多米尼加共和国的完整豪华房产收藏。',
-    vault_form_title:'加入圈子', vault_form_sub:'完成此认证表以访问我们的非公开收藏。您的信息严格保密。',
-    vault_f_name:'全名', vault_f_email:'邮箱地址', vault_f_phone:'电话号码', vault_f_budget:'投资范围', vault_f_budget_ph:'选择范围', vault_f_msg:'留言（可选）', vault_f_submit:'申请访问',
-    partners_sub:'我们与酒店、房地产和奢侈品服务领域最负盛名的品牌合作，提供无与伦比的体验。',
-    psvc_0_title:'法律与税务咨询', psvc_0_desc:'专业律师和税务顾问，确保Confotur合规和最优税务结构。',
-    psvc_1_title:'物业管理', psvc_1_desc:'全方位租赁管理、维护和礼宾服务，无需业主参与即可获得优质收益。',
-    psvc_2_title:'建筑与设计', psvc_2_desc:'屡获殊荣的加勒比建筑师和室内设计师，打造融合奢华与热带风情的定制住宅。',
-    psvc_3_title:'居留与移民', psvc_3_desc:'快速办理多米尼加居留项目、投资者签证协调和双重国籍咨询。',
-    af_0_title:'完全保密', af_0_desc:'每份文件都以最严格的保密方式处理。',
-    af_1_title:'国际网络', af_1_desc:'进入仅限我们圈子的非公开房产市场。',
-    af_2_title:'专属管家', af_2_desc:'从始至终的一站式专属联络人。',
-    af_3_title:'虚拟参观', af_3_desc:'足不出户，沉浸式3D探索每处房产。',
-    cc_0_title:'税收豁免<br><em>15年</em>', cc_0_desc:'根据Confotur法案158-01，15年内零所得税、零资本利得税、零产权转让税。', cc_0_tag0:'0% 所得税', cc_0_tag1:'0% 资本利得',
-    cc_1_title:'黄金签证<br><em>& 居留</em>', cc_1_desc:'通过投资$200,000起获得多米尼加居留权。为我们的客户提供加速流程。', cc_1_tag0:'90天内获居留', cc_1_tag1:'投资 $200K+',
-    cc_2_title:'租赁收益<br><em>&gt; 8% 净收</em>', cc_2_desc:'多米尼加旅游租赁市场提供加勒比地区最高的收益率，入住率超过75%。', cc_2_tag0:'8-12% 净收', cc_2_tag1:'入住率 75%+',
-    fo_0_title:'法律与公证咨询', fo_0_sub:'尽职调查 · 架构设计 · 交割', fo_0_body:'我们的合作律所监督每个环节：产权验证、最优法律架构、条款谈判和安全交割。',
-    fo_1_title:'私人管家与安保', fo_1_sub:'家政人员 · 安保 · 维护', fo_1_body:'招聘和管理您的家政团队：私人厨师、管家、保洁、园丁、司机。24/7安保系统和视频监控。',
-    fo_2_title:'航空与海上礼宾', fo_2_sub:'私人飞机 · 游艇 · VIP接送', fo_2_body:'完整旅行安排：私人飞机包机、带船员游艇租赁、直升机接送和豪华汽车礼宾服务。',
-    fo_3_title:'财富管理', fo_3_sub:'税务 · 保险 · 租赁收益', fo_3_body:'通过Confotur法案优化税务，8-12%净收益的高端租赁管理，房产保险和季度财务报告。',
-    ft_desc:'多米尼加共和国超豪华房地产。别墅、顶层公寓和私人庄园，为挑剔的国际客户而生。',
-    ft_nav:'导航', ft_svc:'服务', ft_dest:'目的地',
-    ft_svc_0:'个性化搜索', ft_svc_1:'租赁管理', ft_svc_2:'VIP礼宾', ft_svc_3:'法律咨询',
-    ft_privacy:'隐私政策'
   }
 };
 
@@ -856,9 +719,11 @@ function renderMarquee(){
 function scrollToSection(id){
   const el = document.getElementById(id);
   if(!el) return;
-  const headerH = document.getElementById('mainHeader').offsetHeight || 80;
+  const header = document.getElementById('mainHeader');
+  const headerH = header ? header.offsetHeight : 80;
   const y = el.getBoundingClientRect().top + window.pageYOffset - headerH;
-  if(typeof gsap !== 'undefined'){
+  if(typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined'){
+    gsap.registerPlugin(ScrollToPlugin);
     gsap.to(window, {scrollTo:{y:y, autoKill:true}, duration:1, ease:'power3.inOut'});
   } else {
     window.scrollTo({top:y, behavior:'smooth'});
@@ -907,7 +772,7 @@ if(window.matchMedia('(pointer:fine)').matches){
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('rl-lang', lang);
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+  document.documentElement.lang = lang;
   document.getElementById('currentLangText').textContent = lang.toUpperCase();
   // Update active state in dropdown
   document.querySelectorAll('.lang-opt').forEach(o => o.classList.toggle('active', o.textContent.trim().toLowerCase() === lang));
@@ -924,7 +789,7 @@ function setLang(lang) {
   // Update WhatsApp link
   const waBtn = document.getElementById('waBtn');
   if (waBtn && t.wa_text) {
-    const msg = I18N[lang === 'fr' ? 'fr' : lang === 'es' ? 'es' : lang === 'ru' ? 'ru' : lang === 'zh' ? 'zh' : 'en'];
+    const msg = I18N[lang] || I18N.en;
     waBtn.href = 'https://wa.me/61436007811?text=' + encodeURIComponent(msg.hero_sub || '');
   }
 }
@@ -1727,54 +1592,6 @@ var I18N = {
     lead_success_sub:'Nuestro equipo concierge ha sido notificado y le contactar\u00E1 en breve.',
     lead_wa_cta:'Respuesta Inmediata por WhatsApp',
     lead_close:'Cerrar'
-  },
-  ru: {
-    cat_label:'\u041F\u043E\u043B\u043D\u0430\u044F \u041A\u043E\u043B\u043B\u0435\u043A\u0446\u0438\u044F', cat_title:'\u041D\u0430\u0448\u0438 <em>\u041E\u0431\u044A\u0435\u043A\u0442\u044B</em>', cat_sub:'\u041E\u0437\u043D\u0430\u043A\u043E\u043C\u044C\u0442\u0435\u0441\u044C \u0441 \u043F\u043E\u043B\u043D\u043E\u0439 \u043A\u043E\u043B\u043B\u0435\u043A\u0446\u0438\u0435\u0439 \u044D\u043B\u0438\u0442\u043D\u043E\u0439 \u043D\u0435\u0434\u0432\u0438\u0436\u0438\u043C\u043E\u0441\u0442\u0438 \u0432 \u0414\u043E\u043C\u0438\u043D\u0438\u043A\u0430\u043D\u0441\u043A\u043E\u0439 \u0420\u0435\u0441\u043F\u0443\u0431\u043B\u0438\u043A\u0435.',
-    card_beds:'\u0421\u043F\u0430\u043B\u0435\u043D', card_baths:'\u0412\u0430\u043D\u043D\u044B\u0445',
-    back_home:'\u041D\u0430\u0437\u0430\u0434',
-    filter_all:'\u0412\u0441\u0435',
-    filter_price_asc:'\u0426\u0435\u043D\u0430: \u043F\u043E \u0432\u043E\u0437\u0440\u0430\u0441\u0442\u0430\u043D\u0438\u044E',
-    filter_price_desc:'\u0426\u0435\u043D\u0430: \u043F\u043E \u0443\u0431\u044B\u0432\u0430\u043D\u0438\u044E',
-    cat_view_details:'\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435',
-    cat_stats_line:'5 \u041E\u0431\u044A\u0435\u043A\u0442\u043E\u0432 \u00B7 3 \u041B\u043E\u043A\u0430\u0446\u0438\u0438 \u00B7 \u041E\u0442 $1.95M',
-    footer_rights:'\u00A9 2024 Real Luxe. \u0412\u0441\u0435 \u043F\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043D\u044B.',
-    cat_photos:'\u0444\u043E\u0442\u043E',
-    cat_request_visit:'\u0417\u0430\u043F\u0440\u043E\u0441\u0438\u0442\u044C \u043F\u043E\u0441\u0435\u0449\u0435\u043D\u0438\u0435',
-    lead_title:'\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u0430\u044F \u041A\u043E\u043D\u0441\u0443\u043B\u044C\u0442\u0430\u0446\u0438\u044F',
-    lead_sub:'\u041D\u0430\u0448\u0430 \u043A\u043E\u043C\u0430\u043D\u0434\u0430 \u0441\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0442\u0435\u0447\u0435\u043D\u0438\u0435 24 \u0447\u0430\u0441\u043E\u0432.',
-    lead_name:'\u0424\u0418\u041E',
-    lead_email:'Email',
-    lead_phone:'\u0422\u0435\u043B\u0435\u0444\u043E\u043D',
-    lead_message:'\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 (\u043D\u0435\u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E)',
-    lead_send:'\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C',
-    lead_success_title:'VIP \u0417\u0430\u043F\u0440\u043E\u0441 \u041F\u0435\u0440\u0435\u0434\u0430\u043D',
-    lead_success_sub:'\u041D\u0430\u0448 \u043A\u043E\u043D\u0441\u044C\u0435\u0440\u0436 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D \u0438 \u0441\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0435 \u0432\u0440\u0435\u043C\u044F.',
-    lead_wa_cta:'\u041C\u0433\u043D\u043E\u0432\u0435\u043D\u043D\u044B\u0439 \u043E\u0442\u0432\u0435\u0442 \u0432 WhatsApp',
-    lead_close:'\u0417\u0430\u043A\u0440\u044B\u0442\u044C'
-  },
-  zh: {
-    cat_label:'\u5B8C\u6574\u6536\u85CF', cat_title:'\u6211\u4EEC\u7684<em>\u623F\u4EA7</em>', cat_sub:'\u63A2\u7D22\u6211\u4EEC\u5728\u591A\u7C73\u5C3C\u52A0\u5171\u548C\u56FD\u7684\u5B8C\u6574\u8C6A\u534E\u623F\u4EA7\u6536\u85CF\u3002',
-    card_beds:'\u5367\u5BA4', card_baths:'\u6D74\u5BA4',
-    back_home:'\u8FD4\u56DE',
-    filter_all:'\u5168\u90E8',
-    filter_price_asc:'\u4EF7\u683C: \u4F4E\u5230\u9AD8',
-    filter_price_desc:'\u4EF7\u683C: \u9AD8\u5230\u4F4E',
-    cat_view_details:'\u67E5\u770B\u8BE6\u60C5',
-    cat_stats_line:'5 \u623F\u4EA7 \u00B7 3 \u5730\u70B9 \u00B7 \u4ECE $1.95M \u8D77',
-    footer_rights:'\u00A9 2024 Real Luxe. \u4FDD\u7559\u6240\u6709\u6743\u5229\u3002',
-    cat_photos:'\u7167\u7247',
-    cat_request_visit:'\u9884\u7EA6\u53C2\u89C2',
-    lead_title:'\u79C1\u4EBA\u54A8\u8BE2',
-    lead_sub:'\u6211\u4EEC\u7684\u56E2\u961F\u5C06\u572824\u5C0F\u65F6\u5185\u4E0E\u60A8\u8054\u7CFB\u3002',
-    lead_name:'\u59D3\u540D',
-    lead_email:'\u7535\u5B50\u90AE\u4EF6',
-    lead_phone:'\u7535\u8BDD',
-    lead_message:'\u7559\u8A00\uFF08\u53EF\u9009\uFF09',
-    lead_send:'\u53D1\u9001\u8BF7\u6C42',
-    lead_success_title:'VIP\u8BF7\u6C42\u5DF2\u53D1\u9001',
-    lead_success_sub:'\u6211\u4EEC\u7684\u793C\u5BBE\u670D\u52A1\u56E2\u961F\u5DF2\u6536\u5230\u901A\u77E5\uFF0C\u5C06\u5C3D\u5FEB\u4E0E\u60A8\u8054\u7CFB\u3002',
-    lead_wa_cta:'WhatsApp\u5373\u65F6\u56DE\u590D',
-    lead_close:'\u5173\u95ED'
   }
 };
 
@@ -1794,6 +1611,7 @@ var PARTNER_AGENCIES = {
    STATE
    =================================================================== */
 var currentLang = localStorage.getItem('rl-lang') || 'en';
+if (['ru','zh'].indexOf(currentLang) !== -1) { currentLang = 'en'; localStorage.setItem('rl-lang','en'); }
 var activeFilter = 'all';
 var activeSort = null;
 var displayedProperties = PROPERTIES.slice();
@@ -1985,7 +1803,7 @@ function applyFilterSort(animate) {
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('rl-lang', lang);
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+  document.documentElement.lang = lang;
   document.getElementById('currentLangText').textContent = lang.toUpperCase();
 
   // Update active state in dropdown
