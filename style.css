@@ -693,3 +693,43 @@ header.scrolled .lang-btn{background:rgba(0,0,0,.04);border-color:var(--cream);c
 @media(max-width:480px){
   .cursor-dot,.cursor-ring{display:none!important}
 }
+
+/* ═══════════════════════════════════════════
+   VIRTUAL TOURS SECTION
+   ═══════════════════════════════════════════ */
+.vt-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:20px;max-width:1200px;margin:40px auto 0;padding:0 var(--gutter)}
+.vt-card{border-radius:var(--radius-lg);overflow:hidden;background:var(--white);box-shadow:0 4px 20px rgba(0,0,0,.06);transition:transform .4s var(--ease),box-shadow .4s var(--ease);cursor:pointer}
+.vt-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.12)}
+.vt-card-featured{grid-column:1;grid-row:1/3}
+.vt-card-featured .vt-card-img{height:100%;min-height:400px}
+.vt-card-img{height:220px;background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center}
+.vt-card-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.5) 100%)}
+.vt-play{position:relative;z-index:2;width:64px;height:64px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .3s var(--ease),background .3s}
+.vt-card:hover .vt-play{transform:scale(1.1);background:rgba(198,165,92,.8)}
+.vt-play svg{margin-left:4px}
+.vt-badge{position:absolute;top:16px;left:16px;z-index:2;background:var(--gold);color:var(--white);font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:var(--radius-pill)}
+.vt-card-info{padding:20px 24px}
+.vt-card-info h4{font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:4px}
+.vt-card-info p{font-size:13px;color:var(--slate);letter-spacing:.02em}
+.vt-note{text-align:center;max-width:600px;margin:32px auto 0;font-size:14px;color:var(--slate);padding:0 var(--gutter)}
+@media(max-width:768px){
+  .vt-grid{grid-template-columns:1fr;grid-template-rows:auto}
+  .vt-card-featured{grid-column:1;grid-row:auto}
+  .vt-card-featured .vt-card-img{min-height:260px}
+}
+
+/* ═══════════════════════════════════════════
+   TESTIMONIALS CAROUSEL
+   ═══════════════════════════════════════════ */
+.testi-carousel{position:relative;max-width:1000px;margin:0 auto;overflow:hidden}
+.testi-slide{display:none;animation:testiFadeIn .6s var(--ease)}
+.testi-slide.active{display:block}
+@keyframes testiFadeIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.testi-quote-icon{position:absolute;top:-10px;left:0;opacity:.15}
+.testi-content{position:relative}
+.testi-dots{display:flex;justify-content:center;gap:10px;margin-top:32px}
+.testi-dot{width:10px;height:10px;border-radius:50%;background:var(--slate);opacity:.3;transition:all .3s var(--ease);border:none;cursor:pointer;padding:0}
+.testi-dot.active{background:var(--gold);opacity:1;transform:scale(1.2)}
+.testi-arrows{display:flex;justify-content:center;gap:16px;margin-top:20px}
+.testi-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:var(--white);transition:all .3s var(--ease);cursor:pointer;background:transparent}
+.testi-arrow:hover{border-color:var(--gold);color:var(--gold);background:rgba(198,165,92,.1)}

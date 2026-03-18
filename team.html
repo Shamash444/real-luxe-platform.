@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Meet the Real Luxe Estates team — luxury real estate experts in the Dominican Republic.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Real Luxe — Our Team · Dominican Republic</title>
+
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Global Stylesheet -->
+<link rel="stylesheet" href="style.css">
+
+<style>
+  /* ─── Team Hero ─── */
+  .team-hero {
+    position: relative;
+    padding: 160px 40px 100px;
+    text-align: center;
+    background: var(--charcoal, #1A1A1A);
+    overflow: hidden;
+  }
+  .team-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(198,165,92,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 80% 100%, rgba(198,165,92,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .team-hero-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold, #C6A55C);
+    margin-bottom: 24px;
+    display: block;
+  }
+  .team-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 400;
+    color: var(--ivory, #FAF8F5);
+    line-height: 1.15;
+    margin: 0 auto 24px;
+    max-width: 700px;
+  }
+  .team-hero h1 em {
+    font-style: italic;
+    color: var(--gold, #C6A55C);
+  }
+  .team-hero-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    color: rgba(250,248,245,0.55);
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .team-hero-line {
+    width: 48px;
+    height: 1px;
+    background: var(--gold, #C6A55C);
+    margin: 32px auto 0;
+    opacity: 0.5;
+  }
+
+  /* ─── Team Grid ─── */
+  .team-section {
+    padding: 100px 40px;
+    background: var(--ivory, #FAF8F5);
+  }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .team-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+    transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.45s ease;
+  }
+  .team-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.1);
+  }
+  .team-card-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/3.5;
+    overflow: hidden;
+  }
+  .team-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+  .team-card:hover .team-card-img img {
+    transform: scale(1.04);
+  }
+  .team-card-body {
+    padding: 32px 28px 28px;
+  }
+  .team-card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--charcoal, #1A1A1A);
+    margin: 0 0 4px;
+  }
+  .team-card-role {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold, #C6A55C);
+    margin-bottom: 16px;
+    display: block;
+  }
+  .team-card-bio {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: #666;
+    line-height: 1.75;
+    margin-bottom: 20px;
+  }
+  .team-card-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gold, #C6A55C);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+  .team-card-contact:hover {
+    color: var(--charcoal, #1A1A1A);
+  }
+  .team-card-contact svg {
+    flex-shrink: 0;
+  }
+
+  /* ─── Calendly Section ─── */
+  .calendly-section {
+    padding: 100px 40px;
+    background: var(--charcoal, #1A1A1A);
+    text-align: center;
+  }
+  .calendly-section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold, #C6A55C);
+    margin-bottom: 20px;
+    display: block;
+  }
+  .calendly-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+    font-weight: 400;
+    color: var(--ivory, #FAF8F5);
+    margin: 0 0 16px;
+  }
+  .calendly-section-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(250,248,245,0.5);
+    max-width: 480px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+  .calendly-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(198,165,92,0.12);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 960px) {
+    .team-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+  }
+  @media (max-width: 640px) {
+    .team-hero {
+      padding: 140px 24px 72px;
+    }
+    .team-section {
+      padding: 64px 20px;
+    }
+    .team-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: 420px;
+    }
+    .calendly-section {
+      padding: 64px 20px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Page transition overlay -->
+<div class="page-transition-overlay"></div>
+
+<!-- Custom cursor -->
+<div class="cursor-dot"></div>
+<div class="cursor-outline"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════════════════ -->
+<header class="cat-header" id="catHeader">
+  <a href="index.html" class="h-logo">REAL <span>Luxe</span></a>
+  <div class="cat-header-center">Our Team</div>
+  <div class="cat-header-right">
+    <a href="index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back</span>
+    </a>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════════ -->
+<section class="team-hero">
+  <span class="team-hero-label">Real Luxe Estates</span>
+  <h1>Meet The Team Behind <em>Real Luxe</em></h1>
+  <p class="team-hero-sub">A curated team of specialists dedicated to delivering extraordinary Caribbean investment experiences with discretion and excellence.</p>
+  <div class="team-hero-line"></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TEAM GRID
+     ═══════════════════════════════════════════════════════════ -->
+<section class="team-section">
+  <div class="team-grid">
+
+    <!-- Tony Adlun -->
+    <div class="team-card">
+      <div class="team-card-img">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format" alt="Tony Adlun — Founder & CEO" loading="lazy">
+      </div>
+      <div class="team-card-body">
+        <h3 class="team-card-name">Tony Adlun</h3>
+        <span class="team-card-role">Founder &amp; CEO</span>
+        <p class="team-card-bio">Australian-born entrepreneur with 15+ years in luxury real estate development. Based between Sydney and Punta Cana, Tony brings a global perspective to Caribbean investment, connecting UHNWI clients with exceptional properties.</p>
+        <a href="mailto:tony@realluxe.com" class="team-card-contact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
+          Get in Touch
+        </a>
+      </div>
+    </div>
+
+    <!-- Maria Santos -->
+    <div class="team-card">
+      <div class="team-card-img">
+        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&auto=format" alt="Maria Santos — Head of Client Relations" loading="lazy">
+      </div>
+      <div class="team-card-body">
+        <h3 class="team-card-name">Maria Santos</h3>
+        <span class="team-card-role">Head of Client Relations</span>
+        <p class="team-card-bio">Dominican native with deep local knowledge and international hospitality experience. Maria ensures every client receives white-glove service from first contact to closing and beyond.</p>
+        <a href="mailto:maria@realluxe.com" class="team-card-contact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
+          Get in Touch
+        </a>
+      </div>
+    </div>
+
+    <!-- James Crawford -->
+    <div class="team-card">
+      <div class="team-card-img">
+        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&auto=format" alt="James Crawford — Investment Advisor" loading="lazy">
+      </div>
+      <div class="team-card-body">
+        <h3 class="team-card-name">James Crawford</h3>
+        <span class="team-card-role">Investment Advisor</span>
+        <p class="team-card-bio">Former wealth management director with expertise in Caribbean tax optimization and Confotur benefits. James helps investors maximize returns while navigating Dominican real estate regulations.</p>
+        <a href="mailto:james@realluxe.com" class="team-card-contact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
+          Get in Touch
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CALENDLY
+     ═══════════════════════════════════════════════════════════ -->
+<section class="calendly-section">
+  <span class="calendly-section-label">Private Consultation</span>
+  <h2>Book a Private Consultation</h2>
+  <p class="calendly-section-sub">Schedule a 30-minute call with our team to discuss your investment goals.</p>
+  <div class="calendly-wrapper">
+    <div class="calendly-inline-widget" data-url="https://calendly.com/realluxeestates" style="min-width:320px;height:700px;"></div>
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════ -->
+<footer class="cat-footer">
+  <div class="cat-footer-inner">
+    <div class="cat-footer-copy">&copy; 2025 Real Luxe. All rights reserved.</div>
+    <div class="cat-footer-links">
+      <a href="index.html" class="cat-footer-link">Home</a>
+      <a href="catalogue.html" class="cat-footer-link">Properties</a>
+      <a href="https://wa.me/61436007811" target="_blank" rel="noopener" class="cat-footer-wa">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>

@@ -2358,3 +2358,40 @@ document.addEventListener('keydown', function(e) {
 });
 
 } // end CATALOGUE
+
+/* ═══════════════════════════════════════════════════════════════
+   TESTIMONIALS CAROUSEL (shared)
+   ═══════════════════════════════════════════════════════════════ */
+var currentTestimonial = 0;
+var totalTestimonials = 3;
+var testiAutoplayInterval = null;
+
+function goToTestimonial(idx) {
+  currentTestimonial = idx;
+  var slides = document.querySelectorAll('.testi-slide');
+  var dots = document.querySelectorAll('.testi-dot');
+  if (!slides.length) return;
+  slides.forEach(function(s) { s.classList.remove('active'); });
+  dots.forEach(function(d) { d.classList.remove('active'); });
+  if (slides[idx]) slides[idx].classList.add('active');
+  if (dots[idx]) dots[idx].classList.add('active');
+}
+
+function nextTestimonial() {
+  goToTestimonial((currentTestimonial + 1) % totalTestimonials);
+}
+
+function prevTestimonial() {
+  goToTestimonial((currentTestimonial - 1 + totalTestimonials) % totalTestimonials);
+}
+
+// Auto-advance every 6 seconds
+if (document.querySelector('.testi-carousel')) {
+  testiAutoplayInterval = setInterval(nextTestimonial, 6000);
+  document.querySelector('.testi-carousel').addEventListener('mouseenter', function() {
+    clearInterval(testiAutoplayInterval);
+  });
+  document.querySelector('.testi-carousel').addEventListener('mouseleave', function() {
+    testiAutoplayInterval = setInterval(nextTestimonial, 6000);
+  });
+}
