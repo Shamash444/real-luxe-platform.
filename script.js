@@ -717,17 +717,30 @@ function renderMarquee(){
 
 // ─── NAVIGATION ───
 function scrollToSection(id){
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   if(!el) return;
-  const header = document.getElementById('mainHeader');
-  const headerH = header ? header.offsetHeight : 80;
-  const y = el.getBoundingClientRect().top + window.pageYOffset - headerH;
-  if(typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined'){
-    gsap.registerPlugin(ScrollToPlugin);
-    gsap.to(window, {scrollTo:{y:y, autoKill:true}, duration:1, ease:'power3.inOut'});
-  } else {
-    window.scrollTo({top:y, behavior:'smooth'});
+  // Close mobile nav first
+  var nav = document.getElementById('mainNav');
+  var wasOpen = nav && nav.classList.contains('open');
+  if(wasOpen) closeNav();
+
+  function doScroll(){
+    // Refresh ScrollTrigger so sections become visible
+    if(typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+    var header = document.getElementById('mainHeader');
+    var banner = document.getElementById('disclaimerBanner');
+    var headerH = (header ? header.offsetHeight : 80);
+    if(banner && banner.style.display !== 'none') headerH += banner.offsetHeight || 0;
+    var y = el.getBoundingClientRect().top + window.pageYOffset - headerH - 10;
+    if(typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined'){
+      gsap.registerPlugin(ScrollToPlugin);
+      gsap.to(window, {scrollTo:{y: y, autoKill:false}, duration:1, ease:'power3.inOut'});
+    } else {
+      window.scrollTo({top: y, behavior:'smooth'});
+    }
   }
+  // Delay scroll if nav was open (mobile) to let DOM settle
+  if(wasOpen){ setTimeout(doScroll, 200); } else { doScroll(); }
 }
 function toggleNav(){
   const nav = document.getElementById('mainNav');
