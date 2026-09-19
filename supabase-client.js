@@ -1,76 +1,68 @@
 /*
- * Supabase client.
+ * Supabase client for the public site.
  *
- * One client, created once. Reads retry twice on failure; writes queue in
- * localStorage when the network is down and flush on the next successful
- * connection, so an enquiry is never silently lost.
+ * Reads retry twice. Writes get three attempts before falling back to
+ * localStorage, so a dropped connection doesn't swallow an enquiry.
  *
- * The anon key is public by design — every row is protected by row level
- * security on the server. Nothing here is a substitute for those policies.
+ * The anon key is public by design. Row level security on the server is the
+ * thing actually protecting these tables.
  */
 
-/* Credentials come from config.js. Left unset there, the client stays dormant:
-   the catalogue falls back to data.js and enquiries are queued in the browser. */
+/* From config.js. With nothing set the client stays dormant: the catalogue
+   falls back to data.js and enquiries queue in the browser. */
 var SUPABASE_URL      = (window.RL && window.RL.get('integrations.supabase.url')) || '';
 var SUPABASE_ANON_KEY = (window.RL && window.RL.get('integrations.supabase.anonKey')) || '';
 
-/* Module state. One client for the page; leads that cannot be written wait in
-   _retryQueue and are flushed on the next successful connection. */
 var _sb             = null;
 var _supabaseReady  = false;
 var _supabaseError  = null;
-var _retryQueue     = [];   // enquiries awaiting a working connection
+var _retryQueue     = [];   // enquiries waiting on a working connection
 var _initAttempts   = 0;
 var _maxInitRetries = 3;
-
-/* Initialisation, retried a few times in case the SDK is still loading. */
 
 function _initSupabase() {
   'use strict';
   _initAttempts++;
 
 
-  /* Is the SDK present? */
   var sdk = window.supabase;
   if (!sdk) {
     _supabaseError = new Error(
-      'SDK Supabase non chargé (window.supabase undefined).\n' +
-      'Vérifie que <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> ' +
-      'est AVANT supabase-client.js et n\'a PAS l\'attribut "defer".'
+      'Supabase SDK not loaded (window.supabase is undefined).\n' +
+      'Check that <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> ' +
+      'comes BEFORE supabase-client.js and does NOT carry the "defer" attribute.'
     );
     console.warn('[Real Luxe] ' + _supabaseError.message);
 
-    // It may still be loading; try again shortly
+    // CDN script may still be in flight, so back off and look again
     if (_initAttempts < _maxInitRetries) {
       setTimeout(_initSupabase, _initAttempts * 1000);
     }
     return;
   }
 
-  /* Createclient existe ? */
+  // UMD build hangs createClient off the namespace; bundled ESM buries it under .default
   var createFn = sdk.createClient || (sdk.default && sdk.default.createClient);
   if (typeof createFn !== 'function') {
     _supabaseError = new Error(
-      'SDK chargé mais createClient() introuvable.\n' +
-      'Contenu de window.supabase : ' + Object.keys(sdk).join(', ')
+      'SDK loaded but createClient() is missing.\n' +
+      'window.supabase contains: ' + Object.keys(sdk).join(', ')
     );
     console.warn('[Real Luxe] ' + _supabaseError.message);
     return;
   }
 
-  /* Validation url + key */
   if (!SUPABASE_URL || !SUPABASE_URL.startsWith('https://')) {
-    _supabaseError = new Error('SUPABASE_URL invalide : "' + SUPABASE_URL + '"');
+    _supabaseError = new Error('SUPABASE_URL is not valid: "' + SUPABASE_URL + '"');
     console.warn('[Real Luxe] ' + _supabaseError.message);
     return;
   }
   if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.length < 30) {
-    _supabaseError = new Error('SUPABASE_ANON_KEY invalide (trop courte).');
+    _supabaseError = new Error('SUPABASE_ANON_KEY is not valid (too short).');
     console.warn('[Real Luxe] ' + _supabaseError.message);
     return;
   }
 
-  /* Create the single client */
   try {
     _sb = createFn(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false },
@@ -82,11 +74,10 @@ function _initSupabase() {
     _supabaseError = null;
     console.info('[Real Luxe] Supabase connected.');
 
-    // Send anything that queued while the connection was down
-    _flushRetryQueue();
+    _flushRetryQueue();   // drain whatever piled up while we were down
 
   } catch (err) {
-    _supabaseError = new Error('createClient() crash : ' + err.message);
+    _supabaseError = new Error('createClient() threw: ' + err.message);
     console.warn('[Real Luxe] ' + _supabaseError.message);
   }
 }
@@ -99,18 +90,13 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
 }
 
 
-/* HELPERS — Properties */
+/* Properties */
 
-/* The live client, or null when none is configured or the connection failed.
-   Callers are expected to have a fallback for null. */
+// null when nothing is configured or the connection failed; callers fall back to data.js
 function getSupabaseClient() {
   return (_supabaseReady && _sb) ? _sb : null;
 }
 
-/**
- * fetchPublishedProperties(options)
- * Fetches published properties, retrying twice on failure.
- */
 async function fetchPublishedProperties(options) {
   options = options || {};
   var location  = options.location  || null;
@@ -118,14 +104,12 @@ async function fetchPublishedProperties(options) {
   var ascending = options.ascending !== undefined ? options.ascending : true;
   var retries   = options._retries  || 0;
 
-  /* Is the client ready? */
   if (!_supabaseReady || !_sb) {
-    var reason = _supabaseError ? _supabaseError.message : 'Client non initialisé.';
-    throw new Error('[Connexion] ' + reason);
+    var reason = _supabaseError ? _supabaseError.message : 'Client not initialised.';
+    throw new Error('[Connection] ' + reason);
   }
 
 
-  /* Build the query */
   var query = _sb
     .from('properties')
     .select('*')
@@ -137,7 +121,6 @@ async function fetchPublishedProperties(options) {
 
   query = query.order(orderBy, { ascending: ascending });
 
-  /* Run it, retrying on failure */
   var result = await query;
   var data  = result.data;
   var error = result.error;
@@ -145,7 +128,7 @@ async function fetchPublishedProperties(options) {
   if (error) {
     console.warn('[Real Luxe] Property fetch failed: ' + error.message);
 
-    // Retry automatique (max 2 retries)
+    // two retries, 1.5s then 3s, then give up and let the caller show data.js
     if (retries < 2) {
       var delay = (retries + 1) * 1500;
       await new Promise(function(r) { setTimeout(r, delay); });
@@ -153,20 +136,16 @@ async function fetchPublishedProperties(options) {
       return fetchPublishedProperties(options);
     }
 
-    throw new Error('[Requête] ' + error.message + (error.hint ? ' (Hint: ' + error.hint + ')' : ''));
+    throw new Error('[Query] ' + error.message + (error.hint ? ' (Hint: ' + error.hint + ')' : ''));
   }
 
   return data || [];
 }
 
 
-/* HELPERS — Leads (avec Lead Guard) */
+/* Leads */
 
-/**
- * generateCommissionId()
- * A reference of the form RL-YYYYMMDD-XXXXXXXX, generated client side so an
- * enquiry can be traced even when it is only stored locally.
- */
+// RL-YYYYMMDD-XXXXXXXX. Made client side so an enquiry stuck in localStorage still has a reference.
 function generateCommissionId() {
   var now = new Date();
   var date = now.getFullYear().toString() +
@@ -176,36 +155,29 @@ function generateCommissionId() {
   return 'RL-' + date + '-' + uid;
 }
 
-/**
- * insertLead(leadData, callback)
- * Records an enquiry:
- *   - with a generated reference
- *   - Retry automatique (3 tentatives)
- *   - falling back to localStorage if every attempt fails
- *   - Callback(error, result) pour le Lead Guard
- *
- * Le bouton WhatsApp ne s'active qu'au callback(null, result).
- */
+/* The callback is the Lead Guard — script.js only reveals the WhatsApp button
+   once it fires with a null error. Every path out of this function has to call
+   it, including the failures. */
 async function insertLead(leadData, callback) {
   callback = callback || function() {};
 
-  /* Generate the reference */
   var commissionId = generateCommissionId();
   leadData.commission_id = commissionId;
 
 
-  /* Client not ready: queue for later */
+  /* No client yet. Queue in memory for the flush and keep a localStorage copy
+     in case the tab closes first. Both can drain later, so the same enquiry can
+     land twice; dedupe on commission_id if that ever turns up. */
   if (!_supabaseReady || !_sb) {
     console.warn('[Real Luxe] Supabase unavailable — enquiry queued locally.');
     _retryQueue.push({ data: leadData, callback: callback });
 
-    // Keep it locally regardless
     _storeLeadLocally(leadData);
-    callback(new Error('Supabase pas prêt — lead sauvegardé localement'), { commission_id: commissionId, saved_locally: true });
+    callback(new Error('Supabase not ready, enquiry saved locally'), { commission_id: commissionId, saved_locally: true });
     return;
   }
 
-  /* Construire le payload pour supabase */
+  // the table columns are still the original French ones
   var payload = {
     commission_id:     commissionId,
     nom:               leadData.nom || leadData.name || '',
@@ -223,7 +195,6 @@ async function insertLead(leadData, callback) {
     partner_agency:    leadData.partner_agency || ''
   };
 
-  /* Insert, retrying on failure */
   var maxRetries = 3;
   var lastError = null;
 
@@ -240,7 +211,6 @@ async function insertLead(leadData, callback) {
           continue;
         }
       } else {
-        /* Written */
         console.info('[Real Luxe] Enquiry recorded (' + commissionId + ').');
 
         callback(null, {
@@ -259,24 +229,21 @@ async function insertLead(leadData, callback) {
     }
   }
 
-  /* Every attempt failed: fall back to local storage */
+  // out of attempts
   console.error('[Real Luxe] Enquiry could not be written after ' + maxRetries + ' attempts.');
   _storeLeadLocally(leadData);
   callback(lastError || new Error('Insert failed'), { commission_id: commissionId, saved_locally: true });
 }
 
 
-/**
- * insertLeadFromTunnel(tunnelData, callback)
- * Enquiry from the three-step form on the home page.
- */
+// "tunnel" is the three-step form on the home page, "vault" the off-market one below it
 async function insertLeadFromTunnel(tunnelData, callback) {
   var leadData = {
     nom:               (tunnelData.firstName || '') + ' ' + (tunnelData.lastName || ''),
     email:             tunnelData.email || '',
     tel:               tunnelData.phone || '',
     villa_interet:     'general-inquiry',
-    property_name:     'Consultation Privée',
+    property_name:     'Private consultation',
     property_location: '',
     horizon:           tunnelData.horizon || '',
     budget:            tunnelData.budget || '',
@@ -289,10 +256,6 @@ async function insertLeadFromTunnel(tunnelData, callback) {
 }
 
 
-/**
- * insertLeadFromVault(vaultData, callback)
- * Enquiry from the off-market access form.
- */
 async function insertLeadFromVault(vaultData, callback) {
   var leadData = {
     nom:               vaultData.name || '',
@@ -300,7 +263,7 @@ async function insertLeadFromVault(vaultData, callback) {
     tel:               vaultData.phone || '',
     message:           vaultData.message || '',
     villa_interet:     'vault-access',
-    property_name:     'Collection Off-Market',
+    property_name:     'Off-market collection',
     budget:            vaultData.budget || '',
     source:            'vault',
     language:          vaultData.language || 'en'
@@ -310,12 +273,6 @@ async function insertLeadFromVault(vaultData, callback) {
 }
 
 
-/* UTILITAIRES INTERNES */
-
-/**
- * _storeLeadLocally(data)
- * Keeps an enquiry in localStorage when the network is down.
- */
 function _storeLeadLocally(data) {
   try {
     var stored = JSON.parse(localStorage.getItem('rl-leads-pending') || '[]');
@@ -324,14 +281,12 @@ function _storeLeadLocally(data) {
     localStorage.setItem('rl-leads-pending', JSON.stringify(stored));
     console.info('[Real Luxe] Enquiry stored locally (' + stored.length + ' pending).');
   } catch (e) {
+    // private browsing and a full quota both throw on setItem
     console.error('[Real Luxe] Local storage unavailable: ' + e.message);
   }
 }
 
-/**
- * _flushRetryQueue()
- * Renvoie les leads en file d'attente quand Supabase revient.
- */
+// resend the queued leads once Supabase comes back
 async function _flushRetryQueue() {
   if (_retryQueue.length === 0) return;
 
@@ -344,10 +299,6 @@ async function _flushRetryQueue() {
   }
 }
 
-/**
- * syncPendingLeads()
- * Sends anything held in localStorage. Called once the client connects.
- */
 async function syncPendingLeads() {
   if (!_supabaseReady || !_sb) return;
 
@@ -366,6 +317,8 @@ async function syncPendingLeads() {
       }
     }
 
+    /* insertLead re-stores its own failures, and the setItem below overwrites
+       that with `remaining`. Same set either way. */
     localStorage.setItem('rl-leads-pending', JSON.stringify(remaining));
     if (remaining.length === 0) {
       console.info('[Real Luxe] Pending enquiries synchronised.');
@@ -375,7 +328,7 @@ async function syncPendingLeads() {
   } catch (e) { /* silent */ }
 }
 
-// Auto-sync au chargement
+// after the init retries, which run at 0, 1s and 3s
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
     setTimeout(syncPendingLeads, 3000);
@@ -385,11 +338,6 @@ if (document.readyState === 'loading') {
 }
 
 
-/* FORMATAGE & NORMALISATION */
-
-/**
- * formatPrice(value) → "$4,200,000"
- */
 function formatPrice(value) {
   if (typeof value === 'string' && value.startsWith('$')) return value;
   var num = typeof value === 'number' ? value : parseInt(value, 10);
@@ -397,10 +345,7 @@ function formatPrice(value) {
   return '$' + num.toLocaleString('en-US');
 }
 
-/**
- * normalizeProperty(row)
- * Transforme une ligne Supabase en objet compatible avec le renderer.
- */
+// turns a Supabase row into the shape the renderer expects
 function normalizeProperty(row) {
   return {
     slug:              row.slug              || '',
@@ -411,7 +356,7 @@ function normalizeProperty(row) {
     beds:              row.beds              || 0,
     baths:             row.baths             || 0,
     sqm:               row.sqm              || 0,
-    sqft:              row.sqft             || Math.round((row.sqm || 0) * 10.7639),
+    sqft:              row.sqft             || Math.round((row.sqm || 0) * 10.7639),   // older rows have no sqft
     lot:               row.lot              || 0,
     year:              row.year             || 2024,
     pool:              row.pool             || '',
@@ -433,18 +378,5 @@ function normalizeProperty(row) {
 }
 
 
-/* Everything is global: the pages load this as a plain script, not a module. */
-// Exposed:
-//   - fetchPublishedProperties(options)   → Promise<Array>
-//   - insertLead(data, callback)          → Promise<void>
-//   - insertLeadFromTunnel(data, cb)      → Promise<void>
-//   - insertLeadFromVault(data, cb)       → Promise<void>
-//   - generateCommissionId()              → string
-//   - formatPrice(value)                  → string
-//   - normalizeProperty(row)              → object
-//   - syncPendingLeads()                  → Promise<void>
-//
-// Variables globales :
-//   - _supabaseReady  (boolean)
-//   - _supabaseError  (Error|null)
-//   - SUPABASE_URL    (string)
+/* No modules here. The pages load this with a plain script tag, so everything
+   above is global. */

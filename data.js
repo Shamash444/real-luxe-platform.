@@ -30,7 +30,7 @@ window.RL_PROPERTIES = [
       'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1600&q=82&auto=format',
       'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1600&q=82&auto=format'
     ],
-    description: 'Villa Oceana stands on the coral shelf at the eastern edge of Cap Cana, about twelve metres above the water. It is a single storey wrapped around a central courtyard, with the living pavilion turned east, so the sea is in view from the kitchen, both principal suites and the pool terrace. Glass panels along the whole eastern face retract into the wall, which leaves the living room and the terrace as one space for most of the year. Calacatta marble underfoot, ipe decking outside, bronze ironmongery throughout. Four of the six bedrooms sit in a guest wing with its own entrance and service stair.',
+    description: 'The house sits on the coral shelf at the eastern edge of Cap Cana, about twelve metres above the water. It is a single storey wrapped around a central courtyard, and the living pavilion has been turned east so that the sea is in view from the kitchen and the pool terrace, and from both principal suites. Glass panels along the whole eastern face retract into the wall. For most of the year that leaves the living room and the terrace working as one room. Calacatta marble underfoot and ipe decking outside; the ironmongery is bronze throughout. The pool runs twenty-five metres along the edge of the terrace. Four of the six bedrooms are in a guest wing that has its own entrance and a service stair, which is useful if you intend to let the place and slightly odd if you do not. The plot is 2,200 m².',
     amenities: ['Infinity pool', 'Beach access', 'Screening room', 'Wine store', 'Spa and hammam', 'Staff quarters', 'Gated, patrolled', 'Helipad'],
     roi: { rentalYield: '8–12%', occupancyRate: '80%', projectedAppreciation: '6–8% p.a.', capRate: '7%' },
     confoturBenefits: 'Confotur certified. Fifteen years exempt from transfer duty, annual property tax, rental income tax and capital gains tax.',
@@ -63,8 +63,8 @@ window.RL_PROPERTIES = [
       'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=1600&q=82&auto=format',
       'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1600&q=82&auto=format'
     ],
-    description: 'Finished in early 2024, inside a gated community fifteen minutes from Punta Cana airport. The house is two blocks joined by a covered walkway: living and kitchen on one side, four bedrooms on the other, with a fifth room for staff off the service court. The pool is a shallow freeform lagoon rather than a lap pool, edged in local coral stone. Spanish kitchen, quartz worktops, gas range. Planting is mature on all four boundaries, so no neighbouring roof is visible from the ground floor.',
-    amenities: ['Lagoon pool', 'Mature gardens', 'Outdoor kitchen', 'Principal suite with terrace', 'Gym', 'Home automation', 'Triple garage', 'Staff room'],
+    description: 'Palma Real was finished at the start of 2024 and stands in a gated community about fifteen minutes from Punta Cana airport. The house is two blocks joined by a covered walkway, living and kitchen on one side, four bedrooms on the other, with a fifth room for staff off the service court. The pool is a shallow freeform lagoon edged in local coral stone, so anyone who wants to swim lengths will be disappointed. The kitchen is Spanish, with quartz worktops and a gas range. Planting is mature along all four boundaries and no neighbouring roof is visible from the ground floor.',
+    amenities: ['Lagoon pool', 'Mature gardens', 'Outdoor kitchen', 'Principal suite with terrace', 'Gym', 'Triple garage', 'Staff room'],
     roi: { rentalYield: '9–11%', occupancyRate: '78%', projectedAppreciation: '7–9% p.a.', capRate: '7%' },
     confoturBenefits: 'Confotur certified under Law 158-01. Fifteen-year exemption; qualifies for the investor residency route.',
     techSpecs: {
@@ -74,7 +74,7 @@ window.RL_PROPERTIES = [
       smart: 'Control4 automation, multi-room audio',
       security: 'Gated community, private patrol, smart locks'
     },
-    conciergeServices: ['Tee-time booking', 'Spa and wellness', 'Private dining', 'Excursion planning', 'Pet care', 'Event support']
+    conciergeServices: ['Tee-time booking', 'Spa and wellness', 'Private dining', 'Excursion planning']
   },
 
   {
@@ -96,18 +96,17 @@ window.RL_PROPERTIES = [
       'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1600&q=82&auto=format',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1600&q=82&auto=format'
     ],
-    description: 'Top floor of a six-storey building on the northern quay, reached by a lift that opens into the flat rather than onto a landing. The main rooms face south-west over the moorings; the second bedroom and the study face inland across the golf course. The roof terrace is private and holds a plunge pool, an outdoor kitchen and covered seating for ten. A fifteen-metre berth is included in the sale and lies roughly sixty metres from the lobby door. Terrazzo floors throughout, motorised external blinds on the west elevation.',
-    amenities: ['Private roof terrace', 'Plunge pool', 'Marina outlook', 'Berth included', 'Private lift', 'Concierge desk', 'Wine wall', 'Home automation'],
+    description: 'Top floor of a six-storey block on the northern quay, reached by a lift that opens into the flat rather than onto a landing. Main rooms face south-west over the moorings; the second bedroom and the study look inland across the golf course. The roof terrace is private and holds a plunge pool and an outdoor kitchen, with covered seating for ten, and the fifteen-metre berth included in the sale lies roughly sixty metres from the lobby door. Terrazzo floors throughout, motorised external blinds on the west elevation.',
+    amenities: ['Private roof terrace', 'Plunge pool', 'Berth included', 'Private lift', 'Concierge desk', 'Wine wall'],
     roi: { rentalYield: '7–10%', occupancyRate: '75%', projectedAppreciation: '5–7% p.a.', capRate: '6%' },
     confoturBenefits: 'Confotur certified. Short-let demand is steady year round given the marina frontage.',
     techSpecs: {
       construction: 'Steel frame, hurricane-rated curtain wall',
       energy: 'Building solar array, individual metering',
-      water: 'Mains supply with building filtration',
       smart: 'Savant control, motorised blinds',
       security: 'Staffed lobby, biometric lift, marina patrol'
     },
-    conciergeServices: ['Berth management and provisioning', 'Diving and water sports', 'Marina club membership', 'Helicopter transfers', 'Restaurant booking', 'Personal shopping']
+    conciergeServices: ['Berth management and provisioning', 'Diving and water sports', 'Marina club membership', 'Helicopter transfers', 'Restaurant booking']
   },
 
   {
@@ -129,8 +128,8 @@ window.RL_PROPERTIES = [
       'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1600&q=82&auto=format',
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=82&auto=format'
     ],
-    description: 'An 8,500 m² plot running from the coast road down to a private stretch of sand on the northern side of the Samaná peninsula. Accommodation is split between a main house of five bedrooms and two guest pavilions of two and one. Construction is timber frame on stone bases, with deep overhangs and cross-ventilation instead of air conditioning in the living areas. A natural sinkhole on the lower terrace has been cleared and is used for swimming. The land carries fruit trees and a working kitchen garden, and a caretaker’s cottage sits by the upper gate.',
-    amenities: ['Private beach', 'Two pools', 'Natural cenote', 'Guest pavilions', 'Kitchen garden', 'Orchard', 'Private dock', 'Tennis court'],
+    description: 'The plot is 8,500 m² and runs from the coast road down to a private stretch of sand on the northern side of the Samaná peninsula. The fall of the land sets the layout: nothing sits on one level and you walk a good deal. Accommodation is split across three buildings, a main house of five bedrooms and guest pavilions of two and one. At eight bedrooms and nine bathrooms that is closer to a small compound than a house, and it needs staff on the place year round. Construction is timber frame on stone bases with deep overhangs, and the living areas are cross-ventilated rather than air conditioned. The buildings date from 2021, so the timber has not had long to weather. A natural sinkhole on the lower terrace has been cleared and is used for swimming, and there are two pools besides. The land carries fruit trees and a working kitchen garden, both of which want looking after, and the caretaker’s cottage sits by the upper gate. There is a tennis court, and a private dock at the bottom of the land.',
+    amenities: ['Private beach', 'Two pools', 'Natural cenote', 'Guest pavilions', 'Kitchen garden', 'Orchard', 'Private dock', 'Tennis court', 'Caretaker’s cottage'],
     roi: { rentalYield: '6–9%', occupancyRate: '70%', projectedAppreciation: '8–12% p.a.', capRate: '6%' },
     confoturBenefits: 'Confotur certified. Las Terrenas remains the least built-out of the four corridors we cover.',
     techSpecs: {
@@ -161,7 +160,7 @@ window.RL_PROPERTIES = [
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=82&auto=format',
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=1600&q=82&auto=format'
     ],
-    description: 'Built into the cliff above Bayahíbe, facing the marine reserve of the Parque Nacional del Este. The house steps down the slope across three levels, so every room holds an unbroken sea view and the roof of each level serves as the terrace for the one above. A stair cut into the rock leads to a small private cove. Walls are local coral stone and poured concrete left exposed; joinery is Caribbean cedar. The lowest level holds a studio with its own entrance, used at present as a workshop.',
+    description: 'Villa Coral Bay is built into the cliff above Bayahíbe, looking across at the marine reserve of the Parque Nacional del Este. It steps down the slope over three levels, so every room has an unbroken sea view and the roof of each level does duty as the terrace for the one above. A stair cut into the rock drops to a small private cove. Walls are local coral stone and poured concrete left exposed; the joinery is Caribbean cedar. The lowest level holds a studio with its own entrance, in use at the moment as a workshop. The arrangement does mean stairs between every level, and there are a lot of them. Plot is 3,200 m² and the garden is walled.',
     amenities: ['Private cove', 'Infinity pool', 'Cliff-edge jacuzzi', 'Three terraces', 'Principal suite with dressing room', 'Studio with separate entrance', 'Open kitchen', 'Walled garden'],
     roi: { rentalYield: '7–10%', occupancyRate: '72%', projectedAppreciation: '6–8% p.a.', capRate: '6%' },
     confoturBenefits: 'Confotur eligible. The adjoining national park limits what can be built on the neighbouring plots.',
@@ -172,7 +171,7 @@ window.RL_PROPERTIES = [
       smart: 'KNX building control',
       security: 'Cliff on one side, electronic gates, resident guard'
     },
-    conciergeServices: ['Diving and snorkelling', 'Boat days to Saona', 'Marine reserve tours', 'Yoga on the terrace', 'Studio access', 'Private chef']
+    conciergeServices: ['Diving and snorkelling', 'Boat days to Saona', 'Marine reserve tours', 'Yoga on the terrace', 'Private chef']
   }
 ];
 

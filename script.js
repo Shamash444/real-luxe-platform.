@@ -239,7 +239,7 @@ function openPropertyDetail(slug, clickEvent) {
     }
   }
 
-  // Fill gallery (fallback si pas d'images)
+  // Fill gallery (falls back when there are no images)
   var gallery = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.img ? [p.img] : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format']);
   var mainImg = document.getElementById('pdMainImg');
   mainImg.innerHTML = '<img src="' + gallery[0] + '" alt="' + p.name + '">';
@@ -484,25 +484,6 @@ document.addEventListener('keydown', (e) => {
 /* INDEX PAGE */
 if (PAGE_TYPE === 'index') {
 
-/*
- * REAL LUXE — Production JavaScript
- *
- * CORS CONFIGURATION (for production server — nginx/Apache/.htaccess):
- *   Access-Control-Allow-Origin: https://real-luxe.com
- *   Access-Control-Allow-Methods: GET, POST, OPTIONS
- *   Access-Control-Allow-Headers: Content-Type, Authorization
- *   X-Content-Type-Options: nosniff
- *   X-Frame-Options: DENY
- *   X-XSS-Protection: 1; mode=block
- *   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com data:; connect-src 'self' https://api.emailjs.com;
- *   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
- *   Referrer-Policy: strict-origin-when-cross-origin
- *
- * RATE LIMITING (server-side — nginx example):
- *   limit_req_zone $binary_remote_addr zone=contact:10m rate=3r/m;
- *   location /api/contact { limit_req zone=contact burst=2 nodelay; }
- */
-
 // Security utilities
 function sanitize(str) {
   if (typeof str !== 'string') return '';
@@ -534,7 +515,7 @@ const I18N = {
     hero_btn1:'See the listings', hero_btn2:'Arrange a viewing',
     stat_0:'Coastal areas', stat_1:'Entry price', stat_2:'Confotur exemption',
     props_label:'Current listings', props_title:'Selected <em>houses</em>',
-    props_sub:'Five properties are on the books at present. Each has been visited, and its title and Confotur status checked, before appearing here.',
+    props_sub:'Five properties are on the books at present. We have been round all of them and checked the title and the Confotur status.',
     props_btn:'Full catalogue',
     vault_label:'Off-market', vault_title:'Not <em>publicly listed</em>',
     vault_sub:'Twelve further properties are withheld from public listing, usually at the seller&rsquo;s request. Viewing them requires a signed non-disclosure agreement and evidence of funds.',
@@ -546,34 +527,34 @@ const I18N = {
     vault_f_budget:'Budget', vault_f_budget_ph:'Select a range',
     vault_f_msg:'Anything we should know (optional)', vault_f_submit:'Send request',
     about_label:'Approach', about_title:'How we<br><em>work</em>',
-    about_sub:'We are a small desk, not a portal. One adviser takes a purchase from the first viewing through the notary and the Title Registry, and remains the person you call afterwards.',
-    af_0_title:'Title checked first', af_0_desc:'The deslinde and the Confotur certificate are verified before a property is shown, not after an offer is made.',
-    af_1_title:'One point of contact', af_1_desc:'The adviser who shows you the house handles the notary, the transfer and the registration.',
+    about_sub:'We are a small desk. One adviser takes a purchase from the first viewing through the notary and the Title Registry, and is still the one you ring afterwards.',
+    af_0_title:'Title checked first', af_0_desc:'The deslinde and the Confotur certificate are checked before a property is shown to anyone. If the survey has not been registered you will hear it from us on the first call.',
+    af_1_title:'One point of contact', af_1_desc:'Whoever shows you the house takes it through the notary and on to registration.',
     af_2_title:'Discretion', af_2_desc:'Names and figures stay inside the file. Off-market sellers list with us on that basis.',
-    af_3_title:'After completion', af_3_desc:'Rental management, staffing and maintenance go to firms we have used ourselves and can vouch for.',
+    af_3_title:'After completion', af_3_desc:'Rental management, staffing and maintenance go out to firms we have used ourselves and can vouch for.',
     confotur_label:'Tax status', confotur_title:'The <em>Confotur</em> regime',
-    confotur_sub:'Law 158-01 exempts qualifying tourism developments from most property taxation for fifteen years. It applies to the development, not the buyer, so the certificate travels with the title.',
-    cc_0_title:'Fifteen years<br><em>exempt</em>', cc_0_desc:'No 3% transfer duty on purchase, no 1% annual property tax, no tax on rental income and no capital gains tax on resale, for fifteen years from the certificate date.', cc_0_tag0:'0% transfer duty', cc_0_tag1:'0% capital gains',
-    cc_1_title:'Residency<br><em>by investment</em>', cc_1_desc:'A property purchase of USD 200,000 or more opens the investor residency route. Filing normally takes three to six months. We introduce the immigration lawyers; we do not file it ourselves.', cc_1_tag0:'From $200,000', cc_1_tag1:'3&ndash;6 months',
-    cc_2_title:'What the<br><em>lettings return</em>', cc_2_desc:'Well-run short lets in Punta Cana and Cap Cana have been returning 7&ndash;10% gross. Demand is seasonal: September and October are thin, and the figures below assume professional management.', cc_2_tag0:'7&ndash;10% gross', cc_2_tag1:'Seasonal',
+    confotur_sub:'Law 158-01 exempts qualifying tourism developments from most property taxation for fifteen years. The certificate attaches to the development rather than to the owner, so it travels with the title when the property changes hands.',
+    cc_0_title:'Fifteen years<br><em>exempt</em>', cc_0_desc:'For fifteen years from the date on the certificate you pay no 3% transfer duty on purchase, no 1% annual property tax, no tax on rental income and no capital gains tax when you sell.', cc_0_tag0:'0% transfer duty', cc_0_tag1:'0% capital gains',
+    cc_1_title:'Residency<br><em>by investment</em>', cc_1_desc:'A property purchase of USD 200,000 or more opens the investor residency route. Filing normally takes three to six months once the paperwork is in. We introduce the immigration lawyers; the application is theirs to make.', cc_1_tag0:'From $200,000', cc_1_tag1:'3&ndash;6 months',
+    cc_2_title:'What the<br><em>lettings return</em>', cc_2_desc:'Well-run short lets in Punta Cana and Cap Cana have been returning 7&ndash;10% gross. September and October are thin. The figures below assume professional management.', cc_2_tag0:'7&ndash;10% gross', cc_2_tag1:'Seasonal',
     calc_title:'What the exemption is <em>worth</em>',
     calc_sub_text:'Enter a purchase price to see the tax a Confotur-certified title avoids over fifteen years.',
     calc_l0:'Transfer duty', calc_l1:'Property tax, 15 yrs', calc_l2:'Tax on rental income', calc_l3:'Capital gains tax',
     calc_total_label:'Estimated total over fifteen years',
     calc_note:'An illustration at current rates, assuming full occupancy of the exemption period. It is not tax advice; confirm the figures with a Dominican tax adviser before you rely on them.',
     life_label:'Nearby', life_title:'What is <em>around</em>',
-    life_sub:'The four corridors we cover are within ninety minutes of an international airport, and each has its own character. These are the places our buyers use most.',
+    life_sub:'The four corridors we cover are within ninety minutes of an international airport. These are the places our buyers use most.',
     fo_label:'Services', fo_title:'Beyond the<br><em>transaction</em>',
     fo_sub:'Four things buyers ask us for most often. Each is delivered by a firm we work with regularly, and billed by them directly.',
     fo_0_title:'Legal and notarial', fo_0_sub:'Due diligence &middot; structure &middot; closing', fo_0_body:'A Dominican firm runs the title search, confirms the deslinde is registered and the property is free of charges, and advises whether to hold personally or through a company. They draft the promise of sale and attend the closing. Registration at the Title Registry takes four to eight weeks.',
-    fo_1_title:'Staff and security', fo_1_sub:'Household &middot; grounds &middot; monitoring', fo_1_body:'Recruitment and payroll for household staff: cook, housekeeper, gardener, driver. Most gated developments include perimeter security; for standalone plots we arrange a monitored system and a resident caretaker.',
-    fo_2_title:'Getting there', fo_2_sub:'Charter &middot; berths &middot; transfers', fo_2_body:'Punta Cana takes direct flights from most of Europe and the eastern United States. For private aircraft, the FBO at PUJ handles the arrival. Berths at Cap Cana and Casa de Campo are leased annually and are usually the constraint, so ask early.',
+    fo_1_title:'Staff and security', fo_1_sub:'Household &middot; grounds &middot; monitoring', fo_1_body:'The firm we use handles recruitment and payroll for household staff: cook, housekeeper, gardener, driver. Most gated developments include perimeter security. On a standalone plot you want a monitored system and a caretaker living on site. We arrange both.',
+    fo_2_title:'Getting there', fo_2_sub:'Charter &middot; berths &middot; transfers', fo_2_body:'Punta Cana takes direct flights from most of Europe and the eastern United States. For private aircraft, the FBO at PUJ handles the arrival. Berths at Cap Cana and Casa de Campo are leased annually and are usually the constraint.',
     fo_3_title:'Letting and upkeep', fo_3_sub:'Management &middot; insurance &middot; reporting', fo_3_body:'Management companies take 20&ndash;25% of gross rental revenue and handle listings, guests, cleaning and maintenance. Hurricane cover is a separate policy and worth reading closely. Expect quarterly statements.',
     testi_label:'Buyers', testi_title:'In their<br><em>own words</em>',
     contact_label:'Contact', contact_title:'Tell us what<br><em>you are after</em>',
-    contact_sub:'Three questions, then your details. We reply within one working day, in English, French or Spanish.',
+    contact_sub:'We ask three questions, then your details. Replies go out within one working day, in English, French or Spanish.',
     contact_info_title:'Before you write',
-    contact_info_body:'It helps to know the area, the budget and whether the property is for your own use or to let. If you already have a shortlist from elsewhere, send it &mdash; we will say plainly what we think of it.',
+    contact_info_body:'It helps to know the area, the budget and whether the property is for your own use or to let. If you already have a shortlist from elsewhere, send it over and we will tell you plainly what we think of it.',
     ci_phone:'Telephone', ci_email:'Email', ci_office:'Office',
     tunnel_title:'Arrange a viewing', tunnel_sub:'Three steps, about a minute',
     t_step1_title:'What is the property for?',
@@ -588,15 +569,15 @@ const I18N = {
     t_success_title:'Received',
     t_success_msg:'An adviser will reply within one working day. If it is urgent, say so in your reply to the confirmation and we will call instead.',
     partners_label:'Process', partners_title:'How a purchase<br><em>actually runs</em>',
-    partners_sub:'From first enquiry to registered title is typically three to five months. The slow parts are the survey and the Title Registry, neither of which we control.',
-    pstep_0_title:'Brief and shortlist', pstep_0_desc:'A call to establish the area, budget and use. We send five to eight properties, including any off-market ones that fit, with what is wrong with each as well as what is right.', pstep_0_time:'Week 1',
-    pstep_1_title:'Viewing trip', pstep_1_desc:'Two or three days on the ground, usually four properties a day. We drive; the developers do not. You will also see the roads, the supermarket and the hospital, because those decide whether a house works.', pstep_1_time:'Weeks 2&ndash;4',
-    pstep_2_title:'Offer and due diligence', pstep_2_desc:'A promise of sale with a 10% deposit held in escrow, conditional on the title search. The lawyer confirms the deslinde, the absence of charges and the Confotur certificate. Withdraw if anything fails and the deposit returns.', pstep_2_time:'Weeks 4&ndash;8',
-    pstep_3_title:'Closing and registration', pstep_3_desc:'Signature before a notary, balance transferred, keys handed over. The Title Registry then issues the certificate in your name, which takes four to eight weeks and occasionally longer.', pstep_3_time:'Months 3&ndash;5',
-    psvc_0_title:'Legal and tax', psvc_0_desc:'Dominican firms handling title searches, Confotur compliance and the holding structure. Billed by them, at their rates, which we will tell you before you instruct.',
-    psvc_1_title:'Letting management', psvc_1_desc:'Listings, guests, cleaning and maintenance for 20&ndash;25% of gross revenue. We introduce two or three and let you choose.',
-    psvc_2_title:'Architects and builders', psvc_2_desc:'For plots and for refurbishment. Coastal construction has specific demands &mdash; salt, wind load, drainage &mdash; and the wrong contractor is expensive.',
-    psvc_3_title:'Residency', psvc_3_desc:'Immigration lawyers who file investor residency applications. Three to six months, and they will tell you honestly whether your case is straightforward.',
+    partners_sub:'From first enquiry to registered title is typically three to five months. The slow parts are the survey and the Title Registry.',
+    pstep_0_title:'Brief and shortlist', pstep_0_desc:'A call comes first, to settle the area and the budget, and whether the place is to live in or to let. Five to eight properties follow, off-market ones included, faults and all.', pstep_0_time:'Week 1',
+    pstep_1_title:'Viewing trip', pstep_1_desc:'Two or three days on the ground, usually four properties a day. We drive; the developers do not. You will also see the roads, the supermarket and the hospital, because those are what decide whether a house works once you are living in it. Plan on being tired by the end of the second day.', pstep_1_time:'Weeks 2&ndash;4',
+    pstep_2_title:'Offer and due diligence', pstep_2_desc:'You sign a promise of sale and 10% goes into escrow, conditional on the title search. The lawyer confirms the deslinde, the absence of charges and the Confotur certificate. Withdraw if anything fails and the deposit returns.', pstep_2_time:'Weeks 4&ndash;8',
+    pstep_3_title:'Closing and registration', pstep_3_desc:'The closing itself is a signature before a notary, the balance transferred and the keys handed over. The Title Registry then issues the certificate in your name, four to eight weeks and occasionally longer.', pstep_3_time:'Months 3&ndash;5',
+    psvc_0_title:'Legal and tax', psvc_0_desc:'Dominican firms run the title searches, the Confotur compliance and the holding structure. They bill you directly at their own rates, and we tell you what those are before you instruct anyone. They are also the ones chasing the Title Registry afterwards.',
+    psvc_1_title:'Letting management', psvc_1_desc:'We introduce two or three management firms, all taking 20&ndash;25% of gross revenue for listings, guests, cleaning and maintenance.',
+    psvc_2_title:'Architects and builders', psvc_2_desc:'For plots, and for refurbishing what is already standing. Salt and wind load make coastal construction a trade of its own, and drainage is where a cheap contractor will cost you.',
+    psvc_3_title:'Residency', psvc_3_desc:'Immigration lawyers file the investor residency applications. Three to six months is normal, and they are blunt about the awkward cases.',
     wa_text:'Enquire',
     card_beds:'bed', card_baths:'bath',
     pd_cta_visit:'Arrange a viewing', pd_cta_whatsapp:'Request the dossier',
@@ -615,7 +596,7 @@ const I18N = {
     hero_btn1:'Voir les biens', hero_btn2:'Organiser une visite',
     stat_0:'Zones côtières', stat_1:'Prix d&rsquo;entrée', stat_2:'Exonération Confotur',
     props_label:'Biens disponibles', props_title:'Maisons <em>sélectionnées</em>',
-    props_sub:'Cinq biens sont actuellement au portefeuille. Chacun a été visité, son titre et son statut Confotur vérifiés, avant de figurer ici.',
+    props_sub:'Cinq biens sont actuellement au portefeuille. Nous sommes allés voir chacun d&rsquo;eux et avons vérifié le titre et le statut Confotur.',
     props_btn:'Catalogue complet',
     vault_label:'Hors marché', vault_title:'Non <em>publiés</em>',
     vault_sub:'Douze biens supplémentaires ne sont pas publiés, le plus souvent à la demande du vendeur. Leur visite suppose un accord de confidentialité signé et un justificatif de fonds.',
@@ -627,13 +608,13 @@ const I18N = {
     vault_f_budget:'Budget', vault_f_budget_ph:'Choisir une fourchette',
     vault_f_msg:'Précisions (facultatif)', vault_f_submit:'Envoyer',
     about_label:'Méthode', about_title:'Notre<br><em>façon de faire</em>',
-    about_sub:'Nous sommes un cabinet restreint, pas un portail. Un conseiller suit l&rsquo;achat de la première visite jusqu&rsquo;au notaire et au registre foncier, et reste votre interlocuteur ensuite.',
+    about_sub:'Nous sommes un cabinet restreint. Un conseiller suit l&rsquo;achat de la première visite jusqu&rsquo;au notaire et au registre foncier, et reste celui que vous appelez ensuite.',
     af_0_title:'Le titre d&rsquo;abord', af_0_desc:'Le deslinde et le certificat Confotur sont vérifiés avant la visite, pas après l&rsquo;offre.',
     af_1_title:'Un seul interlocuteur', af_1_desc:'Le conseiller qui vous fait visiter suit le notaire, le transfert et l&rsquo;enregistrement.',
     af_2_title:'Discrétion', af_2_desc:'Les noms et les montants restent dans le dossier. Les vendeurs hors marché nous confient leurs biens à cette condition.',
     af_3_title:'Après la vente', af_3_desc:'Gestion locative, personnel et entretien sont confiés à des sociétés que nous avons nous-mêmes employées.',
     confotur_label:'Fiscalité', confotur_title:'Le régime <em>Confotur</em>',
-    confotur_sub:'La loi 158-01 exonère les programmes touristiques éligibles de l&rsquo;essentiel de la fiscalité immobilière pendant quinze ans. Elle porte sur le programme, non sur l&rsquo;acquéreur : le certificat suit le titre.',
+    confotur_sub:'La loi 158-01 exonère les programmes touristiques éligibles de l&rsquo;essentiel de la fiscalité immobilière pendant quinze ans. Le certificat est attaché au programme plutôt qu&rsquo;au propriétaire, il suit donc le titre lors d&rsquo;une revente.',
     cc_0_title:'Quinze ans<br><em>d&rsquo;exonération</em>', cc_0_desc:'Ni droit de mutation de 3%, ni taxe foncière annuelle de 1%, ni impôt sur les loyers, ni impôt sur la plus-value de revente, pendant quinze ans à compter du certificat.', cc_0_tag0:'0% de mutation', cc_0_tag1:'0% de plus-value',
     cc_1_title:'Résidence<br><em>par investissement</em>', cc_1_desc:'Un achat de 200 000 USD ou plus ouvre la voie de la résidence investisseur. Le dossier prend en général trois à six mois. Nous présentons les avocats en immigration ; nous ne déposons pas le dossier.', cc_1_tag0:'À partir de 200 000 $', cc_1_tag1:'3 à 6 mois',
     cc_2_title:'Ce que rapporte<br><em>la location</em>', cc_2_desc:'Bien gérées, les locations courte durée à Punta Cana et Cap Cana rapportent 7 à 10% bruts. La demande est saisonnière : septembre et octobre sont creux, et ces chiffres supposent une gestion professionnelle.', cc_2_tag0:'7 à 10% bruts', cc_2_tag1:'Saisonnier',
@@ -643,7 +624,7 @@ const I18N = {
     calc_total_label:'Total estimé sur quinze ans',
     calc_note:'Illustration aux taux actuels, sur la durée complète de l&rsquo;exonération. Ce n&rsquo;est pas un conseil fiscal : faites confirmer ces montants par un fiscaliste dominicain.',
     life_label:'Aux alentours', life_title:'Ce qu&rsquo;il y a <em>autour</em>',
-    life_sub:'Les quatre secteurs que nous couvrons sont à moins de quatre-vingt-dix minutes d&rsquo;un aéroport international, et chacun a son caractère. Voici les adresses que nos acquéreurs fréquentent.',
+    life_sub:'Les quatre secteurs que nous couvrons sont à moins de quatre-vingt-dix minutes d&rsquo;un aéroport international. Voici les adresses que nos acquéreurs fréquentent.',
     fo_label:'Services', fo_title:'Au-delà de<br><em>la transaction</em>',
     fo_sub:'Les quatre demandes les plus fréquentes. Chacune est assurée par un cabinet avec lequel nous travaillons régulièrement, et facturée par lui.',
     fo_0_title:'Juridique et notarial', fo_0_sub:'Audit &middot; structure &middot; signature', fo_0_body:'Un cabinet dominicain effectue la recherche de titre, confirme que le deslinde est enregistré et le bien libre de charges, et conseille sur la détention en nom propre ou par société. Il rédige la promesse de vente et assiste à la signature. L&rsquo;enregistrement prend quatre à huit semaines.',
@@ -652,9 +633,9 @@ const I18N = {
     fo_3_title:'Location et entretien', fo_3_sub:'Gestion &middot; assurance &middot; reporting', fo_3_body:'Les sociétés de gestion prélèvent 20 à 25% du revenu locatif brut et prennent en charge annonces, voyageurs, ménage et maintenance. La garantie cyclone fait l&rsquo;objet d&rsquo;un contrat distinct, à lire de près. Comptez un relevé trimestriel.',
     testi_label:'Acquéreurs', testi_title:'Dans leurs<br><em>propres mots</em>',
     contact_label:'Contact', contact_title:'Dites-nous ce que<br><em>vous cherchez</em>',
-    contact_sub:'Trois questions, puis vos coordonnées. Nous répondons sous un jour ouvré, en français, anglais ou espagnol.',
+    contact_sub:'Nous posons trois questions, puis nous vous demandons vos coordonnées. Les réponses partent sous un jour ouvré, en français, anglais ou espagnol.',
     contact_info_title:'Avant d&rsquo;écrire',
-    contact_info_body:'Il est utile de connaître le secteur, le budget, et si le bien est destiné à votre usage ou à la location. Si vous avez déjà une sélection faite ailleurs, envoyez-la : nous vous dirons franchement ce que nous en pensons.',
+    contact_info_body:'Il est utile de connaître le secteur, le budget, et si le bien est destiné à votre usage ou à la location. Si vous avez déjà une sélection faite ailleurs, envoyez-la et nous vous dirons franchement ce que nous en pensons.',
     ci_phone:'Téléphone', ci_email:'E-mail', ci_office:'Bureau',
     tunnel_title:'Organiser une visite', tunnel_sub:'Trois étapes, environ une minute',
     t_step1_title:'À quoi le bien est-il destiné ?',
@@ -669,7 +650,7 @@ const I18N = {
     t_success_title:'Bien reçu',
     t_success_msg:'Un conseiller répondra sous un jour ouvré. Si c&rsquo;est urgent, dites-le en réponse à la confirmation et nous appellerons.',
     partners_label:'Déroulé', partners_title:'Comment se déroule<br><em>un achat</em>',
-    partners_sub:'De la première demande au titre enregistré, comptez trois à cinq mois. Les délais viennent du bornage et du registre foncier, que nous ne maîtrisons pas.',
+    partners_sub:'De la première demande au titre enregistré, comptez trois à cinq mois. Les délais viennent du bornage et du registre foncier.',
     pstep_0_title:'Cadrage et sélection', pstep_0_desc:'Un appel pour établir le secteur, le budget et l&rsquo;usage. Nous envoyons cinq à huit biens, y compris hors marché s&rsquo;ils correspondent, avec leurs défauts autant que leurs qualités.', pstep_0_time:'Semaine 1',
     pstep_1_title:'Voyage de visite', pstep_1_desc:'Deux ou trois jours sur place, environ quatre biens par jour. C&rsquo;est nous qui conduisons, pas les promoteurs. Vous verrez aussi les routes, le supermarché et l&rsquo;hôpital, car c&rsquo;est ce qui rend une maison vivable.', pstep_1_time:'Semaines 2 à 4',
     pstep_2_title:'Offre et audit', pstep_2_desc:'Une promesse de vente avec 10% séquestrés, sous condition de la recherche de titre. L&rsquo;avocat confirme le deslinde, l&rsquo;absence de charges et le certificat Confotur. En cas d&rsquo;anomalie, vous vous retirez et le dépôt vous revient.', pstep_2_time:'Semaines 4 à 8',
@@ -696,7 +677,7 @@ const I18N = {
     hero_btn1:'Ver las propiedades', hero_btn2:'Concertar una visita',
     stat_0:'Zonas costeras', stat_1:'Precio de entrada', stat_2:'Exención Confotur',
     props_label:'En cartera', props_title:'Casas <em>seleccionadas</em>',
-    props_sub:'Ahora mismo hay cinco propiedades en cartera. Cada una ha sido visitada, y su título y situación Confotur comprobados, antes de aparecer aquí.',
+    props_sub:'Ahora mismo hay cinco propiedades en cartera. Hemos estado en todas y comprobado el título y la situación Confotur.',
     props_btn:'Catálogo completo',
     vault_label:'Fuera de mercado', vault_title:'Sin <em>publicar</em>',
     vault_sub:'Otras doce propiedades no se publican, normalmente a petición del vendedor. Verlas requiere un acuerdo de confidencialidad firmado y acreditación de fondos.',
@@ -708,13 +689,13 @@ const I18N = {
     vault_f_budget:'Presupuesto', vault_f_budget_ph:'Elija un rango',
     vault_f_msg:'Algo que debamos saber (opcional)', vault_f_submit:'Enviar',
     about_label:'Método', about_title:'Cómo<br><em>trabajamos</em>',
-    about_sub:'Somos una oficina pequeña, no un portal. Un asesor lleva la compra desde la primera visita hasta el notario y el Registro de Títulos, y sigue siendo su interlocutor después.',
+    about_sub:'Somos una oficina pequeña. Un asesor lleva la compra desde la primera visita hasta el notario y el Registro de Títulos, y sigue siendo a quien usted llama después.',
     af_0_title:'Primero el título', af_0_desc:'El deslinde y el certificado Confotur se verifican antes de enseñar la propiedad, no después de la oferta.',
     af_1_title:'Un solo interlocutor', af_1_desc:'El asesor que le enseña la casa lleva el notario, el traspaso y el registro.',
     af_2_title:'Discreción', af_2_desc:'Los nombres y las cifras no salen del expediente. Los vendedores fuera de mercado nos confían su propiedad por eso.',
     af_3_title:'Después de la compra', af_3_desc:'Gestión de alquiler, personal y mantenimiento van a empresas que nosotros mismos hemos usado.',
     confotur_label:'Fiscalidad', confotur_title:'El régimen <em>Confotur</em>',
-    confotur_sub:'La ley 158-01 exime a los desarrollos turísticos cualificados de la mayor parte de la fiscalidad inmobiliaria durante quince años. Se aplica al desarrollo, no al comprador, de modo que el certificado acompaña al título.',
+    confotur_sub:'La ley 158-01 exime a los desarrollos turísticos cualificados de la mayor parte de la fiscalidad inmobiliaria durante quince años. El certificado queda unido al desarrollo, de modo que acompaña al título cuando la propiedad cambia de manos.',
     cc_0_title:'Quince años<br><em>de exención</em>', cc_0_desc:'Sin el 3% de impuesto de transferencia, sin el 1% de impuesto anual, sin impuesto sobre los alquileres ni sobre la plusvalía en la reventa, durante quince años desde el certificado.', cc_0_tag0:'0% de transferencia', cc_0_tag1:'0% de plusvalía',
     cc_1_title:'Residencia<br><em>por inversión</em>', cc_1_desc:'Una compra de 200.000 USD o más abre la vía de residencia por inversión. El expediente suele tardar de tres a seis meses. Presentamos a los abogados de inmigración; no lo tramitamos nosotros.', cc_1_tag0:'Desde 200.000 $', cc_1_tag1:'3 a 6 meses',
     cc_2_title:'Lo que deja<br><em>el alquiler</em>', cc_2_desc:'Bien gestionados, los alquileres de corta estancia en Punta Cana y Cap Cana vienen dando un 7 a 10% bruto. La demanda es estacional: septiembre y octubre son flojos, y estas cifras suponen gestión profesional.', cc_2_tag0:'7 a 10% bruto', cc_2_tag1:'Estacional',
@@ -724,7 +705,7 @@ const I18N = {
     calc_total_label:'Total estimado en quince años',
     calc_note:'Una ilustración a los tipos actuales, suponiendo el periodo completo de exención. No es asesoramiento fiscal: confirme las cifras con un asesor dominicano antes de basarse en ellas.',
     life_label:'Alrededor', life_title:'Qué hay <em>cerca</em>',
-    life_sub:'Los cuatro corredores que cubrimos están a menos de noventa minutos de un aeropuerto internacional, y cada uno tiene su carácter. Estos son los sitios que más usan nuestros compradores.',
+    life_sub:'Los cuatro corredores que cubrimos están a menos de noventa minutos de un aeropuerto internacional. Estos son los sitios que más usan nuestros compradores.',
     fo_label:'Servicios', fo_title:'Más allá de<br><em>la compraventa</em>',
     fo_sub:'Las cuatro cosas que más nos piden. Cada una la presta una firma con la que trabajamos habitualmente, y la factura ella.',
     fo_0_title:'Legal y notarial', fo_0_sub:'Revisión &middot; estructura &middot; cierre', fo_0_body:'Una firma dominicana hace la búsqueda de título, confirma que el deslinde está registrado y la propiedad libre de cargas, y aconseja si conviene comprar a título personal o por sociedad. Redacta la promesa de venta y asiste al cierre. El registro tarda de cuatro a ocho semanas.',
@@ -733,9 +714,9 @@ const I18N = {
     fo_3_title:'Alquiler y mantenimiento', fo_3_sub:'Gestión &middot; seguro &middot; informes', fo_3_body:'Las gestoras se quedan un 20 a 25% de los ingresos brutos y llevan anuncios, huéspedes, limpieza y mantenimiento. La cobertura de huracán es una póliza aparte y conviene leerla con calma. Cuente con informes trimestrales.',
     testi_label:'Compradores', testi_title:'En sus<br><em>propias palabras</em>',
     contact_label:'Contacto', contact_title:'Cuéntenos qué<br><em>está buscando</em>',
-    contact_sub:'Tres preguntas y sus datos. Respondemos en un día laborable, en español, inglés o francés.',
+    contact_sub:'Le hacemos tres preguntas y le pedimos sus datos. Respondemos en un día laborable, en español, inglés o francés.',
     contact_info_title:'Antes de escribir',
-    contact_info_body:'Ayuda saber la zona, el presupuesto y si la propiedad es para uso propio o para alquilar. Si ya tiene una lista hecha en otro sitio, mándela: le diremos con franqueza qué nos parece.',
+    contact_info_body:'Ayuda saber la zona, el presupuesto y si la propiedad es para uso propio o para alquilar. Si ya tiene una lista hecha en otro sitio, mándela y le diremos con franqueza qué nos parece.',
     ci_phone:'Teléfono', ci_email:'Correo', ci_office:'Oficina',
     tunnel_title:'Concertar una visita', tunnel_sub:'Tres pasos, alrededor de un minuto',
     t_step1_title:'¿Para qué es la propiedad?',
@@ -750,7 +731,7 @@ const I18N = {
     t_success_title:'Recibido',
     t_success_msg:'Un asesor responderá en un día laborable. Si es urgente, dígalo al responder a la confirmación y le llamamos.',
     partners_label:'Proceso', partners_title:'Cómo transcurre<br><em>una compra</em>',
-    partners_sub:'De la primera consulta al título registrado suelen pasar de tres a cinco meses. Lo lento es el deslinde y el Registro de Títulos, que no dependen de nosotros.',
+    partners_sub:'De la primera consulta al título registrado suelen pasar de tres a cinco meses. Lo lento es el deslinde y el Registro de Títulos.',
     pstep_0_title:'Encargo y preselección', pstep_0_desc:'Una llamada para fijar zona, presupuesto y uso. Enviamos de cinco a ocho propiedades, incluidas las de fuera de mercado que encajen, con sus defectos además de sus virtudes.', pstep_0_time:'Semana 1',
     pstep_1_title:'Viaje de visitas', pstep_1_desc:'Dos o tres días sobre el terreno, unas cuatro propiedades al día. Conducimos nosotros, no los promotores. También verá las carreteras, el supermercado y el hospital, porque de eso depende que una casa funcione.', pstep_1_time:'Semanas 2 a 4',
     pstep_2_title:'Oferta y comprobaciones', pstep_2_desc:'Promesa de venta con un 10% en depósito, condicionada a la búsqueda de título. El abogado confirma el deslinde, la ausencia de cargas y el certificado Confotur. Si algo falla, se retira y recupera el depósito.', pstep_2_time:'Semanas 4 a 8',
@@ -1008,17 +989,17 @@ function submitTunnel(e) {
   /* The confirmation is only shown once the enquiry is recorded. */
   insertLeadFromTunnel(leadData, function(err, result) {
     if (err) {
-      console.warn('[Real Luxe] Tunnel Lead Guard : erreur Supabase, lead sauvegardé localement');
+      console.warn('[Real Luxe] Tunnel Lead Guard: Supabase error, lead saved locally');
     }
     leadData.commission_id = result ? result.commission_id : 'LOCAL';
-    console.log('[Real Luxe] ✓ Tunnel lead enregistré — commission_id:', leadData.commission_id);
+    console.log('[Real Luxe] Tunnel lead recorded, commission_id:', leadData.commission_id);
 
     // EmailJS notification
     sendLeadEmails({
       nom: leadData.firstName + ' ' + leadData.lastName,
       email: leadData.email,
       tel: leadData.phone,
-      property_name: 'Consultation Privée (' + leadData.horizon + ')',
+      property_name: 'Private consultation (' + leadData.horizon + ')',
       villa_interet: 'general-inquiry',
       commission_id: leadData.commission_id,
       source: 'tunnel'
@@ -1084,17 +1065,17 @@ function submitVaultForm(e) {
   /* The confirmation is only shown once the enquiry is recorded. */
   insertLeadFromVault(vaultData, function(err, result) {
     if (err) {
-      console.warn('[Real Luxe] Vault Lead Guard : erreur Supabase, lead sauvegardé localement');
+      console.warn('[Real Luxe] Vault Lead Guard: Supabase error, lead saved locally');
     }
     vaultData.commission_id = result ? result.commission_id : 'LOCAL';
-    console.log('[Real Luxe] ✓ Vault lead enregistré — commission_id:', vaultData.commission_id);
+    console.log('[Real Luxe] Vault lead recorded, commission_id:', vaultData.commission_id);
 
     // EmailJS notification
     sendLeadEmails({
       nom: vaultData.name,
       email: vaultData.email,
       tel: vaultData.phone,
-      property_name: 'Collection Off-Market',
+      property_name: 'Off-market collection',
       villa_interet: 'vault-access',
       commission_id: vaultData.commission_id,
       source: 'vault'
@@ -1521,56 +1502,8 @@ function updateHeroStats(properties) {
 function showEmptyState(grid) {
   grid.innerHTML =
     '<div class="props-error">' +
-      '<div class="props-error-icon">🏝️</div>' +
-      '<p class="props-error-msg">No properties available at this time.<br>Please check back soon.</p>' +
+      '<p class="props-error-msg">Nothing on the books just now.<br>Try again in a few days.</p>' +
     '</div>';
-}
-
-/**
- * showErrorState(grid, errorMsg)
- * Shown when loading failed outright, with a retry.
- * En mode dev, l'erreur exacte est visible dans le DOM.
- */
-function showErrorState(grid, errorMsg) {
-  var detailHtml = '';
-  if (errorMsg) {
-    /* Formatage lisible : chaque \n devient un <br> */
-    var safeMsg = errorMsg
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\n/g, '<br>');
-
-    detailHtml =
-      '<div style="margin-top:16px;padding:14px 18px;' +
-      'background:rgba(192,57,43,0.06);border:1px solid rgba(192,57,43,0.15);border-radius:10px;' +
-      'font-size:12px;font-family:\'DM Sans\',monospace;color:#c0392b;' +
-      'word-break:break-word;max-width:550px;margin-left:auto;margin-right:auto;text-align:left;line-height:1.7;">' +
-        '<strong style="display:block;margin-bottom:6px;font-size:13px;">Diagnostic :</strong>' +
-        safeMsg +
-      '</div>';
-  }
-  grid.innerHTML =
-    '<div class="props-error">' +
-      '<div class="props-error-icon">⚠️</div>' +
-      '<p class="props-error-msg">Impossible de charger les propriétés.<br>Vérifie ta connexion et réessaie.</p>' +
-      detailHtml +
-      '<button class="props-retry-btn" onclick="retryLoad()">Réessayer</button>' +
-    '</div>';
-}
-
-/**
- * retryLoad()
- * Retries the load after a failure.
- */
-function retryLoad() {
-  var grid = document.getElementById('propsGrid');
-  grid.innerHTML =
-    '<div class="props-loading" id="propsLoader">' +
-      '<div class="props-loading-spinner"></div>' +
-      '<div class="props-loading-text">Loading properties...</div>' +
-    '</div>';
-  loadPropertiesFromSupabase();
 }
 
 /* ===================================================================
@@ -1783,9 +1716,6 @@ function renderCards(animate) {
       clearProps: 'all'
     });
   }
-
-  // Re-bind hover for custom cursor
-
 }
 
 /* ===================================================================
@@ -1987,20 +1917,17 @@ function initAnimations() {
    INIT
    =================================================================== */
 document.addEventListener('DOMContentLoaded', function() {
-  /* Langue (synchrone, pas besoin d'attendre supabase) */
+  /* Language first, no waiting on Supabase */
   setLang(currentLang);
 
-  /* Scroll listener (synchrone) */
+  /* Scroll listener (synchronous) */
   window.addEventListener('scroll', handleScroll, {passive: true});
   handleScroll();
-
-  /* Custom cursor (synchrone) */
-
 
   /* Card animations are started by loadPropertiesFromSupabase once the cards
      are in the DOM, not here, so there is no race with the fetch. */
 
-  /* Lancer le chargement async depuis supabase */
+  /* Kick off the async load from Supabase */
   loadPropertiesFromSupabase();
 });
 
@@ -2098,7 +2025,7 @@ function submitLeadForm(e) {
      enquiry has been recorded, so nothing is lost between the two. */
   insertLead(leadData, function(err, result) {
     if (err) {
-      console.warn('[Real Luxe] Lead Guard : erreur Supabase mais lead sauvegardé localement');
+      console.warn('[Real Luxe] Lead Guard: Supabase error, but the lead was saved locally');
     }
     // Carry the reference through for tracking
     leadData.commission_id = result ? result.commission_id : 'LOCAL';
