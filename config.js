@@ -45,7 +45,7 @@ window.RL_CONFIG = {
     email: '',
 
     /* Display form, e.g. '+1 809 555 0100'. */
-    phone: '',
+    phone: '01 02 03 04 05 06',
 
     /* Digits only, country code first, no +, spaces or dashes.
        e.g. '18095550100'. Empty removes WhatsApp from the whole site. */
