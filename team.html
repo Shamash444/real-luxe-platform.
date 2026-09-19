@@ -3,347 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Meet the Real Luxe Estates team — luxury real estate experts in the Dominican Republic.">
+<meta name="description" content="The people behind Real Luxe — three advisers covering the Dominican east and north coasts.">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Real Luxe — Our Team · Dominican Republic</title>
+<meta name="theme-color" content="#1A1A1A">
+<title>Real Luxe — The team</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-P9GTXJK1G6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-P9GTXJK1G6');</script>
-
-<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<!-- Global Stylesheet -->
+<script src="config.js" defer></script>
+<script src="data.js" defer></script>
+<script src="script.js" defer></script>
+
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* ─── Team Hero ─── */
-  .team-hero {
-    position: relative;
-    padding: 160px 40px 100px;
-    text-align: center;
-    background: linear-gradient(165deg, #F7F4EF 0%, #EDE8DF 40%, #E8E2D6 100%);
-    overflow: hidden;
-  }
-  .team-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(198,165,92,0.12) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 60% at 80% 100%, rgba(198,165,92,0.06) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .team-hero-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--gold, #C6A55C);
-    margin-bottom: 24px;
-    display: block;
-  }
-  .team-hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 3.6rem);
-    font-weight: 400;
-    color: #1A1A1A;
-    line-height: 1.15;
-    margin: 0 auto 24px;
-    max-width: 700px;
-  }
-  .team-hero h1 em {
-    font-style: italic;
-    color: var(--gold, #C6A55C);
-  }
-  .team-hero-sub {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 300;
-    color: rgba(26,26,26,0.55);
-    max-width: 540px;
-    margin: 0 auto;
-    line-height: 1.7;
-  }
-  .team-hero-line {
-    width: 48px;
-    height: 1px;
-    background: var(--gold, #C6A55C);
-    margin: 32px auto 0;
-    opacity: 0.6;
-  }
+  /* Team hero */
+  .team-hero{position:relative;padding:clamp(120px,16vh,180px) var(--gutter) clamp(64px,9vh,104px);text-align:center;background:linear-gradient(168deg,#F8F5F0 0%,#EFEAE1 45%,#E9E3D7 100%);overflow:hidden}
+  .team-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(198,165,92,.11) 0%,transparent 70%);pointer-events:none}
+  .team-hero>*{position:relative}
+  .team-hero-label{display:block;font-size:10px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:22px}
+  .team-hero h1{font-family:var(--font-display);font-size:clamp(30px,3.6vw,54px);font-weight:400;color:var(--charcoal);line-height:1.15;margin:0 auto 22px;max-width:16ch;letter-spacing:-.015em}
+  .team-hero h1 em{font-style:italic;color:var(--gold)}
+  .team-hero-sub{font-size:15.5px;font-weight:300;color:rgba(26,26,26,.58);max-width:58ch;margin:0 auto;line-height:1.8}
+  .team-hero-line{width:44px;height:1px;background:var(--gold);margin:34px auto 0;opacity:.55}
 
-  /* ─── Team Grid ─── */
-  .team-section {
-    padding: 100px 40px;
-    background: var(--ivory, #FAF8F5);
-  }
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .team-card {
-    background: #fff;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.06);
-    transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.45s ease;
-  }
-  .team-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 48px rgba(0,0,0,0.1);
-  }
-  .team-card-img {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 3/3.5;
-    overflow: hidden;
-  }
-  .team-card-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.6s ease;
-  }
-  .team-card:hover .team-card-img img {
-    transform: scale(1.04);
-  }
-  .team-card-body {
-    padding: 32px 28px 28px;
-  }
-  .team-card-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--charcoal, #1A1A1A);
-    margin: 0 0 4px;
-  }
-  .team-card-role {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--gold, #C6A55C);
-    margin-bottom: 16px;
-    display: block;
-  }
-  .team-card-bio {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    color: #666;
-    line-height: 1.75;
-    margin-bottom: 20px;
-  }
-  .team-card-contact {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--gold, #C6A55C);
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    transition: color 0.3s;
-  }
-  .team-card-contact:hover {
-    color: var(--charcoal, #1A1A1A);
-  }
-  .team-card-contact svg {
-    flex-shrink: 0;
-  }
+  /* Team grid */
+  .team-section{padding:clamp(64px,10vh,104px) var(--gutter);background:var(--ivory)}
+  .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,3vw,44px);max-width:1120px;margin:0 auto}
+  .team-card{background:#fff;border:1px solid var(--cream);border-radius:var(--radius-lg);padding:38px 34px 34px;transition:border-color .4s var(--ease),transform .4s var(--ease)}
+  .team-card:hover{border-color:rgba(198,165,92,.45);transform:translateY(-3px)}
 
-  /* ─── Calendly Section ─── */
-  .calendly-section {
-    padding: 100px 40px;
-    background: var(--charcoal, #1A1A1A);
-    text-align: center;
-  }
-  .calendly-section-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--gold, #C6A55C);
-    margin-bottom: 20px;
-    display: block;
-  }
-  .calendly-section h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.6rem, 3.5vw, 2.6rem);
-    font-weight: 400;
-    color: var(--ivory, #FAF8F5);
-    margin: 0 0 16px;
-  }
-  .calendly-section-sub {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 300;
-    color: rgba(250,248,245,0.5);
-    max-width: 480px;
-    margin: 0 auto 48px;
-    line-height: 1.7;
-  }
-  .calendly-wrapper {
-    max-width: 900px;
-    margin: 0 auto;
-    border-radius: 12px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(198,165,92,0.12);
-  }
+  /* A monogram instead of a stock photograph: a placeholder that reads as a
+     deliberate choice, and does not put a stranger's face on the site. */
+  .team-monogram{width:60px;height:60px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:19px;color:var(--gold);letter-spacing:.06em;margin-bottom:26px}
+  .team-card-name{font-family:var(--font-display);font-size:21px;font-weight:400;color:var(--charcoal);margin:0 0 7px}
+  .team-card-role{display:block;font-size:10px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+  .team-card-bio{font-size:13.5px;font-weight:300;color:var(--slate);line-height:1.85;margin:0}
+  .team-card-langs{margin-top:20px;padding-top:18px;border-top:1px solid var(--cream);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mist)}
 
-  /* ─── Responsive ─── */
-  @media (max-width: 960px) {
-    .team-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 28px;
-    }
-  }
-  @media (max-width: 640px) {
-    .team-hero {
-      padding: 140px 24px 72px;
-    }
-    .team-section {
-      padding: 64px 20px;
-    }
-    .team-grid {
-      grid-template-columns: 1fr;
-      gap: 24px;
-      max-width: 420px;
-    }
-    .calendly-section {
-      padding: 64px 20px;
-    }
-  }
+  /* Booking */
+  .booking-section{padding:clamp(64px,10vh,104px) var(--gutter);background:var(--charcoal);text-align:center}
+  .booking-label{display:block;font-size:10px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+  .booking-section h2{font-family:var(--font-display);font-size:clamp(26px,2.8vw,40px);font-weight:400;color:var(--ivory);margin:0 0 16px;letter-spacing:-.01em}
+  .booking-sub{font-size:14.5px;font-weight:300;color:rgba(250,248,245,.52);max-width:52ch;margin:0 auto 44px;line-height:1.8}
+  .booking-wrapper{max-width:900px;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:rgba(255,255,255,.03);border:1px solid rgba(198,165,92,.12)}
+  .booking-fallback{display:inline-flex;align-items:center;gap:10px;padding:15px 30px;border:1px solid rgba(198,165,92,.4);border-radius:var(--radius-pill);color:var(--gold);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;transition:background .35s var(--ease),color .35s var(--ease)}
+  .booking-fallback:hover{background:var(--gold);color:var(--black)}
+
+  @media (max-width:960px){ .team-grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:640px){ .team-grid{grid-template-columns:1fr;max-width:420px} }
 </style>
 </head>
 
-<body>
-<!-- Disclaimer Banner -->
-<div id="disclaimerBanner" style="background:#1A1A1A;color:rgba(255,255,255,0.7);text-align:center;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.5px;line-height:1.5;position:relative;z-index:10000;">
-  This website is a <strong style="color:#C6A55C;">showcase project</strong> and does not represent an active real estate agency. For inquiries, contact <a href="mailto:tony@realluxeestates.com" style="color:#C6A55C;text-decoration:underline;">tony@realluxeestates.com</a>
-  <button onclick="document.getElementById('disclaimerBanner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;margin-left:12px;vertical-align:middle;">&times;</button>
+<body data-page="team">
+
+<!-- Demonstration notice. Populated from config.notice; removed when disabled. -->
+<div id="siteNotice" class="site-notice" hidden>
+  <span id="siteNoticeText"></span>
+  <button type="button" class="site-notice-close" aria-label="Dismiss notice">&times;</button>
 </div>
 
-<!-- Page transition overlay -->
-<div class="page-transition-overlay"></div>
+<a href="#team" class="skip-link">Skip to the team</a>
 
-<!-- Custom cursor -->
-<div class="cursor-dot"></div>
-<div class="cursor-outline"></div>
+<div class="page-transition" id="pageTransition"></div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════════════════════════ -->
 <header class="cat-header" id="catHeader">
-  <a href="index.html" class="h-logo">REAL <span>Luxe</span></a>
-  <div class="cat-header-center">Our Team</div>
+  <a href="index.html" class="h-logo">Real <span>Luxe</span></a>
+  <div class="cat-header-center">The team</div>
   <div class="cat-header-right">
     <a href="index.html" class="back-link">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       <span>Back</span>
     </a>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HERO
-     ═══════════════════════════════════════════════════════════ -->
 <section class="team-hero">
-  <span class="team-hero-label">Real Luxe Estates</span>
-  <h1>Meet The Team Behind <em>Real Luxe</em></h1>
-  <p class="team-hero-sub">A curated team of specialists dedicated to delivering extraordinary Caribbean investment experiences with discretion and excellence.</p>
+  <span class="team-hero-label">Who you deal with</span>
+  <h1>Three people, <em>not a call centre</em></h1>
+  <p class="team-hero-sub">Whoever answers your first enquiry stays with the file to completion. There is no handover to a closing team, because there is no closing team.</p>
   <div class="team-hero-line"></div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     TEAM GRID
-     ═══════════════════════════════════════════════════════════ -->
-<section class="team-section">
+<section class="team-section" id="team">
   <div class="team-grid">
 
-    <!-- Tony Adlun -->
-    <div class="team-card">
-      <div class="team-card-img">
-        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format" alt="Daniel Moreau — Founder & CEO" loading="lazy">
-      </div>
-      <div class="team-card-body">
-        <h3 class="team-card-name">Daniel Moreau</h3>
-        <span class="team-card-role">Founder &amp; CEO</span>
-        <p class="team-card-bio">Franco-Australian entrepreneur with over 15 years of experience in luxury real estate development. Based between Sydney and Punta Cana, Daniel connects high-net-worth investors with the Caribbean's most exclusive properties.</p>
-      </div>
-    </div>
+    <article class="team-card">
+      <div class="team-monogram" aria-hidden="true">DM</div>
+      <h2 class="team-card-name">Daniel Moreau</h2>
+      <span class="team-card-role">Founder</span>
+      <p class="team-card-bio">Fifteen years in coastal development, first in the south of France and since 2016 in Punta Cana. Handles the off-market list and anything involving a plot rather than a finished house.</p>
+      <div class="team-card-langs">French &middot; English</div>
+    </article>
 
-    <!-- Maria Santos -->
-    <div class="team-card">
-      <div class="team-card-img">
-        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&auto=format" alt="Isabella Reyes — Head of Client Relations" loading="lazy">
-      </div>
-      <div class="team-card-body">
-        <h3 class="team-card-name">Isabella Reyes</h3>
-        <span class="team-card-role">Head of Client Relations</span>
-        <p class="team-card-bio">Bilingual hospitality professional with deep roots in the Dominican Republic. Isabella ensures every client receives a seamless, white-glove experience from initial inquiry through closing and beyond.</p>
-      </div>
-    </div>
+    <article class="team-card">
+      <div class="team-monogram" aria-hidden="true">IR</div>
+      <h2 class="team-card-name">Isabella Reyes</h2>
+      <span class="team-card-role">Client relations</span>
+      <p class="team-card-bio">Dominican, based in La Romana. Runs the viewing trips and the paperwork between offer and closing, which is where most purchases in this country go wrong.</p>
+      <div class="team-card-langs">Spanish &middot; English</div>
+    </article>
 
-    <!-- James Crawford -->
-    <div class="team-card">
-      <div class="team-card-img">
-        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&auto=format" alt="Alexandre Fontaine — Investment Advisor" loading="lazy">
-      </div>
-      <div class="team-card-body">
-        <h3 class="team-card-name">Alexandre Fontaine</h3>
-        <span class="team-card-role">Investment Advisor</span>
-        <p class="team-card-bio">Seasoned wealth strategist specializing in Caribbean tax optimization and Confotur benefits. Alexandre guides international investors through every aspect of Dominican real estate acquisition and ROI maximization.</p>
-      </div>
-    </div>
+    <article class="team-card">
+      <div class="team-monogram" aria-hidden="true">AF</div>
+      <h2 class="team-card-name">Alexandre Fontaine</h2>
+      <span class="team-card-role">Investment</span>
+      <p class="team-card-bio">Former tax practice, now advises on holding structures, Confotur eligibility and what a letting proposition actually returns after management fees and the two thin months.</p>
+      <div class="team-card-langs">French &middot; English &middot; Spanish</div>
+    </article>
 
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     CALENDLY
-     ═══════════════════════════════════════════════════════════ -->
-<section class="calendly-section">
-  <span class="calendly-section-label">Private Consultation</span>
-  <h2>Book a Private Consultation</h2>
-  <p class="calendly-section-sub">Schedule a 30-minute call with our team to discuss your investment goals.</p>
-  <div class="calendly-wrapper">
-    <div class="calendly-inline-widget" data-url="https://calendly.com/realluxeestates" style="min-width:320px;height:700px;"></div>
-    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
-  </div>
+<!-- Booking. The widget loads only when config.contact.bookingUrl is set;
+     otherwise the section offers the enquiry form instead. -->
+<section class="booking-section" id="booking">
+  <span class="booking-label">Talk to us</span>
+  <h2>Half an hour, no obligation</h2>
+  <p class="booking-sub">Enough time to establish whether we hold anything worth your trip. If we do not, we will say so.</p>
+  <div class="booking-wrapper" id="bookingWrapper" hidden></div>
+  <a href="index.html#contact" class="booking-fallback" id="bookingFallback">
+    <span>Send an enquiry</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     FOOTER
-     ═══════════════════════════════════════════════════════════ -->
 <footer class="cat-footer">
   <div class="cat-footer-inner">
-    <div class="cat-footer-copy">&copy; 2025 Real Luxe. All rights reserved.</div>
+    <div class="cat-footer-copy">&copy; <span data-year></span> <span data-brand>Real Luxe</span>.</div>
     <div class="cat-footer-links">
       <a href="index.html" class="cat-footer-link">Home</a>
-      <a href="catalogue.html" class="cat-footer-link">Properties</a>
-      <a href="https://wa.me/61436007811" target="_blank" rel="noopener" class="cat-footer-wa">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-        WhatsApp
-      </a>
+      <a href="catalogue.html" class="cat-footer-link">Catalogue</a>
+      <a href="privacy.html" class="cat-footer-link">Privacy</a>
     </div>
   </div>
 </footer>
 
-<script src="script.js" defer></script>
+<script>
+/* Mounts the scheduler named in config.js. With none set the section keeps the
+   enquiry link, so the page never shows an empty widget frame. */
+document.addEventListener('DOMContentLoaded', function () {
+  var url = window.RL ? window.RL.get('contact.bookingUrl') : '';
+  if (!url) return;
+  var wrap = document.getElementById('bookingWrapper');
+  var fallback = document.getElementById('bookingFallback');
+  if (!wrap) return;
+
+  var widget = document.createElement('div');
+  widget.className = 'calendly-inline-widget';
+  widget.setAttribute('data-url', url);
+  widget.style.minWidth = '320px';
+  widget.style.height = '700px';
+  wrap.appendChild(widget);
+  wrap.hidden = false;
+  if (fallback) fallback.hidden = true;
+
+  var s = document.createElement('script');
+  s.src = 'https://assets.calendly.com/assets/external/widget.js';
+  s.async = true;
+  document.body.appendChild(s);
+});
+</script>
 </body>
 </html>

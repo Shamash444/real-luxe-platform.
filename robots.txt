@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Replace the host below with your own domain before going live.
+Sitemap: https://example.com/sitemap.xml

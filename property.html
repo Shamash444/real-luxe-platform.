@@ -3,43 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Real Luxe — Luxury property details, Dominican Republic.">
+<meta name="description" content="Property details — Real Luxe, Dominican Republic.">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Real Luxe — Property Detail</title>
+<title>Real Luxe — Property</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Real Luxe — Property Detail" id="ogTitle">
-<meta property="og:description" content="Discover this exceptional luxury property in the Dominican Republic." id="ogDesc">
+<meta property="og:title" content="Real Luxe — Property" id="ogTitle">
+<meta property="og:description" content="Property details, Dominican Republic." id="ogDesc">
 <meta property="og:image" content="" id="ogImage">
 <meta property="og:url" content="" id="ogUrl">
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://images.unsplash.com">
 
-<!-- Supabase SDK (synchronous) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Same ordering as every other page: config, content, vendor, application. -->
+<script src="config.js" defer></script>
+<script src="data.js" defer></script>
 
-<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
 
-<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 
-<!-- Global Stylesheet -->
-<link rel="stylesheet" href="style.css">
+<script src="supabase-client.js" defer></script>
+<script src="script.js" defer></script>
 
-<!-- GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-P9GTXJK1G6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-P9GTXJK1G6');</script>
+<link rel="stylesheet" href="style.css">
 
 <!-- Property Page Styles -->
 <style>
-/* ─── HERO GALLERY ─── */
+/* HERO GALLERY */
 .pp-hero{position:relative;width:100%;height:clamp(400px,60vh,700px);overflow:hidden;background:var(--charcoal)}
 .pp-hero-img{width:100%;height:100%;object-fit:cover;transition:opacity .6s var(--ease)}
 .pp-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.1) 0%,rgba(10,10,10,.05) 50%,rgba(10,10,10,.45) 100%);pointer-events:none}
@@ -51,10 +50,10 @@
 .pp-thumb:hover,.pp-thumb.active{opacity:1;border-color:var(--gold)}
 .pp-thumb img{width:100%;height:100%;object-fit:cover}
 
-/* ─── PAGE BODY ─── */
+/* PAGE BODY */
 .pp-body{max-width:1200px;margin:0 auto;padding:48px var(--gutter) 80px}
 
-/* ─── TITLE BLOCK ─── */
+/* TITLE BLOCK */
 .pp-title-block{margin-bottom:40px}
 .pp-tag{display:inline-block;padding:5px 14px;background:rgba(198,165,92,.1);border-radius:var(--radius-pill);font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:16px}
 .pp-name{font-family:var(--font-display);font-size:clamp(32px,5vw,56px);font-weight:400;line-height:1.1;letter-spacing:-1px;color:var(--charcoal);margin-bottom:12px}
@@ -63,14 +62,14 @@
 .pp-location svg{color:var(--gold);flex-shrink:0}
 .pp-price{font-family:var(--font-display);font-size:clamp(28px,3.5vw,44px);color:var(--gold-dark);font-weight:400;margin-left:auto}
 
-/* ─── SPECS BAR ─── */
+/* SPECS BAR */
 .pp-specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin-bottom:48px;padding:28px 0;border-top:1px solid var(--cream);border-bottom:1px solid var(--cream)}
 .pp-spec{text-align:center;padding:12px 8px}
 .pp-spec-icon{margin-bottom:8px;color:var(--gold)}
 .pp-spec-value{font-family:var(--font-display);font-size:24px;color:var(--charcoal);line-height:1;margin-bottom:6px}
 .pp-spec-label{font-size:9px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--mist)}
 
-/* ─── DESCRIPTION TABS ─── */
+/* DESCRIPTION TABS */
 .pp-desc-tabs{display:flex;gap:0;margin-bottom:20px}
 .pp-desc-tab{padding:10px 24px;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--mist);border-bottom:2px solid transparent;cursor:pointer;transition:all .3s}
 .pp-desc-tab.active{color:var(--charcoal);border-bottom-color:var(--gold)}
@@ -79,11 +78,11 @@
 .pp-desc-panel{display:none}
 .pp-desc-panel.active{display:block}
 
-/* ─── SECTION TITLES ─── */
+/* SECTION TITLES */
 .pp-section-title{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--charcoal);margin-bottom:24px;display:flex;align-items:center;gap:10px}
 .pp-section-title svg{color:var(--gold)}
 
-/* ─── ROI / INVESTMENT ─── */
+/* ROI / INVESTMENT */
 .pp-data-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:48px}
 .pp-data-card{padding:28px;background:var(--white);border:1px solid var(--cream);border-radius:var(--radius-lg);transition:all .3s}
 .pp-data-card:hover{border-color:var(--gold);box-shadow:0 8px 32px rgba(198,165,92,.08)}
@@ -94,31 +93,32 @@
 .pp-data-item .label{color:var(--slate)}
 .pp-data-item .value{font-weight:600;color:var(--charcoal)}
 
-/* ─── CONFOTUR BADGE ─── */
+/* CONFOTUR BADGE */
 .pp-confotur{display:flex;align-items:flex-start;gap:12px;padding:20px 24px;background:rgba(198,165,92,.06);border:1px solid rgba(198,165,92,.18);border-radius:var(--radius);font-size:13px;color:var(--gold-dark);line-height:1.7;margin-bottom:48px}
 .pp-confotur svg{flex-shrink:0;margin-top:2px;color:var(--gold)}
 
-/* ─── AMENITIES ─── */
+/* AMENITIES */
 .pp-amenities{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:48px}
 .pp-amenity{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--white);border:1px solid var(--cream);border-radius:var(--radius);font-size:13px;color:var(--charcoal);transition:all .3s}
 .pp-amenity:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 16px rgba(198,165,92,.08)}
 .pp-amenity-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
 
-/* ─── CONCIERGE ─── */
+/* CONCIERGE */
 .pp-concierge{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:48px}
 .pp-concierge-item{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--ivory);border-radius:var(--radius);font-size:13px;color:var(--charcoal);transition:all .3s}
 .pp-concierge-item:hover{background:rgba(198,165,92,.06);transform:translateY(-2px)}
 .pp-concierge-item::before{content:'\2726';color:var(--gold);font-size:10px}
 
-/* ─── MAP ─── */
+/* MAP */
+.pp-map-fallback{display:flex;align-items:center;justify-content:center;height:100%;font-size:13px;letter-spacing:.06em;color:var(--gold);text-decoration:underline;text-underline-offset:4px}
 .pp-map{width:100%;height:360px;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:48px;border:1px solid var(--cream);position:relative;z-index:1}
 .pp-map .leaflet-control-attribution{font-size:9px;opacity:.6}
 
-/* ─── CTA SECTION ─── */
+/* CTA SECTION */
 .pp-cta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:60px;padding-top:20px}
 .pp-cta-btn{flex:1;min-width:220px;justify-content:center}
 
-/* ─── LEAD FORM (inline) ─── */
+/* LEAD FORM (inline) */
 .pp-lead-section{background:var(--white);border:1px solid var(--cream);border-radius:var(--radius-lg);padding:48px;margin-bottom:60px}
 .pp-lead-header{text-align:center;margin-bottom:32px}
 .pp-lead-header h3{font-family:var(--font-display);font-size:28px;font-weight:400;color:var(--charcoal);margin-bottom:8px}
@@ -135,7 +135,7 @@
 .pp-lead-success h4{font-family:var(--font-display);font-size:22px;margin-bottom:8px;color:var(--charcoal)}
 .pp-lead-success p{color:var(--slate);font-size:14px}
 
-/* ─── LOADING / ERROR ─── */
+/* LOADING / ERROR */
 .pp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
 .pp-loading-spinner{width:40px;height:40px;border:3px solid var(--cream);border-top-color:var(--gold);border-radius:50%;animation:pp-spin .8s linear infinite}
 @keyframes pp-spin{to{transform:rotate(360deg)}}
@@ -146,7 +146,7 @@
 .pp-not-found a{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--gold);color:var(--black);font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;border-radius:var(--radius-pill);transition:all .4s}
 .pp-not-found a:hover{background:var(--gold-dark);color:var(--white);transform:translateY(-2px)}
 
-/* ─── RESPONSIVE ─── */
+/* RESPONSIVE */
 @media(max-width:768px){
   .pp-data-grid{grid-template-columns:1fr}
   .pp-specs{grid-template-columns:repeat(3,1fr)}
@@ -166,15 +166,15 @@
 </style>
 </head>
 <body data-page="property">
-<!-- Disclaimer Banner -->
-<div id="disclaimerBanner" style="background:#1A1A1A;color:rgba(255,255,255,0.7);text-align:center;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.5px;line-height:1.5;position:relative;z-index:10000;">
-  This website is a <strong style="color:#C6A55C;">showcase project</strong> and does not represent an active real estate agency. For inquiries, contact <a href="mailto:tony@realluxeestates.com" style="color:#C6A55C;text-decoration:underline;">tony@realluxeestates.com</a>
-  <button onclick="document.getElementById('disclaimerBanner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;margin-left:12px;vertical-align:middle;">&times;</button>
+<!-- Demonstration notice. Populated from config.notice; removed when disabled. -->
+<div id="siteNotice" class="site-notice" hidden>
+  <span id="siteNoticeText"></span>
+  <button type="button" class="site-notice-close" aria-label="Dismiss notice">&times;</button>
 </div>
 
 <!-- HEADER -->
 <header class="cat-header" id="catHeader">
-  <a href="index.html" class="h-logo">REAL <span>Luxe</span></a>
+  <a href="index.html" class="h-logo">Real <span>Luxe</span></a>
   <div class="cat-header-center" id="propHeaderName">Loading...</div>
   <div class="cat-header-right">
     <a href="catalogue.html" class="back-link">
@@ -188,37 +188,33 @@
 <main id="ppMain">
   <div class="pp-loading" id="ppLoader">
     <div class="pp-loading-spinner"></div>
-    <div class="pp-loading-text">Loading property...</div>
+    <div class="pp-loading-text">Loading</div>
   </div>
 </main>
 
-<!-- FOOTER -->
 <footer class="cat-footer">
   <div class="cat-footer-inner">
-    <div class="cat-footer-copy">&copy; 2024 Real Luxe. All rights reserved.</div>
+    <div class="cat-footer-copy">&copy; <span data-year></span> <span data-brand>Real Luxe</span>.</div>
     <div class="cat-footer-links">
-      <a href="catalogue.html" class="cat-footer-link">Collection</a>
+      <a href="catalogue.html" class="cat-footer-link">Catalogue</a>
       <a href="index.html" class="cat-footer-link">Home</a>
-      <a href="https://wa.me/61436007811" target="_blank" rel="noopener" class="cat-footer-wa">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        WhatsApp
-      </a>
+      <a href="privacy.html" class="cat-footer-link">Privacy</a>
     </div>
   </div>
 </footer>
 
 <script>
-(function(){
-  /* ═══ CONFIG ═══ */
-  const SUPABASE_URL = 'https://bfwygmxebrlspimhobpa.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmd3lnbXhlYnJsc3BpbWhvYnBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzA2NjEsImV4cCI6MjA2NTQwNjY2MX0.eS6WKMnpfRwVGwbs3CiH3IL1JBceKFm1FfqLnkYeMk4';
-  const WA_NUMBER = '61436007811';
+/* Deferred scripts (config.js, data.js, supabase-client.js) have not executed
+   while the parser is here, so this waits for them. */
+document.addEventListener('DOMContentLoaded', function(){
+  /* Credentials come from config.js; there are none in this file. */
+  const CONTACT_EMAIL = window.RL ? window.RL.get('contact.email') : '';
+  const WA_NUMBER = window.RL ? window.RL.get('contact.whatsapp') : '';
 
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const slug = new URLSearchParams(window.location.search).get('slug');
   const main = document.getElementById('ppMain');
 
-  /* ═══ HELPERS ═══ */
+  /* HELPERS */
   function fmtPrice(n) {
     if (!n) return 'Price on Request';
     return '$' + Number(n).toLocaleString('en-US');
@@ -234,21 +230,21 @@
     document.getElementById('ogUrl').setAttribute('content', window.location.href);
   }
 
-  /* ═══ NOT FOUND ═══ */
+  /* NOT FOUND */
   function showNotFound() {
     main.innerHTML = `
       <div class="pp-not-found">
-        <h2>Property Not Found</h2>
-        <p>This property may no longer be available or the link may be incorrect.</p>
+        <h2>Not found</h2>
+        <p>This property is no longer listed, or the link is wrong.</p>
         <a href="catalogue.html">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Browse Collection
+          See the catalogue
         </a>
       </div>`;
     document.getElementById('propHeaderName').textContent = 'Not Found';
   }
 
-  /* ═══ BUILD GALLERY ═══ */
+  /* BUILD GALLERY */
   function buildGallery(images) {
     if (!images || !images.length) return '';
     const mainSrc = images[0];
@@ -267,7 +263,7 @@
       <div class="pp-thumbs" id="ppThumbs">${thumbsHTML}</div>`;
   }
 
-  /* ═══ BUILD SPECS ═══ */
+  /* BUILD SPECS */
   function buildSpecs(p) {
     const specs = [];
     if (p.bedrooms) specs.push({ val: p.bedrooms, label: 'Bedrooms', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v11m0-4h18m0 4V11a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4m18 7H3m1-11V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3m4 0V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3"/></svg>' });
@@ -292,7 +288,7 @@
     ).join('')}</div>`;
   }
 
-  /* ═══ BUILD DESCRIPTION TABS ═══ */
+  /* BUILD DESCRIPTION TABS */
   function buildDescription(p) {
     const en = p.description_en || p.description || '';
     const fr = p.description_fr || '';
@@ -313,7 +309,7 @@
       </div>`;
   }
 
-  /* ═══ BUILD ROI / INVESTMENT ═══ */
+  /* BUILD ROI / INVESTMENT */
   function buildROI(p) {
     const hasROI = p.roi_gross || p.roi_net || p.rental_income_monthly || p.rental_income_yearly || p.occupancy_rate || p.cap_rate;
     const hasTax = p.annual_taxes || p.hoa_fees || p.transfer_tax || p.closing_costs;
@@ -349,7 +345,7 @@
     return html;
   }
 
-  /* ═══ BUILD CONFOTUR ═══ */
+  /* BUILD CONFOTUR */
   function buildConfotur(p) {
     if (!p.confotur && !p.confotur_text) return '';
     const text = p.confotur_text || 'This property qualifies for CONFOTUR tax benefits: 100% exemption on property transfer taxes, annual property taxes, and income from rentals for up to 15 years.';
@@ -360,7 +356,7 @@
       </div>`;
   }
 
-  /* ═══ BUILD AMENITIES ═══ */
+  /* BUILD AMENITIES */
   function buildAmenities(p) {
     const list = p.amenities || [];
     if (!list.length) return '';
@@ -374,7 +370,7 @@
       ).join('')}</div>`;
   }
 
-  /* ═══ BUILD CONCIERGE ═══ */
+  /* BUILD CONCIERGE */
   function buildConcierge(p) {
     const list = p.concierge_services || p.concierge || [];
     if (!list.length) return '';
@@ -388,7 +384,7 @@
       ).join('')}</div>`;
   }
 
-  /* ═══ BUILD MAP ═══ */
+  /* BUILD MAP */
   function buildMap(p) {
     const lat = p.latitude || p.lat;
     const lng = p.longitude || p.lng || p.lon;
@@ -401,19 +397,35 @@
       <div class="pp-map" id="ppMap"></div>`;
   }
 
-  /* ═══ BUILD CTA + LEAD FORM ═══ */
+  /* BUILD CTA + LEAD FORM */
+  /* Second button: WhatsApp when a number is configured, email when only an
+     address is, and otherwise the enquiry form further down this page. */
+  function secondaryCTA(p) {
+    const subject = 'Enquiry: ' + (p.name || 'property');
+    const body = 'Hello, I would like more information about ' + (p.name || 'this property') + '.';
+    if (WA_NUMBER) {
+      return `<a href="https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(body)}" target="_blank" rel="noopener" class="btn-ghost pp-cta-btn" style="color:var(--charcoal);border-color:var(--cream);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </a>`;
+    }
+    const href = CONTACT_EMAIL
+      ? 'mailto:' + encodeURI(CONTACT_EMAIL) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body)
+      : '#ppLeadSection';
+    return `<a href="${href}" class="btn-ghost pp-cta-btn" style="color:var(--charcoal);border-color:var(--cream);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Request the dossier
+        </a>`;
+  }
+
   function buildCTA(p) {
-    const waMsg = encodeURIComponent('Hello, I am interested in ' + (p.name || 'your property') + '. Could you provide more information?');
     return `
       <div class="pp-cta">
         <button class="btn-primary pp-cta-btn" onclick="document.getElementById('ppLeadSection').scrollIntoView({behavior:'smooth'})">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          Schedule a Private Viewing
+          Arrange a viewing
         </button>
-        <a href="https://wa.me/${WA_NUMBER}?text=${waMsg}" target="_blank" rel="noopener" class="btn-ghost pp-cta-btn" style="color:var(--charcoal);border-color:var(--cream);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Contact on WhatsApp
-        </a>
+        ${secondaryCTA(p)}
       </div>`;
   }
 
@@ -421,8 +433,8 @@
     return `
       <div class="pp-lead-section" id="ppLeadSection">
         <div class="pp-lead-header">
-          <h3>Private Consultation</h3>
-          <p>Our team will contact you within 24 hours for a personalized experience.</p>
+          <h3>Enquire about this property</h3>
+          <p>An adviser replies within one working day, with the floor plans and the title position.</p>
         </div>
         <div id="ppLeadFormWrap">
           <form class="pp-lead-form" id="ppLeadForm" onsubmit="return submitPPLead(event)">
@@ -430,22 +442,22 @@
             <input type="hidden" id="ppLeadPropName" value="${(p.name || '').replace(/"/g,'&quot;')}">
             <div class="pp-field">
               <label>Full Name</label>
-              <input type="text" id="ppLeadName" required autocomplete="name" placeholder="Your full name">
+              <input type="text" id="ppLeadName" required autocomplete="name" placeholder="">
             </div>
             <div class="pp-field">
               <label>Email</label>
-              <input type="email" id="ppLeadEmail" required autocomplete="email" placeholder="your@email.com">
+              <input type="email" id="ppLeadEmail" required autocomplete="email" placeholder="">
             </div>
             <div class="pp-field">
               <label>Phone</label>
-              <input type="tel" id="ppLeadPhone" required autocomplete="tel" placeholder="+1 (555) 000-0000">
+              <input type="tel" id="ppLeadPhone" required autocomplete="tel" placeholder="">
             </div>
             <div class="pp-field">
               <label>Message</label>
-              <textarea id="ppLeadMsg" rows="3" placeholder="I am interested in scheduling a private viewing..."></textarea>
+              <textarea id="ppLeadMsg" rows="3" placeholder=""></textarea>
             </div>
             <button type="submit" class="pp-lead-submit" id="ppLeadSubmitBtn">
-              <span>Send Request</span>
+              <span>Send</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             </button>
           </form>
@@ -455,13 +467,13 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
-          <h4>VIP Request Transmitted</h4>
-          <p>Our concierge team has been notified and will contact you shortly.</p>
+          <h4>Received</h4>
+          <p>We have your enquiry and will come back to you within one working day.</p>
         </div>
       </div>`;
   }
 
-  /* ═══ RENDER PAGE ═══ */
+  /* RENDER PAGE */
   function render(p) {
     setMeta(p);
     document.getElementById('propHeaderName').textContent = p.name || '';
@@ -499,6 +511,15 @@
     const lng = p.longitude || p.lng || p.lon;
     if (lat && lng && document.getElementById('ppMap')) {
       requestAnimationFrame(function() {
+        /* An empty grey rectangle reads as a broken page. If the tile library
+           is blocked, offer the coordinates instead. */
+        if (typeof L === 'undefined') {
+          document.getElementById('ppMap').innerHTML =
+            '<a class="pp-map-fallback" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' +
+            lat + '&mlon=' + lng + '#map=14/' + lat + '/' + lng + '">View ' +
+            (p.location || 'this location') + ' on a map</a>';
+          return;
+        }
         try {
           const map = L.map('ppMap', { scrollWheelZoom: false }).setView([lat, lng], 14);
           L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -521,7 +542,7 @@
     window._ppImages = images;
   }
 
-  /* ═══ GALLERY SWITCH ═══ */
+  /* GALLERY SWITCH */
   window.switchImage = function(idx) {
     const images = window._ppImages || [];
     if (!images[idx]) return;
@@ -540,7 +561,7 @@
     if (counter) counter.textContent = (idx + 1) + ' / ' + images.length;
   };
 
-  /* ═══ DESCRIPTION TAB SWITCH ═══ */
+  /* DESCRIPTION TAB SWITCH */
   window.switchDescTab = function(lang, btn) {
     document.querySelectorAll('.pp-desc-tab').forEach(function(t) { t.classList.remove('active'); });
     document.querySelectorAll('.pp-desc-panel').forEach(function(p) { p.classList.remove('active'); });
@@ -549,7 +570,7 @@
     if (panel) panel.classList.add('active');
   };
 
-  /* ═══ LEAD FORM SUBMIT ═══ */
+  /* LEAD FORM SUBMIT */
   window.submitPPLead = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('ppLeadSubmitBtn');
@@ -567,10 +588,22 @@
       created_at: new Date().toISOString()
     };
 
-    try {
-      await sb.from('leads').insert([payload]);
-    } catch(err) {
-      console.warn('Lead save error:', err);
+    /* insertLead handles retries, the offline queue and the local fallback.
+       The enquiry is kept either way, so the confirmation is honest. */
+    if (typeof insertLead === 'function') {
+      await new Promise(function (resolve) {
+        insertLead({
+          nom: payload.name,
+          email: payload.email,
+          tel: payload.phone,
+          message: payload.message,
+          villa_interet: payload.property_slug,
+          property_name: payload.property_name,
+          source: 'property_page'
+        }, resolve);
+      });
+    } else {
+      console.info('[Real Luxe] No storage configured — enquiry kept in this page only:', payload);
     }
 
     document.getElementById('ppLeadFormWrap').style.display = 'none';
@@ -578,30 +611,71 @@
     return false;
   };
 
-  /* ═══ HEADER SCROLL ═══ */
+  /* HEADER SCROLL */
   window.addEventListener('scroll', function() {
     var header = document.getElementById('catHeader');
     if (header) header.classList.toggle('scrolled', window.scrollY > 40);
   }, { passive: true });
 
-  /* ═══ FETCH & INIT ═══ */
+  /* Looks the property up in the configured project, then falls back to the
+     bundled catalogue, so a shared link still resolves with no backend. */
   async function init() {
     if (!slug) { showNotFound(); return; }
 
-    const { data, error } = await sb
-      .from('properties')
-      .select('*')
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single();
+    var record = null;
 
-    if (error || !data) { showNotFound(); return; }
+    if (typeof getSupabaseClient === 'function') {
+      try {
+        var sb = getSupabaseClient();
+        if (sb) {
+          var res = await sb.from('properties').select('*')
+            .eq('slug', slug).eq('status', 'published').single();
+          if (!res.error && res.data) record = res.data;
+        }
+      } catch (err) {
+        console.warn('[Real Luxe] Lookup failed, using the bundled catalogue:', err.message);
+      }
+    }
 
-    render(data);
+    if (!record) {
+      record = (window.RL_PROPERTIES || []).filter(function (x) { return x.slug === slug; })[0] || null;
+      if (record) record = adaptBundled(record);
+    }
+
+    if (!record) { showNotFound(); return; }
+    render(record);
+  }
+
+  /* The bundled entries use the home page's field names; the renderer below
+     expects the database column names. This maps one onto the other. */
+  /* The renderer appends a per-cent sign, matching the numeric database
+     columns; the bundled entries carry it already, so strip it here. */
+  function pct(v) {
+    return v ? String(v).replace(/%\s*$/, '') : null;
+  }
+
+  function adaptBundled(p) {
+    return {
+      slug: p.slug, name: p.name, location: p.location, status: 'published',
+      price: Number(String(p.price).replace(/[^0-9]/g, '')) || null,
+      bedrooms: p.beds, bathrooms: p.baths, area_sqm: p.sqm,
+      lot_size: p.lot || null, year_built: p.year || null,
+      pool: p.pool || null, parking: p.parking || null,
+      images: p.gallery || (p.img ? [p.img] : []), image_url: p.img,
+      description_en: p.description || '',
+      amenities: p.amenities || [],
+      concierge_services: p.conciergeServices || [],
+      latitude: p.lat, longitude: p.lng,
+      confotur: !!p.confoturBenefits, confotur_text: p.confoturBenefits || '',
+      roi_gross: pct(p.roi && p.roi.rentalYield),
+      occupancy_rate: pct(p.roi && p.roi.occupancyRate),
+      cap_rate: pct(p.roi && p.roi.capRate),
+      tag: p.tag || ''
+    };
   }
 
   init();
-})();
+});
 </script>
 </body>
 </html>

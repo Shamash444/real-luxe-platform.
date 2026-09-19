@@ -1,13 +1,44 @@
-/* ═══════════════════════════════════════════════════════════════
- * REAL LUXE — Unified JavaScript
- * Page detection via <body data-page="index|catalogue">
- * ═══════════════════════════════════════════════════════════════ */
+/* REAL LUXE — Unified JavaScript Page detection via <body data-page="index|catalogue"> */
 
 var PAGE_TYPE = document.body.getAttribute('data-page') || 'index';
 
-/* ═══════════════════════════════════════════════════════════════
-   PAGE TRANSITION (shared across all pages)
-   ═══════════════════════════════════════════════════════════════ */
+/* Animation is decoration, so nothing on the page may depend on it.
+ *
+ * Every script tag on every page is deferred and ordered, so by the time this
+ * file runs the animation library has either loaded or failed for good. When it
+ * failed, a stub takes its place: calls do nothing, but completion callbacks
+ * still fire, because several of them are what actually closes a modal or
+ * reveals a success panel. Without this a blocked CDN leaves dialogues that
+ * cannot be dismissed. */
+if (typeof window.gsap === 'undefined') {
+  var _stub = {
+    __stub: true,
+    registerPlugin: function () { return _stub; },
+    killTweensOf: function () { return _stub; },
+    set: function () { return _stub; },
+    timeline: function () { return _stub; },
+    add: function () { return _stub; },
+    kill: function () { return _stub; }
+  };
+  var _fire = function () {
+    var vars = arguments[arguments.length - 1];
+    if (vars && typeof vars.onComplete === 'function') {
+      setTimeout(function () { try { vars.onComplete(); } catch (e) {} }, 0);
+    }
+    return _stub;
+  };
+  _stub.to = _fire;
+  _stub.from = _fire;
+  _stub.fromTo = _fire;
+  window.gsap = _stub;
+  console.warn('[Real Luxe] Animation library unavailable — running without motion.');
+}
+
+function prefersReducedMotion() {
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+
+/* PAGE TRANSITION (shared across all pages) */
 (function() {
   // Fade in on page load
   var pt = document.getElementById('pageTransition');
@@ -42,9 +73,152 @@ var PAGE_TYPE = document.body.getAttribute('data-page') || 'index';
   window.navigateWithTransition = navigateWithTransition;
 })();
 
-/* ═══════════════════════════════════════════════════════════════
-   PROPERTY DETAIL (shared across index + catalogue)
-   ═══════════════════════════════════════════════════════════════ */
+/* Applies config.js to the markup. Runs on every page.
+
+   The rule throughout: a setting left empty removes the element it drives
+   rather than leaving an empty row, a dead link or a "+undefined" telephone
+   number. That is what makes the shipped configuration safe to publish. */
+function applyContactConfig() {
+  if (!window.RL) return;
+  var get = window.RL.get;
+
+  var email    = get('contact.email');
+  var phone    = get('contact.phone');
+  var whatsapp = get('contact.whatsapp');
+  var office1  = get('contact.office.line1');
+  var office2  = get('contact.office.line2');
+
+  /* Contact rows */
+  document.querySelectorAll('[data-contact]').forEach(function (row) {
+    var kind = row.getAttribute('data-contact');
+    var slot = row.querySelector('.ci-value');
+    var value = '';
+    if (kind === 'phone' && phone) {
+      value = '<a href="tel:' + phone.replace(/[^\d+]/g, '') + '">' + escapeHtml(phone) + '</a>';
+    } else if (kind === 'email' && email) {
+      value = '<a href="mailto:' + encodeURI(email) + '">' + escapeHtml(email) + '</a>';
+    } else if (kind === 'office' && (office1 || office2)) {
+      value = escapeHtml(office1) + (office2 ? '<br>' + escapeHtml(office2) : '');
+    }
+    if (value && slot) { slot.innerHTML = value; row.hidden = false; }
+    else { row.hidden = true; }
+  });
+
+  /* Secondary calls to action: email when there is an address, otherwise the form */
+  document.querySelectorAll('[data-contact-cta]').forEach(function (el) {
+    if (email) {
+      el.setAttribute('href', 'mailto:' + encodeURI(email) + '?subject=' +
+        encodeURIComponent('Property enquiry'));
+    } else {
+      el.setAttribute('href', 'catalogue.html');
+      el.addEventListener('click', function (e) {
+        if (PAGE_TYPE === 'index') {
+          e.preventDefault();
+          if (typeof closePropertyDetail === 'function') closePropertyDetail();
+          scrollToSection('contact');
+        }
+      });
+    }
+  });
+
+  /* Floating shortcut. It stays out of the way over the hero, which already
+     carries two calls to action, and appears once the visitor scrolls past. */
+  var waBtn = document.getElementById('waBtn');
+  if (waBtn) {
+    var toggle = function () {
+      waBtn.classList.toggle('visible', window.scrollY > window.innerHeight * 0.7);
+    };
+    toggle();
+    window.addEventListener('scroll', toggle, { passive: true });
+  }
+  if (waBtn && whatsapp) {
+    waBtn.setAttribute('href', 'https://wa.me/' + whatsapp);
+    waBtn.setAttribute('target', '_blank');
+    waBtn.setAttribute('rel', 'noopener');
+    waBtn.onclick = null;
+  }
+
+  /* Anything marked as WhatsApp-only disappears without a number */
+  document.querySelectorAll('[data-requires="whatsapp"]').forEach(function (el) {
+    if (!whatsapp) el.remove();
+  });
+
+  /* Brand name and copyright year */
+  var brand = get('brand.fullName', 'Real Luxe');
+  document.querySelectorAll('[data-brand]').forEach(function (el) { el.textContent = brand; });
+  var year = new Date().getFullYear();
+  var founded = parseInt(get('brand.foundedYear', 0), 10);
+  document.querySelectorAll('[data-year]').forEach(function (el) {
+    el.textContent = (founded && founded < year) ? founded + '–' + year : String(year);
+  });
+
+  /* Social links */
+  var socials = document.getElementById('ftSocials');
+  if (socials && !socials.childElementCount) {
+    var icons = {
+      instagram: '<rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>',
+      linkedin: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>',
+      facebook: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>'
+    };
+    Object.keys(icons).forEach(function (key) {
+      var url = get('social.' + key);
+      if (!url) return;
+      var a = document.createElement('a');
+      a.className = 'ft-social';
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.setAttribute('aria-label', key.charAt(0).toUpperCase() + key.slice(1));
+      a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' + icons[key] + '</svg>';
+      socials.appendChild(a);
+    });
+  }
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* The demonstration notice, dismissible and remembered for the session. */
+function initSiteNotice() {
+  var bar = document.getElementById('siteNotice');
+  if (!bar) return;
+  var on = window.RL && window.RL.get('notice.enabled', false) === true;
+  var text = window.RL ? window.RL.get('notice.text') : '';
+  var dismissed = false;
+  try { dismissed = sessionStorage.getItem('rl-notice') === 'off'; } catch (e) {}
+
+  if (!on || !text || dismissed) { bar.remove(); return; }
+
+  var slot = document.getElementById('siteNoticeText');
+  if (slot) slot.textContent = text;
+  bar.hidden = false;
+  document.body.classList.add('has-notice');
+
+  /* The fixed header is offset by this, so it has to track the real height. */
+  var syncHeight = function () {
+    document.documentElement.style.setProperty('--notice-h', bar.offsetHeight + 'px');
+  };
+  syncHeight();
+  window.addEventListener('resize', syncHeight, { passive: true });
+
+  var close = bar.querySelector('.site-notice-close');
+  if (close) close.addEventListener('click', function () {
+    bar.remove();
+    document.body.classList.remove('has-notice');
+    document.documentElement.style.removeProperty('--notice-h');
+    try { sessionStorage.setItem('rl-notice', 'off'); } catch (e) {}
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  initSiteNotice();
+  applyContactConfig();
+});
+
+/* PROPERTY DETAIL (shared across index + catalogue) */
 let pdMap = null;
 let currentGalleryIdx = 0;
 let currentProperty = null;
@@ -55,7 +229,7 @@ function openPropertyDetail(slug, clickEvent) {
   currentProperty = p;
   currentGalleryIdx = 0;
 
-  // ── Shared Element Transition: capture source card rect ──
+  // Shared element transition: capture source card rect
   var cardRect = null;
   if (clickEvent) {
     var srcCard = clickEvent.currentTarget || clickEvent.target.closest('.prop-card, .cat-card');
@@ -97,7 +271,7 @@ function openPropertyDetail(slug, clickEvent) {
   // Fill description
   document.getElementById('pdDesc').textContent = p.description;
 
-  // ── Data-Rich Sections: Investment ROI + Technical Specs ──
+  // Data-rich sections: investment roi + technical specs
   var dataHtml = '';
   if (p.roi && p.roi.rentalYield) {
     dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Investment ROI</h4>';
@@ -148,8 +322,10 @@ function openPropertyDetail(slug, clickEvent) {
   overlay.scrollTop = 0;
   document.body.style.overflow = 'hidden';
 
-  // ── Shared Element Transition animation ──
-  if (cardRect) {
+  /* The card grows into the gallery image. It is pure decoration and it hides
+     the gallery image while it runs, so it is skipped entirely without a real
+     animation library — otherwise the image would stay invisible. */
+  if (cardRect && !gsap.__stub && !prefersReducedMotion()) {
     var galleryMain = document.getElementById('pdMainImg');
     var clone = document.createElement('div');
     clone.className = 'prop-card-clone';
@@ -175,11 +351,15 @@ function openPropertyDetail(slug, clickEvent) {
         duration: 0.65, ease: 'power3.inOut',
         onComplete: function(){
           galleryMain.style.opacity = '1';
-          gsap.fromTo(galleryMain, {opacity:0}, {opacity:1, duration:0.2});
           clone.remove();
         }
       });
     });
+
+    setTimeout(function(){
+      galleryMain.style.opacity = '1';
+      if (clone.parentNode) clone.remove();
+    }, 1500);
   }
 
   // Kill any previous property detail tweens to prevent conflicts
@@ -252,7 +432,18 @@ function switchGalleryImg(idx, e) {
 
 function initPropertyMap(p) {
   const mapEl = document.getElementById('pdMap');
+  if (!mapEl) return;
   if (pdMap) { pdMap.remove(); pdMap = null; }
+
+  /* An empty grey rectangle reads as a broken page. If the tile library is
+     blocked, offer the coordinates instead. */
+  if (typeof L === 'undefined') {
+    mapEl.innerHTML = '<a class="pd-map-fallback" target="_blank" rel="noopener" href="' +
+      'https://www.openstreetmap.org/?mlat=' + p.lat + '&mlon=' + p.lng +
+      '#map=14/' + p.lat + '/' + p.lng + '">View ' + escapeHtml(p.location || 'this location') +
+      ' on a map</a>';
+    return;
+  }
 
   pdMap = L.map(mapEl, {
     scrollWheelZoom: false,
@@ -290,18 +481,13 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* ═══════════════════════════════════════════════════════════════
-   INDEX PAGE
-   ═══════════════════════════════════════════════════════════════ */
+/* INDEX PAGE */
 if (PAGE_TYPE === 'index') {
 
 /*
- * ═══════════════════════════════════════════════════════════════
  * REAL LUXE — Production JavaScript
- * ═══════════════════════════════════════════════════════════════
  *
  * CORS CONFIGURATION (for production server — nginx/Apache/.htaccess):
- * ────────────────────────────────────────────────────────────────
  *   Access-Control-Allow-Origin: https://real-luxe.com
  *   Access-Control-Allow-Methods: GET, POST, OPTIONS
  *   Access-Control-Allow-Headers: Content-Type, Authorization
@@ -313,12 +499,11 @@ if (PAGE_TYPE === 'index') {
  *   Referrer-Policy: strict-origin-when-cross-origin
  *
  * RATE LIMITING (server-side — nginx example):
- * ────────────────────────────────────────────
  *   limit_req_zone $binary_remote_addr zone=contact:10m rate=3r/m;
  *   location /api/contact { limit_req zone=contact burst=2 nodelay; }
  */
 
-// ═══ SECURITY UTILITIES ═══
+// Security utilities
 function sanitize(str) {
   if (typeof str !== 'string') return '';
   const div = document.createElement('div');
@@ -334,345 +519,267 @@ function checkRateLimit() {
   return true;
 }
 
-// ═══ i18n TRANSLATIONS ═══
+// I18n translations
 let currentLang = localStorage.getItem('rl-lang') || 'en';
 if (!['en','fr','es'].includes(currentLang)) { currentLang = 'en'; localStorage.setItem('rl-lang','en'); }
+/* Translations for the home page. Keys match the data-i18n attributes in
+   index.html; a key missing from a language falls back to the markup. */
 const I18N = {
-  fr: {
-    nav_0:'Propriétés', nav_1:'À Propos', nav_2:'Lifestyle', nav_3:'Contact', nav_cta:'Consultation Privée',
-    hero_badge:"Immobilier d'Exception · Caraïbes",
-    hero_title:"Vivez l'Exception<br><em>Sans Compromis</em>",
-    hero_sub:"Des propriétés d'exception en République Dominicaine, sélectionnées pour une élite exigeante. Villas pieds dans l'eau, domaines privés, penthouses avec vue océan.",
-    hero_btn1:'Découvrir les Propriétés', hero_btn2:'Consultation Privée →',
-    stat_0:'Prix moyen', stat_1:'Propriétés exclusives', stat_2:'Satisfaction client',
-    props_label:'Collection Exclusive', props_title:"Propriétés <em>d'Exception</em>",
-    props_sub:'Chaque résidence est sélectionnée avec une rigueur absolue. Seul le meilleur accède à notre portfolio.',
-    props_btn:'Voir le Catalogue Complet',
-    vault_label:'Accès Restreint', vault_title:'Collection Privée<br><em>Off-Market</em>',
-    vault_sub:"12 propriétés confidentielles réservées à notre cercle d'investisseurs qualifiés. Ces biens ne sont pas listés publiquement et nécessitent une accréditation préalable.",
-    vault_stat_0:'Propriétés', vault_stat_1:'Valeur totale', vault_stat_2:'Requis',
-    vault_btn:"Demander l'Accès Confidentiel",
-    about_label:'Notre Approche', about_title:"L'Art du<br><em>Sur-Mesure</em>",
-    about_sub:"Depuis plus de 15 ans, nous accompagnons une clientèle internationale dans l'acquisition de biens d'exception en République Dominicaine. Chaque transaction est une œuvre d'art.",
-    confotur_label:'Avantages Fiscaux', confotur_title:'Loi <em>Confotur</em>',
-    confotur_sub:'La République Dominicaine offre un cadre fiscal exceptionnel pour les investisseurs immobiliers internationaux.',
-    calc_title:'Calculateur <em>Confotur</em>', calc_sub_text:"Entrez la valeur d'un bien pour estimer vos économies fiscales sur 15 ans.",
-    calc_l0:'Taxe de Transfert', calc_l1:'Impôt Foncier (15 ans)', calc_l2:'Impôt Revenus Locatifs', calc_l3:'Impôt Plus-Values',
-    calc_total_label:'Économies totales estimées sur 15 ans',
-    life_label:'Art de Vivre', life_title:'Le Lifestyle<br><em>Caraïbes</em>',
-    life_sub:"Bien plus qu'une propriété, c'est un mode de vie d'exception qui vous attend. Golf, yachting, gastronomie, bien-être.",
-    fo_label:'Services Premium', fo_title:'Accompagnement<br><em>Family Office</em>',
-    fo_sub:"Un écosystème complet de services dédiés aux investisseurs exigeants. Chaque détail est pris en charge.",
-    testi_label:'Témoignages', testi_title:'Ce Que Disent<br><em>Nos Clients</em>',
-    testi_quote:"L'équipe Real Luxe a transformé notre rêve en réalité. Leur connaissance intime du marché dominicain et leur sens du détail sont tout simplement incomparables.",
-    testi_author:'Sophie & Laurent Dubois', testi_role:'Acquéreurs · Villa Cap Cana · €3.2M',
-    contact_label:'Contact', contact_title:'Votre Propriété<br><em>Vous Attend</em>',
-    contact_sub:'Prenez rendez-vous pour une consultation privée et confidentielle. Notre équipe vous accompagne dans chaque étape.',
-    tunnel_title:'Consultation Privée', tunnel_sub:'Un parcours personnalisé en 3 étapes',
-    t_step1_title:"Quel est votre horizon d'investissement ?",
-    t_opt0:'Résidence Principale', t_opt0_sub:'Votre résidence principale aux Caraïbes',
-    t_opt1:'Résidence Secondaire', t_opt1_sub:'Une maison de vacances de luxe',
-    t_opt2:'Pur Investissement', t_opt2_sub:'Maximisez votre ROI avec Confotur',
-    t_step2_title:'Votre gamme de budget',
-    t_step2_confotur:'Je suis intéressé par les avantages fiscaux Confotur (exonération 15 ans)',
-    t_step3_title:'Vos coordonnées sécurisées',
-    t_lbl0:'Prénom', t_lbl1:'Nom', t_lbl2:'Email', t_lbl3:'Téléphone',
-    t_back:'Retour', t_next:'Suivant', t_submit:'Envoyer ma Demande',
-    t_success_title:'Demande Envoyée',
-    t_success_msg:'Merci pour votre intérêt. Un conseiller Real Luxe vous contactera dans les 24 heures pour une consultation personnalisée et confidentielle.',
-    partners_label:'Partenaires Privilégiés', partners_title:"Un Réseau<br><em>d'Excellence</em>",
-    wa_text:'Expertise Privée',
-    card_beds:'Ch.', card_baths:'SdB', pd_cta_visit:'Planifier une Visite Privée', pd_cta_whatsapp:'Contacter sur WhatsApp',
-    cat_label:'Collection Complète', cat_title:'Nos <em>Propriétés</em>', cat_sub:'Explorez notre collection complète de propriétés de luxe en République Dominicaine.',
-    vault_form_title:'Rejoindre le Cercle', vault_form_sub:'Complétez ce formulaire d\'accréditation pour accéder à notre collection off-market. Vos informations restent strictement confidentielles.',
-    vault_f_name:'Nom Complet', vault_f_email:'Adresse Email', vault_f_phone:'Numéro de Téléphone', vault_f_budget:'Gamme d\'Investissement', vault_f_budget_ph:'Sélectionner une gamme', vault_f_msg:'Message (optionnel)', vault_f_submit:'Demander l\'Accès',
-    partners_sub:'Nous collaborons avec les marques les plus prestigieuses en hôtellerie, immobilier et services de luxe pour offrir une expérience inégalée.',
-    psvc_0_title:'Conseil Juridique & Fiscal', psvc_0_desc:'Avocats et conseillers fiscaux spécialisés assurant la conformité Confotur et une structuration fiscale optimale.',
-    psvc_1_title:'Gestion Locative', psvc_1_desc:'Gestion locative clé en main, entretien et conciergerie offrant des rendements premium sans intervention du propriétaire.',
-    psvc_2_title:'Architecture & Design', psvc_2_desc:'Architectes caribéens primés et designers d\'intérieur créant des résidences sur mesure mêlant luxe et âme tropicale.',
-    psvc_3_title:'Résidence & Immigration', psvc_3_desc:'Programmes de résidence dominicaine accélérés, coordination de visas investisseur et conseil en double nationalité.',
-    af_0_title:'Confidentialité Totale', af_0_desc:'Chaque dossier est traité avec la plus stricte discrétion.',
-    af_1_title:'Réseau International', af_1_desc:'Accès à des propriétés hors-marché réservées à notre cercle.',
-    af_2_title:'Concierge Dédié', af_2_desc:'Un interlocuteur unique de A à Z pour votre acquisition.',
-    af_3_title:'Visite Virtuelle', af_3_desc:'Explorez chaque propriété en immersion 3D depuis chez vous.',
-    cc_0_title:'Exonération Fiscale<br><em>15 Ans</em>', cc_0_desc:'Aucun impôt sur le revenu, les plus-values ou les transferts de propriété pendant 15 ans grâce à la Loi Confotur 158-01.', cc_0_tag0:'0% Impôt sur le Revenu', cc_0_tag1:'0% Plus-Values',
-    cc_1_title:'Golden Visa<br><em>& Résidence</em>', cc_1_desc:'Obtenez la résidence dominicaine par investissement à partir de $200,000. Processus accéléré pour nos clients.', cc_1_tag0:'Résidence en 90 jours', cc_1_tag1:'Investissement $200K+',
-    cc_2_title:'Rendement Locatif<br><em>&gt; 8% Net</em>', cc_2_desc:'Le marché locatif touristique dominicain offre des rendements parmi les plus élevés des Caraïbes avec un taux d\'occupation supérieur à 75%.', cc_2_tag0:'8-12% Net', cc_2_tag1:'Occupation 75%+',
-    fo_0_title:'Conseil Juridique & Notarial', fo_0_sub:'Due diligence · Structuration · Closing', fo_0_body:'Notre cabinet d\'avocats partenaire supervise chaque étape : vérification des titres de propriété, structuration juridique optimale (SAS, LLC, trust), négociation des termes et closing sécurisé.',
-    fo_1_title:'Staff Privé & Sécurité', fo_1_sub:'Personnel de maison · Surveillance · Maintenance', fo_1_body:'Recrutement et gestion de votre personnel domestique : chef cuisinier, majordome, femme de ménage, jardinier, chauffeur. Système de sécurité 24/7.',
-    fo_2_title:'Conciergerie Aérienne & Maritime', fo_2_sub:'Jets privés · Yachts · Transferts VIP', fo_2_body:'Organisation complète de vos déplacements : affrètement de jets privés, location de yachts avec équipage, transferts héliportés et conciergerie automobile de luxe.',
-    fo_3_title:'Gestion Patrimoniale', fo_3_sub:'Fiscalité · Assurance · Rendement locatif', fo_3_body:'Optimisation fiscale via la Loi Confotur, gestion locative haut de gamme avec un rendement net de 8-12%, assurance propriété et reporting financier trimestriel.',
-    ft_desc:'L\'immobilier d\'exception en République Dominicaine. Villas, penthouses et domaines privés pour une clientèle internationale exigeante.',
-    ft_nav:'Navigation', ft_svc:'Services', ft_dest:'Destinations',
-    ft_svc_0:'Recherche Personnalisée', ft_svc_1:'Gestion Locative', ft_svc_2:'Concierge VIP', ft_svc_3:'Conseil Juridique',
-    ft_privacy:'Politique de Confidentialité'
-  },
   en: {
-    nav_0:'Properties', nav_1:'About', nav_2:'Lifestyle', nav_3:'Contact', nav_cta:'Private Consultation',
-    hero_badge:'Exceptional Real Estate · Caribbean',
-    hero_title:'Live the Exception<br><em>Without Compromise</em>',
-    hero_sub:'Exceptional properties in the Dominican Republic, curated for a discerning elite. Beachfront villas, private estates, ocean-view penthouses.',
-    hero_btn1:'Discover Properties', hero_btn2:'Private Consultation →',
-    stat_0:'Average Price', stat_1:'Exclusive Properties', stat_2:'Client Satisfaction',
-    props_label:'Exclusive Collection', props_title:'Exceptional <em>Properties</em>',
-    props_sub:'Each residence is selected with absolute rigor. Only the finest enters our portfolio.',
-    props_btn:'View Full Catalogue',
-    vault_label:'Restricted Access', vault_title:'Private Collection<br><em>Off-Market</em>',
-    vault_sub:'12 confidential properties reserved for our circle of qualified investors. Not publicly listed — prior accreditation required.',
-    vault_stat_0:'Properties', vault_stat_1:'Total Value', vault_stat_2:'Required',
-    vault_btn:'Request Confidential Access',
-    about_label:'Our Approach', about_title:'The Art of<br><em>Bespoke</em>',
-    about_sub:'For over 15 years, we have accompanied international clients in acquiring exceptional properties in the Dominican Republic.',
-    confotur_label:'Tax Advantages', confotur_title:'Confotur <em>Law</em>',
-    confotur_sub:'The Dominican Republic offers an exceptional tax framework for international real estate investors.',
-    calc_title:'Confotur <em>Calculator</em>', calc_sub_text:'Enter a property value to see your estimated tax savings over 15 years.',
-    calc_l0:'Transfer Tax Saved', calc_l1:'Property Tax (15 yrs)', calc_l2:'Rental Income Tax', calc_l3:'Capital Gains Tax',
-    calc_total_label:'Total estimated savings over 15 years',
-    life_label:'Art of Living', life_title:'The Caribbean<br><em>Lifestyle</em>',
-    life_sub:'More than a property — an exceptional way of life awaits. Golf, yachting, gastronomy, wellness.',
-    fo_label:'Premium Services', fo_title:'Family Office<br><em>Support</em>',
-    fo_sub:'A complete ecosystem of services for discerning investors. Every detail is handled.',
-    testi_label:'Testimonials', testi_title:'What Our<br><em>Clients Say</em>',
-    testi_quote:'The Real Luxe team turned our dream into reality. Their intimate knowledge of the Dominican market and attention to detail are simply incomparable.',
-    testi_author:'Sophie & Laurent Dubois', testi_role:'Buyers · Villa Cap Cana · €3.2M',
-    contact_label:'Contact', contact_title:'Your Property<br><em>Awaits</em>',
-    contact_sub:'Schedule a private and confidential consultation. Our team guides you through every step.',
-    tunnel_title:'Private Consultation', tunnel_sub:'A personalized journey in 3 steps',
-    t_step1_title:'What is your investment horizon?',
-    t_opt0:'Primary Residence', t_opt0_sub:'Your main home in the Caribbean',
-    t_opt1:'Secondary Residence', t_opt1_sub:'A luxury vacation home',
-    t_opt2:'Pure Investment', t_opt2_sub:'Maximize your ROI with Confotur',
-    t_step2_title:'Your budget range',
-    t_step2_confotur:'I am interested in Confotur tax benefits (15-year exemption)',
-    t_step3_title:'Your secure contact details',
-    t_lbl0:'First Name', t_lbl1:'Last Name', t_lbl2:'Email', t_lbl3:'Phone',
-    t_back:'Back', t_next:'Next', t_submit:'Send My Request',
-    t_success_title:'Request Sent',
-    t_success_msg:'Thank you for your interest. A Real Luxe advisor will contact you within 24 hours.',
-    partners_label:'Privileged Partners', partners_title:'A Network of<br><em>Excellence</em>',
-    wa_text:'Private Expertise',
-    card_beds:'Beds', card_baths:'Baths', pd_cta_visit:'Schedule a Private Viewing', pd_cta_whatsapp:'Contact on WhatsApp',
-    cat_label:'Full Collection', cat_title:'Our <em>Properties</em>', cat_sub:'Explore our complete collection of luxury properties in the Dominican Republic.',
-    vault_form_title:'Enter the Circle', vault_form_sub:'Complete this accreditation form to access our off-market collection. Your information remains strictly confidential.',
-    vault_f_name:'Full Name', vault_f_email:'Email Address', vault_f_phone:'Phone Number', vault_f_budget:'Investment Range', vault_f_budget_ph:'Select a range', vault_f_msg:'Message (optional)', vault_f_submit:'Request Access',
-    partners_sub:'We collaborate with the most prestigious brands in hospitality, real estate, and luxury services to deliver an unparalleled experience.',
-    psvc_0_title:'Legal & Tax Advisory', psvc_0_desc:'Specialized attorneys and tax advisors ensuring full Confotur compliance and optimal fiscal structuring for international investors.',
-    psvc_1_title:'Property Management', psvc_1_desc:'Turnkey rental management, maintenance, and concierge services delivering premium yields with zero owner involvement.',
-    psvc_2_title:'Architecture & Design', psvc_2_desc:'Award-winning Caribbean architects and interior designers crafting bespoke residences that blend luxury with tropical soul.',
-    psvc_3_title:'Residency & Immigration', psvc_3_desc:'Fast-track Dominican residency programs, investor visa coordination, and dual citizenship advisory for UHNWI clients.',
-    af_0_title:'Total Confidentiality', af_0_desc:'Every file is handled with the strictest discretion.',
-    af_1_title:'International Network', af_1_desc:'Access to off-market properties reserved for our circle.',
-    af_2_title:'Dedicated Concierge', af_2_desc:'A single point of contact from A to Z for your acquisition.',
-    af_3_title:'Virtual Tour', af_3_desc:'Explore each property in 3D immersion from home.',
-    cc_0_title:'Tax Exemption<br><em>15 Years</em>', cc_0_desc:'Zero income tax, capital gains or property transfer taxes for 15 years under Confotur Law 158-01.', cc_0_tag0:'0% Income Tax', cc_0_tag1:'0% Capital Gains',
-    cc_1_title:'Golden Visa<br><em>& Residency</em>', cc_1_desc:'Obtain Dominican residency through investment starting at $200,000. Fast-track process for our clients.', cc_1_tag0:'Residency in 90 Days', cc_1_tag1:'Investment $200K+',
-    cc_2_title:'Rental Yield<br><em>&gt; 8% Net</em>', cc_2_desc:'The Dominican tourist rental market offers among the highest yields in the Caribbean with occupancy rates above 75%.', cc_2_tag0:'8-12% Net', cc_2_tag1:'Occupancy 75%+',
-    fo_0_title:'Legal & Notarial Advisory', fo_0_sub:'Due diligence · Structuring · Closing', fo_0_body:'Our partner law firm oversees every step: property title verification, optimal legal structuring (SAS, LLC, trust), term negotiation and secure closing.',
-    fo_1_title:'Private Staff & Security', fo_1_sub:'Household staff · Surveillance · Maintenance', fo_1_body:'Recruitment and management of your domestic staff: private chef, butler, housekeeper, gardener, chauffeur. 24/7 security system and connected surveillance.',
-    fo_2_title:'Air & Maritime Concierge', fo_2_sub:'Private jets · Yachts · VIP transfers', fo_2_body:'Complete travel arrangements: private jet charters from Europe and the Americas, crewed yacht rentals, helicopter transfers and luxury car concierge.',
-    fo_3_title:'Wealth Management', fo_3_sub:'Tax planning · Insurance · Rental yield', fo_3_body:'Tax optimization via Confotur Law, premium rental management with 8-12% net yield, Caribbean-adapted property insurance, and quarterly financial reporting.',
-    ft_desc:'Ultra-luxury real estate in the Dominican Republic. Villas, penthouses and private estates for a discerning international clientele.',
-    ft_nav:'Navigation', ft_svc:'Services', ft_dest:'Destinations',
-    ft_svc_0:'Personalized Search', ft_svc_1:'Rental Management', ft_svc_2:'VIP Concierge', ft_svc_3:'Legal Advisory',
-    ft_privacy:'Privacy Policy'
+    nav_0:'Listings', nav_1:'Approach', nav_2:'Confotur', nav_3:'Contact', nav_team:'Team',
+    nav_cta:'Arrange a viewing',
+    hero_badge:'Cap Cana &middot; Punta Cana &middot; Bayah&iacute;be &middot; Saman&aacute;',
+    hero_title:'Coastal property in the<br><em>Dominican Republic</em>',
+    hero_sub:'A small desk handling a short list of houses, estates and apartments on the east and north coasts. We check the title and the Confotur certificate before a property appears here, and see a purchase through to registration.',
+    hero_btn1:'See the listings', hero_btn2:'Arrange a viewing',
+    stat_0:'Coastal areas', stat_1:'Entry price', stat_2:'Confotur exemption',
+    props_label:'Current listings', props_title:'Selected <em>houses</em>',
+    props_sub:'Five properties are on the books at present. Each has been visited, and its title and Confotur status checked, before appearing here.',
+    props_btn:'Full catalogue',
+    vault_label:'Off-market', vault_title:'Not <em>publicly listed</em>',
+    vault_sub:'Twelve further properties are withheld from public listing, usually at the seller&rsquo;s request. Viewing them requires a signed non-disclosure agreement and evidence of funds.',
+    vault_stat_0:'Properties', vault_stat_1:'Combined asking', vault_stat_2:'Required',
+    vault_btn:'Request access',
+    vault_form_title:'Request access',
+    vault_form_sub:'We reply with the non-disclosure agreement and the current off-market list. Nothing is shared with the sellers until you ask us to.',
+    vault_f_name:'Full name', vault_f_email:'Email', vault_f_phone:'Telephone',
+    vault_f_budget:'Budget', vault_f_budget_ph:'Select a range',
+    vault_f_msg:'Anything we should know (optional)', vault_f_submit:'Send request',
+    about_label:'Approach', about_title:'How we<br><em>work</em>',
+    about_sub:'We are a small desk, not a portal. One adviser takes a purchase from the first viewing through the notary and the Title Registry, and remains the person you call afterwards.',
+    af_0_title:'Title checked first', af_0_desc:'The deslinde and the Confotur certificate are verified before a property is shown, not after an offer is made.',
+    af_1_title:'One point of contact', af_1_desc:'The adviser who shows you the house handles the notary, the transfer and the registration.',
+    af_2_title:'Discretion', af_2_desc:'Names and figures stay inside the file. Off-market sellers list with us on that basis.',
+    af_3_title:'After completion', af_3_desc:'Rental management, staffing and maintenance go to firms we have used ourselves and can vouch for.',
+    confotur_label:'Tax status', confotur_title:'The <em>Confotur</em> regime',
+    confotur_sub:'Law 158-01 exempts qualifying tourism developments from most property taxation for fifteen years. It applies to the development, not the buyer, so the certificate travels with the title.',
+    cc_0_title:'Fifteen years<br><em>exempt</em>', cc_0_desc:'No 3% transfer duty on purchase, no 1% annual property tax, no tax on rental income and no capital gains tax on resale, for fifteen years from the certificate date.', cc_0_tag0:'0% transfer duty', cc_0_tag1:'0% capital gains',
+    cc_1_title:'Residency<br><em>by investment</em>', cc_1_desc:'A property purchase of USD 200,000 or more opens the investor residency route. Filing normally takes three to six months. We introduce the immigration lawyers; we do not file it ourselves.', cc_1_tag0:'From $200,000', cc_1_tag1:'3&ndash;6 months',
+    cc_2_title:'What the<br><em>lettings return</em>', cc_2_desc:'Well-run short lets in Punta Cana and Cap Cana have been returning 7&ndash;10% gross. Demand is seasonal: September and October are thin, and the figures below assume professional management.', cc_2_tag0:'7&ndash;10% gross', cc_2_tag1:'Seasonal',
+    calc_title:'What the exemption is <em>worth</em>',
+    calc_sub_text:'Enter a purchase price to see the tax a Confotur-certified title avoids over fifteen years.',
+    calc_l0:'Transfer duty', calc_l1:'Property tax, 15 yrs', calc_l2:'Tax on rental income', calc_l3:'Capital gains tax',
+    calc_total_label:'Estimated total over fifteen years',
+    calc_note:'An illustration at current rates, assuming full occupancy of the exemption period. It is not tax advice; confirm the figures with a Dominican tax adviser before you rely on them.',
+    life_label:'Nearby', life_title:'What is <em>around</em>',
+    life_sub:'The four corridors we cover are within ninety minutes of an international airport, and each has its own character. These are the places our buyers use most.',
+    fo_label:'Services', fo_title:'Beyond the<br><em>transaction</em>',
+    fo_sub:'Four things buyers ask us for most often. Each is delivered by a firm we work with regularly, and billed by them directly.',
+    fo_0_title:'Legal and notarial', fo_0_sub:'Due diligence &middot; structure &middot; closing', fo_0_body:'A Dominican firm runs the title search, confirms the deslinde is registered and the property is free of charges, and advises whether to hold personally or through a company. They draft the promise of sale and attend the closing. Registration at the Title Registry takes four to eight weeks.',
+    fo_1_title:'Staff and security', fo_1_sub:'Household &middot; grounds &middot; monitoring', fo_1_body:'Recruitment and payroll for household staff: cook, housekeeper, gardener, driver. Most gated developments include perimeter security; for standalone plots we arrange a monitored system and a resident caretaker.',
+    fo_2_title:'Getting there', fo_2_sub:'Charter &middot; berths &middot; transfers', fo_2_body:'Punta Cana takes direct flights from most of Europe and the eastern United States. For private aircraft, the FBO at PUJ handles the arrival. Berths at Cap Cana and Casa de Campo are leased annually and are usually the constraint, so ask early.',
+    fo_3_title:'Letting and upkeep', fo_3_sub:'Management &middot; insurance &middot; reporting', fo_3_body:'Management companies take 20&ndash;25% of gross rental revenue and handle listings, guests, cleaning and maintenance. Hurricane cover is a separate policy and worth reading closely. Expect quarterly statements.',
+    testi_label:'Buyers', testi_title:'In their<br><em>own words</em>',
+    contact_label:'Contact', contact_title:'Tell us what<br><em>you are after</em>',
+    contact_sub:'Three questions, then your details. We reply within one working day, in English, French or Spanish.',
+    contact_info_title:'Before you write',
+    contact_info_body:'It helps to know the area, the budget and whether the property is for your own use or to let. If you already have a shortlist from elsewhere, send it &mdash; we will say plainly what we think of it.',
+    ci_phone:'Telephone', ci_email:'Email', ci_office:'Office',
+    tunnel_title:'Arrange a viewing', tunnel_sub:'Three steps, about a minute',
+    t_step1_title:'What is the property for?',
+    t_opt0:'Main home', t_opt0_sub:'Living here most of the year',
+    t_opt1:'Second home', t_opt1_sub:'Yours, used a few months a year',
+    t_opt2:'Letting', t_opt2_sub:'Bought to rent out',
+    t_step2_title:'Roughly what budget?',
+    t_step2_confotur:'Only show me Confotur-certified properties',
+    t_step3_title:'Where should we reply?',
+    t_lbl0:'First name', t_lbl1:'Last name', t_lbl2:'Email', t_lbl3:'Telephone <span class="f-optional">optional</span>',
+    t_back:'Back', t_next:'Next', t_submit:'Send',
+    t_success_title:'Received',
+    t_success_msg:'An adviser will reply within one working day. If it is urgent, say so in your reply to the confirmation and we will call instead.',
+    partners_label:'Process', partners_title:'How a purchase<br><em>actually runs</em>',
+    partners_sub:'From first enquiry to registered title is typically three to five months. The slow parts are the survey and the Title Registry, neither of which we control.',
+    pstep_0_title:'Brief and shortlist', pstep_0_desc:'A call to establish the area, budget and use. We send five to eight properties, including any off-market ones that fit, with what is wrong with each as well as what is right.', pstep_0_time:'Week 1',
+    pstep_1_title:'Viewing trip', pstep_1_desc:'Two or three days on the ground, usually four properties a day. We drive; the developers do not. You will also see the roads, the supermarket and the hospital, because those decide whether a house works.', pstep_1_time:'Weeks 2&ndash;4',
+    pstep_2_title:'Offer and due diligence', pstep_2_desc:'A promise of sale with a 10% deposit held in escrow, conditional on the title search. The lawyer confirms the deslinde, the absence of charges and the Confotur certificate. Withdraw if anything fails and the deposit returns.', pstep_2_time:'Weeks 4&ndash;8',
+    pstep_3_title:'Closing and registration', pstep_3_desc:'Signature before a notary, balance transferred, keys handed over. The Title Registry then issues the certificate in your name, which takes four to eight weeks and occasionally longer.', pstep_3_time:'Months 3&ndash;5',
+    psvc_0_title:'Legal and tax', psvc_0_desc:'Dominican firms handling title searches, Confotur compliance and the holding structure. Billed by them, at their rates, which we will tell you before you instruct.',
+    psvc_1_title:'Letting management', psvc_1_desc:'Listings, guests, cleaning and maintenance for 20&ndash;25% of gross revenue. We introduce two or three and let you choose.',
+    psvc_2_title:'Architects and builders', psvc_2_desc:'For plots and for refurbishment. Coastal construction has specific demands &mdash; salt, wind load, drainage &mdash; and the wrong contractor is expensive.',
+    psvc_3_title:'Residency', psvc_3_desc:'Immigration lawyers who file investor residency applications. Three to six months, and they will tell you honestly whether your case is straightforward.',
+    wa_text:'Enquire',
+    card_beds:'bed', card_baths:'bath',
+    pd_cta_visit:'Arrange a viewing', pd_cta_whatsapp:'Request the dossier',
+    ft_desc:'Coastal property in the Dominican Republic. Cap Cana, Punta Cana, Bayah&iacute;be and Saman&aacute;.',
+    ft_nav:'Site', ft_svc:'Services', ft_dest:'Areas', ft_catalogue:'Full catalogue',
+    ft_svc_0:'Buying process', ft_svc_1:'Letting management', ft_svc_2:'Legal and notarial', ft_svc_3:'Residency',
+    ft_privacy:'Privacy policy'
   },
+
+  fr: {
+    nav_0:'Biens', nav_1:'Méthode', nav_2:'Confotur', nav_3:'Contact', nav_team:'Équipe',
+    nav_cta:'Organiser une visite',
+    hero_badge:'Cap Cana &middot; Punta Cana &middot; Bayah&iacute;be &middot; Saman&aacute;',
+    hero_title:'Biens côtiers en<br><em>République dominicaine</em>',
+    hero_sub:'Un cabinet restreint, qui suit un nombre limité de maisons, domaines et appartements sur les côtes est et nord. Nous vérifions le titre et le certificat Confotur avant qu&rsquo;un bien ne figure ici, et accompagnons l&rsquo;achat jusqu&rsquo;à l&rsquo;enregistrement.',
+    hero_btn1:'Voir les biens', hero_btn2:'Organiser une visite',
+    stat_0:'Zones côtières', stat_1:'Prix d&rsquo;entrée', stat_2:'Exonération Confotur',
+    props_label:'Biens disponibles', props_title:'Maisons <em>sélectionnées</em>',
+    props_sub:'Cinq biens sont actuellement au portefeuille. Chacun a été visité, son titre et son statut Confotur vérifiés, avant de figurer ici.',
+    props_btn:'Catalogue complet',
+    vault_label:'Hors marché', vault_title:'Non <em>publiés</em>',
+    vault_sub:'Douze biens supplémentaires ne sont pas publiés, le plus souvent à la demande du vendeur. Leur visite suppose un accord de confidentialité signé et un justificatif de fonds.',
+    vault_stat_0:'Biens', vault_stat_1:'Total demandé', vault_stat_2:'Requis',
+    vault_btn:'Demander l&rsquo;accès',
+    vault_form_title:'Demander l&rsquo;accès',
+    vault_form_sub:'Nous répondons avec l&rsquo;accord de confidentialité et la liste hors marché du moment. Rien n&rsquo;est transmis aux vendeurs sans votre accord.',
+    vault_f_name:'Nom complet', vault_f_email:'E-mail', vault_f_phone:'Téléphone',
+    vault_f_budget:'Budget', vault_f_budget_ph:'Choisir une fourchette',
+    vault_f_msg:'Précisions (facultatif)', vault_f_submit:'Envoyer',
+    about_label:'Méthode', about_title:'Notre<br><em>façon de faire</em>',
+    about_sub:'Nous sommes un cabinet restreint, pas un portail. Un conseiller suit l&rsquo;achat de la première visite jusqu&rsquo;au notaire et au registre foncier, et reste votre interlocuteur ensuite.',
+    af_0_title:'Le titre d&rsquo;abord', af_0_desc:'Le deslinde et le certificat Confotur sont vérifiés avant la visite, pas après l&rsquo;offre.',
+    af_1_title:'Un seul interlocuteur', af_1_desc:'Le conseiller qui vous fait visiter suit le notaire, le transfert et l&rsquo;enregistrement.',
+    af_2_title:'Discrétion', af_2_desc:'Les noms et les montants restent dans le dossier. Les vendeurs hors marché nous confient leurs biens à cette condition.',
+    af_3_title:'Après la vente', af_3_desc:'Gestion locative, personnel et entretien sont confiés à des sociétés que nous avons nous-mêmes employées.',
+    confotur_label:'Fiscalité', confotur_title:'Le régime <em>Confotur</em>',
+    confotur_sub:'La loi 158-01 exonère les programmes touristiques éligibles de l&rsquo;essentiel de la fiscalité immobilière pendant quinze ans. Elle porte sur le programme, non sur l&rsquo;acquéreur : le certificat suit le titre.',
+    cc_0_title:'Quinze ans<br><em>d&rsquo;exonération</em>', cc_0_desc:'Ni droit de mutation de 3%, ni taxe foncière annuelle de 1%, ni impôt sur les loyers, ni impôt sur la plus-value de revente, pendant quinze ans à compter du certificat.', cc_0_tag0:'0% de mutation', cc_0_tag1:'0% de plus-value',
+    cc_1_title:'Résidence<br><em>par investissement</em>', cc_1_desc:'Un achat de 200 000 USD ou plus ouvre la voie de la résidence investisseur. Le dossier prend en général trois à six mois. Nous présentons les avocats en immigration ; nous ne déposons pas le dossier.', cc_1_tag0:'À partir de 200 000 $', cc_1_tag1:'3 à 6 mois',
+    cc_2_title:'Ce que rapporte<br><em>la location</em>', cc_2_desc:'Bien gérées, les locations courte durée à Punta Cana et Cap Cana rapportent 7 à 10% bruts. La demande est saisonnière : septembre et octobre sont creux, et ces chiffres supposent une gestion professionnelle.', cc_2_tag0:'7 à 10% bruts', cc_2_tag1:'Saisonnier',
+    calc_title:'Ce que vaut <em>l&rsquo;exonération</em>',
+    calc_sub_text:'Indiquez un prix d&rsquo;achat pour voir l&rsquo;impôt qu&rsquo;un titre certifié Confotur évite sur quinze ans.',
+    calc_l0:'Droit de mutation', calc_l1:'Taxe foncière, 15 ans', calc_l2:'Impôt sur les loyers', calc_l3:'Impôt sur la plus-value',
+    calc_total_label:'Total estimé sur quinze ans',
+    calc_note:'Illustration aux taux actuels, sur la durée complète de l&rsquo;exonération. Ce n&rsquo;est pas un conseil fiscal : faites confirmer ces montants par un fiscaliste dominicain.',
+    life_label:'Aux alentours', life_title:'Ce qu&rsquo;il y a <em>autour</em>',
+    life_sub:'Les quatre secteurs que nous couvrons sont à moins de quatre-vingt-dix minutes d&rsquo;un aéroport international, et chacun a son caractère. Voici les adresses que nos acquéreurs fréquentent.',
+    fo_label:'Services', fo_title:'Au-delà de<br><em>la transaction</em>',
+    fo_sub:'Les quatre demandes les plus fréquentes. Chacune est assurée par un cabinet avec lequel nous travaillons régulièrement, et facturée par lui.',
+    fo_0_title:'Juridique et notarial', fo_0_sub:'Audit &middot; structure &middot; signature', fo_0_body:'Un cabinet dominicain effectue la recherche de titre, confirme que le deslinde est enregistré et le bien libre de charges, et conseille sur la détention en nom propre ou par société. Il rédige la promesse de vente et assiste à la signature. L&rsquo;enregistrement prend quatre à huit semaines.',
+    fo_1_title:'Personnel et sécurité', fo_1_sub:'Maison &middot; jardins &middot; surveillance', fo_1_body:'Recrutement et paie du personnel de maison : cuisinier, gouvernante, jardinier, chauffeur. La plupart des résidences fermées assurent la sécurité périmétrique ; sur terrain isolé, nous mettons en place une télésurveillance et un gardien résident.',
+    fo_2_title:'S&rsquo;y rendre', fo_2_sub:'Affrètement &middot; anneaux &middot; transferts', fo_2_body:'Punta Cana est desservie en direct depuis la majeure partie de l&rsquo;Europe et de la côte est américaine. Pour l&rsquo;aviation privée, le FBO de PUJ gère l&rsquo;arrivée. Les anneaux de Cap Cana et Casa de Campo se louent à l&rsquo;année et constituent souvent la contrainte : demandez tôt.',
+    fo_3_title:'Location et entretien', fo_3_sub:'Gestion &middot; assurance &middot; reporting', fo_3_body:'Les sociétés de gestion prélèvent 20 à 25% du revenu locatif brut et prennent en charge annonces, voyageurs, ménage et maintenance. La garantie cyclone fait l&rsquo;objet d&rsquo;un contrat distinct, à lire de près. Comptez un relevé trimestriel.',
+    testi_label:'Acquéreurs', testi_title:'Dans leurs<br><em>propres mots</em>',
+    contact_label:'Contact', contact_title:'Dites-nous ce que<br><em>vous cherchez</em>',
+    contact_sub:'Trois questions, puis vos coordonnées. Nous répondons sous un jour ouvré, en français, anglais ou espagnol.',
+    contact_info_title:'Avant d&rsquo;écrire',
+    contact_info_body:'Il est utile de connaître le secteur, le budget, et si le bien est destiné à votre usage ou à la location. Si vous avez déjà une sélection faite ailleurs, envoyez-la : nous vous dirons franchement ce que nous en pensons.',
+    ci_phone:'Téléphone', ci_email:'E-mail', ci_office:'Bureau',
+    tunnel_title:'Organiser une visite', tunnel_sub:'Trois étapes, environ une minute',
+    t_step1_title:'À quoi le bien est-il destiné ?',
+    t_opt0:'Résidence principale', t_opt0_sub:'Y vivre la majeure partie de l&rsquo;année',
+    t_opt1:'Résidence secondaire', t_opt1_sub:'À vous, quelques mois par an',
+    t_opt2:'Location', t_opt2_sub:'Acheté pour être loué',
+    t_step2_title:'Quel budget, approximativement ?',
+    t_step2_confotur:'Ne me montrer que des biens certifiés Confotur',
+    t_step3_title:'Où devons-nous répondre ?',
+    t_lbl0:'Prénom', t_lbl1:'Nom', t_lbl2:'E-mail', t_lbl3:'Téléphone <span class="f-optional">facultatif</span>',
+    t_back:'Retour', t_next:'Suivant', t_submit:'Envoyer',
+    t_success_title:'Bien reçu',
+    t_success_msg:'Un conseiller répondra sous un jour ouvré. Si c&rsquo;est urgent, dites-le en réponse à la confirmation et nous appellerons.',
+    partners_label:'Déroulé', partners_title:'Comment se déroule<br><em>un achat</em>',
+    partners_sub:'De la première demande au titre enregistré, comptez trois à cinq mois. Les délais viennent du bornage et du registre foncier, que nous ne maîtrisons pas.',
+    pstep_0_title:'Cadrage et sélection', pstep_0_desc:'Un appel pour établir le secteur, le budget et l&rsquo;usage. Nous envoyons cinq à huit biens, y compris hors marché s&rsquo;ils correspondent, avec leurs défauts autant que leurs qualités.', pstep_0_time:'Semaine 1',
+    pstep_1_title:'Voyage de visite', pstep_1_desc:'Deux ou trois jours sur place, environ quatre biens par jour. C&rsquo;est nous qui conduisons, pas les promoteurs. Vous verrez aussi les routes, le supermarché et l&rsquo;hôpital, car c&rsquo;est ce qui rend une maison vivable.', pstep_1_time:'Semaines 2 à 4',
+    pstep_2_title:'Offre et audit', pstep_2_desc:'Une promesse de vente avec 10% séquestrés, sous condition de la recherche de titre. L&rsquo;avocat confirme le deslinde, l&rsquo;absence de charges et le certificat Confotur. En cas d&rsquo;anomalie, vous vous retirez et le dépôt vous revient.', pstep_2_time:'Semaines 4 à 8',
+    pstep_3_title:'Signature et enregistrement', pstep_3_desc:'Signature devant notaire, solde viré, remise des clés. Le registre foncier délivre ensuite le certificat à votre nom, sous quatre à huit semaines, parfois davantage.', pstep_3_time:'Mois 3 à 5',
+    psvc_0_title:'Juridique et fiscal', psvc_0_desc:'Cabinets dominicains pour la recherche de titre, la conformité Confotur et la structure de détention. Ils facturent directement, à des tarifs que nous vous indiquons avant de les saisir.',
+    psvc_1_title:'Gestion locative', psvc_1_desc:'Annonces, voyageurs, ménage et maintenance pour 20 à 25% du revenu brut. Nous en présentons deux ou trois, vous choisissez.',
+    psvc_2_title:'Architectes et constructeurs', psvc_2_desc:'Pour les terrains comme pour les rénovations. La construction en bord de mer a ses exigences — sel, vent, drainage — et le mauvais entrepreneur coûte cher.',
+    psvc_3_title:'Résidence', psvc_3_desc:'Avocats en immigration qui déposent les dossiers de résidence investisseur. Trois à six mois, et ils vous diront honnêtement si votre cas est simple.',
+    wa_text:'Nous écrire',
+    card_beds:'ch.', card_baths:'sdb',
+    pd_cta_visit:'Organiser une visite', pd_cta_whatsapp:'Demander le dossier',
+    ft_desc:'Biens côtiers en République dominicaine. Cap Cana, Punta Cana, Bayah&iacute;be et Saman&aacute;.',
+    ft_nav:'Site', ft_svc:'Services', ft_dest:'Secteurs', ft_catalogue:'Catalogue complet',
+    ft_svc_0:'Déroulé de l&rsquo;achat', ft_svc_1:'Gestion locative', ft_svc_2:'Juridique et notarial', ft_svc_3:'Résidence',
+    ft_privacy:'Politique de confidentialité'
+  },
+
   es: {
-    nav_0:'Propiedades', nav_1:'Acerca de', nav_2:'Estilo de Vida', nav_3:'Contacto', nav_cta:'Consulta Privada',
-    hero_badge:'Bienes Raíces de Excepción · Caribe',
-    hero_title:'Viva la Excepción<br><em>Sin Compromiso</em>',
-    hero_sub:'Propiedades excepcionales en República Dominicana, seleccionadas para una élite exigente.',
-    hero_btn1:'Descubrir Propiedades', hero_btn2:'Consulta Privada →',
-    stat_0:'Precio Promedio', stat_1:'Propiedades Exclusivas', stat_2:'Satisfacción del Cliente',
-    props_label:'Colección Exclusiva', props_title:'Propiedades <em>de Excepción</em>',
-    props_sub:'Cada residencia se selecciona con rigor absoluto. Solo lo mejor accede a nuestro portafolio.',
-    props_btn:'Ver Catálogo Completo',
-    vault_label:'Acceso Restringido', vault_title:'Colección Privada<br><em>Off-Market</em>',
-    vault_sub:'12 propiedades confidenciales reservadas para nuestro círculo de inversores calificados.',
-    vault_stat_0:'Propiedades', vault_stat_1:'Valor total', vault_stat_2:'Requerido',
-    vault_btn:'Solicitar Acceso Confidencial',
-    about_label:'Nuestro Enfoque', about_title:'El Arte de<br><em>lo A Medida</em>',
-    about_sub:'Durante más de 15 años, acompañamos a clientes internacionales en la adquisición de propiedades excepcionales.',
-    confotur_label:'Ventajas Fiscales', confotur_title:'Ley <em>Confotur</em>',
-    confotur_sub:'República Dominicana ofrece un marco fiscal excepcional para inversores inmobiliarios internacionales.',
-    calc_title:'Calculadora <em>Confotur</em>', calc_sub_text:'Ingrese el valor de una propiedad para ver sus ahorros fiscales en 15 años.',
-    calc_l0:'Impuesto Transferencia', calc_l1:'Impuesto Predial (15 años)', calc_l2:'Impuesto Renta Locativa', calc_l3:'Impuesto Plusvalía',
-    calc_total_label:'Ahorro total estimado en 15 años',
-    life_label:'Arte de Vivir', life_title:'El Estilo de Vida<br><em>Caribeño</em>',
-    life_sub:'Más que una propiedad, un modo de vida excepcional le espera.',
-    fo_label:'Servicios Premium', fo_title:'Acompañamiento<br><em>Family Office</em>',
-    fo_sub:'Un ecosistema completo de servicios para inversores exigentes.',
-    testi_label:'Testimonios', testi_title:'Lo Que Dicen<br><em>Nuestros Clientes</em>',
-    testi_quote:'El equipo de Real Luxe convirtió nuestro sueño en realidad. Su conocimiento del mercado dominicano es simplemente incomparable.',
-    testi_author:'Sophie & Laurent Dubois', testi_role:'Compradores · Villa Cap Cana · €3.2M',
-    contact_label:'Contacto', contact_title:'Su Propiedad<br><em>Le Espera</em>',
-    contact_sub:'Agende una consulta privada y confidencial.',
-    tunnel_title:'Consulta Privada', tunnel_sub:'Un recorrido personalizado en 3 pasos',
-    t_step1_title:'¿Cuál es su horizonte de inversión?',
-    t_opt0:'Residencia Principal', t_opt0_sub:'Su hogar principal en el Caribe',
-    t_opt1:'Residencia Secundaria', t_opt1_sub:'Una casa de vacaciones de lujo',
-    t_opt2:'Inversión Pura', t_opt2_sub:'Maximice su ROI con Confotur',
-    t_step2_title:'Su rango de presupuesto',
-    t_step2_confotur:'Estoy interesado en los beneficios fiscales Confotur (exención 15 años)',
-    t_step3_title:'Sus datos de contacto seguros',
-    t_lbl0:'Nombre', t_lbl1:'Apellido', t_lbl2:'Email', t_lbl3:'Teléfono',
-    t_back:'Volver', t_next:'Siguiente', t_submit:'Enviar mi Solicitud',
-    t_success_title:'Solicitud Enviada',
-    t_success_msg:'Gracias por su interés. Un asesor le contactará en las próximas 24 horas.',
-    partners_label:'Socios Privilegiados', partners_title:'Una Red de<br><em>Excelencia</em>',
-    wa_text:'Experiencia Privada',
-    card_beds:'Hab.', card_baths:'Baños', pd_cta_visit:'Agendar Visita Privada', pd_cta_whatsapp:'Contactar por WhatsApp',
-    cat_label:'Colección Completa', cat_title:'Nuestras <em>Propiedades</em>', cat_sub:'Explore nuestra colección completa de propiedades de lujo en República Dominicana.',
-    vault_form_title:'Entrar al Círculo', vault_form_sub:'Complete este formulario de acreditación para acceder a nuestra colección off-market. Su información es estrictamente confidencial.',
-    vault_f_name:'Nombre Completo', vault_f_email:'Correo Electrónico', vault_f_phone:'Número de Teléfono', vault_f_budget:'Rango de Inversión', vault_f_budget_ph:'Seleccionar un rango', vault_f_msg:'Mensaje (opcional)', vault_f_submit:'Solicitar Acceso',
-    partners_sub:'Colaboramos con las marcas más prestigiosas en hotelería, bienes raíces y servicios de lujo para ofrecer una experiencia sin igual.',
-    psvc_0_title:'Asesoría Legal & Fiscal', psvc_0_desc:'Abogados y asesores fiscales especializados asegurando el cumplimiento Confotur y estructura fiscal óptima.',
-    psvc_1_title:'Gestión de Propiedades', psvc_1_desc:'Gestión de alquileres llave en mano, mantenimiento y servicios de conserjería con rendimientos premium.',
-    psvc_2_title:'Arquitectura & Diseño', psvc_2_desc:'Arquitectos caribeños galardonados y diseñadores de interiores creando residencias a medida.',
-    psvc_3_title:'Residencia & Inmigración', psvc_3_desc:'Programas de residencia dominicana acelerados, coordinación de visas de inversor y asesoría en doble ciudadanía.',
-    af_0_title:'Confidencialidad Total', af_0_desc:'Cada expediente se trata con la más estricta discreción.',
-    af_1_title:'Red Internacional', af_1_desc:'Acceso a propiedades fuera de mercado reservadas a nuestro círculo.',
-    af_2_title:'Concierge Dedicado', af_2_desc:'Un interlocutor único de la A a la Z para su adquisición.',
-    af_3_title:'Visita Virtual', af_3_desc:'Explore cada propiedad en inmersión 3D desde su hogar.',
-    cc_0_title:'Exención Fiscal<br><em>15 Años</em>', cc_0_desc:'Cero impuestos sobre la renta, plusvalías o transferencias de propiedad durante 15 años bajo la Ley Confotur 158-01.', cc_0_tag0:'0% Impuesto Renta', cc_0_tag1:'0% Plusvalía',
-    cc_1_title:'Golden Visa<br><em>& Residencia</em>', cc_1_desc:'Obtenga la residencia dominicana por inversión desde $200,000. Proceso acelerado para nuestros clientes.', cc_1_tag0:'Residencia en 90 días', cc_1_tag1:'Inversión $200K+',
-    cc_2_title:'Rentabilidad Locativa<br><em>&gt; 8% Neto</em>', cc_2_desc:'El mercado de alquiler turístico dominicano ofrece los rendimientos más altos del Caribe con una tasa de ocupación superior al 75%.', cc_2_tag0:'8-12% Neto', cc_2_tag1:'Ocupación 75%+',
-    fo_0_title:'Asesoría Legal & Notarial', fo_0_sub:'Due diligence · Estructuración · Cierre', fo_0_body:'Nuestro bufete asociado supervisa cada etapa: verificación de títulos, estructuración legal óptima (SAS, LLC, trust), negociación y cierre seguro.',
-    fo_1_title:'Personal Privado & Seguridad', fo_1_sub:'Personal doméstico · Vigilancia · Mantenimiento', fo_1_body:'Reclutamiento y gestión de su personal: chef privado, mayordomo, servicio de limpieza, jardinero, chófer. Sistema de seguridad 24/7.',
-    fo_2_title:'Conserjería Aérea & Marítima', fo_2_sub:'Jets privados · Yates · Traslados VIP', fo_2_body:'Organización completa de viajes: chárter de jets privados, alquiler de yates con tripulación, traslados en helicóptero y conserjería de autos de lujo.',
-    fo_3_title:'Gestión Patrimonial', fo_3_sub:'Fiscalidad · Seguros · Rentabilidad locativa', fo_3_body:'Optimización fiscal vía Ley Confotur, gestión locativa premium con 8-12% neto, seguro de propiedad e informes financieros trimestrales.',
-    ft_desc:'Bienes raíces de ultra-lujo en República Dominicana. Villas, penthouses y fincas privadas para una clientela internacional exigente.',
-    ft_nav:'Navegación', ft_svc:'Servicios', ft_dest:'Destinos',
-    ft_svc_0:'Búsqueda Personalizada', ft_svc_1:'Gestión Locativa', ft_svc_2:'Concierge VIP', ft_svc_3:'Asesoría Legal',
-    ft_privacy:'Política de Privacidad'
+    nav_0:'Propiedades', nav_1:'Método', nav_2:'Confotur', nav_3:'Contacto', nav_team:'Equipo',
+    nav_cta:'Concertar una visita',
+    hero_badge:'Cap Cana &middot; Punta Cana &middot; Bayah&iacute;be &middot; Saman&aacute;',
+    hero_title:'Propiedad costera en la<br><em>República Dominicana</em>',
+    hero_sub:'Una oficina pequeña que lleva un número reducido de casas, fincas y apartamentos en las costas este y norte. Comprobamos el título y el certificado Confotur antes de publicar una propiedad, y acompañamos la compra hasta el registro.',
+    hero_btn1:'Ver las propiedades', hero_btn2:'Concertar una visita',
+    stat_0:'Zonas costeras', stat_1:'Precio de entrada', stat_2:'Exención Confotur',
+    props_label:'En cartera', props_title:'Casas <em>seleccionadas</em>',
+    props_sub:'Ahora mismo hay cinco propiedades en cartera. Cada una ha sido visitada, y su título y situación Confotur comprobados, antes de aparecer aquí.',
+    props_btn:'Catálogo completo',
+    vault_label:'Fuera de mercado', vault_title:'Sin <em>publicar</em>',
+    vault_sub:'Otras doce propiedades no se publican, normalmente a petición del vendedor. Verlas requiere un acuerdo de confidencialidad firmado y acreditación de fondos.',
+    vault_stat_0:'Propiedades', vault_stat_1:'Total solicitado', vault_stat_2:'Necesario',
+    vault_btn:'Solicitar acceso',
+    vault_form_title:'Solicitar acceso',
+    vault_form_sub:'Respondemos con el acuerdo de confidencialidad y la lista fuera de mercado vigente. No compartimos nada con los vendedores hasta que usted lo pida.',
+    vault_f_name:'Nombre completo', vault_f_email:'Correo', vault_f_phone:'Teléfono',
+    vault_f_budget:'Presupuesto', vault_f_budget_ph:'Elija un rango',
+    vault_f_msg:'Algo que debamos saber (opcional)', vault_f_submit:'Enviar',
+    about_label:'Método', about_title:'Cómo<br><em>trabajamos</em>',
+    about_sub:'Somos una oficina pequeña, no un portal. Un asesor lleva la compra desde la primera visita hasta el notario y el Registro de Títulos, y sigue siendo su interlocutor después.',
+    af_0_title:'Primero el título', af_0_desc:'El deslinde y el certificado Confotur se verifican antes de enseñar la propiedad, no después de la oferta.',
+    af_1_title:'Un solo interlocutor', af_1_desc:'El asesor que le enseña la casa lleva el notario, el traspaso y el registro.',
+    af_2_title:'Discreción', af_2_desc:'Los nombres y las cifras no salen del expediente. Los vendedores fuera de mercado nos confían su propiedad por eso.',
+    af_3_title:'Después de la compra', af_3_desc:'Gestión de alquiler, personal y mantenimiento van a empresas que nosotros mismos hemos usado.',
+    confotur_label:'Fiscalidad', confotur_title:'El régimen <em>Confotur</em>',
+    confotur_sub:'La ley 158-01 exime a los desarrollos turísticos cualificados de la mayor parte de la fiscalidad inmobiliaria durante quince años. Se aplica al desarrollo, no al comprador, de modo que el certificado acompaña al título.',
+    cc_0_title:'Quince años<br><em>de exención</em>', cc_0_desc:'Sin el 3% de impuesto de transferencia, sin el 1% de impuesto anual, sin impuesto sobre los alquileres ni sobre la plusvalía en la reventa, durante quince años desde el certificado.', cc_0_tag0:'0% de transferencia', cc_0_tag1:'0% de plusvalía',
+    cc_1_title:'Residencia<br><em>por inversión</em>', cc_1_desc:'Una compra de 200.000 USD o más abre la vía de residencia por inversión. El expediente suele tardar de tres a seis meses. Presentamos a los abogados de inmigración; no lo tramitamos nosotros.', cc_1_tag0:'Desde 200.000 $', cc_1_tag1:'3 a 6 meses',
+    cc_2_title:'Lo que deja<br><em>el alquiler</em>', cc_2_desc:'Bien gestionados, los alquileres de corta estancia en Punta Cana y Cap Cana vienen dando un 7 a 10% bruto. La demanda es estacional: septiembre y octubre son flojos, y estas cifras suponen gestión profesional.', cc_2_tag0:'7 a 10% bruto', cc_2_tag1:'Estacional',
+    calc_title:'Cuánto vale <em>la exención</em>',
+    calc_sub_text:'Introduzca un precio de compra para ver el impuesto que un título con Confotur evita en quince años.',
+    calc_l0:'Impuesto de transferencia', calc_l1:'Impuesto anual, 15 años', calc_l2:'Impuesto sobre alquileres', calc_l3:'Impuesto de plusvalía',
+    calc_total_label:'Total estimado en quince años',
+    calc_note:'Una ilustración a los tipos actuales, suponiendo el periodo completo de exención. No es asesoramiento fiscal: confirme las cifras con un asesor dominicano antes de basarse en ellas.',
+    life_label:'Alrededor', life_title:'Qué hay <em>cerca</em>',
+    life_sub:'Los cuatro corredores que cubrimos están a menos de noventa minutos de un aeropuerto internacional, y cada uno tiene su carácter. Estos son los sitios que más usan nuestros compradores.',
+    fo_label:'Servicios', fo_title:'Más allá de<br><em>la compraventa</em>',
+    fo_sub:'Las cuatro cosas que más nos piden. Cada una la presta una firma con la que trabajamos habitualmente, y la factura ella.',
+    fo_0_title:'Legal y notarial', fo_0_sub:'Revisión &middot; estructura &middot; cierre', fo_0_body:'Una firma dominicana hace la búsqueda de título, confirma que el deslinde está registrado y la propiedad libre de cargas, y aconseja si conviene comprar a título personal o por sociedad. Redacta la promesa de venta y asiste al cierre. El registro tarda de cuatro a ocho semanas.',
+    fo_1_title:'Personal y seguridad', fo_1_sub:'Casa &middot; jardines &middot; vigilancia', fo_1_body:'Selección y nómina del personal doméstico: cocinero, ama de llaves, jardinero, chófer. La mayoría de los residenciales cerrados incluyen seguridad perimetral; en parcelas aisladas montamos un sistema monitorizado y un cuidador residente.',
+    fo_2_title:'Cómo llegar', fo_2_sub:'Vuelo privado &middot; amarres &middot; traslados', fo_2_body:'Punta Cana tiene vuelos directos desde gran parte de Europa y del este de Estados Unidos. Para aviación privada, el FBO de PUJ gestiona la llegada. Los amarres de Cap Cana y Casa de Campo se arriendan por años y suelen ser la limitación: pregunte pronto.',
+    fo_3_title:'Alquiler y mantenimiento', fo_3_sub:'Gestión &middot; seguro &middot; informes', fo_3_body:'Las gestoras se quedan un 20 a 25% de los ingresos brutos y llevan anuncios, huéspedes, limpieza y mantenimiento. La cobertura de huracán es una póliza aparte y conviene leerla con calma. Cuente con informes trimestrales.',
+    testi_label:'Compradores', testi_title:'En sus<br><em>propias palabras</em>',
+    contact_label:'Contacto', contact_title:'Cuéntenos qué<br><em>está buscando</em>',
+    contact_sub:'Tres preguntas y sus datos. Respondemos en un día laborable, en español, inglés o francés.',
+    contact_info_title:'Antes de escribir',
+    contact_info_body:'Ayuda saber la zona, el presupuesto y si la propiedad es para uso propio o para alquilar. Si ya tiene una lista hecha en otro sitio, mándela: le diremos con franqueza qué nos parece.',
+    ci_phone:'Teléfono', ci_email:'Correo', ci_office:'Oficina',
+    tunnel_title:'Concertar una visita', tunnel_sub:'Tres pasos, alrededor de un minuto',
+    t_step1_title:'¿Para qué es la propiedad?',
+    t_opt0:'Vivienda habitual', t_opt0_sub:'Vivir aquí la mayor parte del año',
+    t_opt1:'Segunda residencia', t_opt1_sub:'Suya, unos meses al año',
+    t_opt2:'Alquiler', t_opt2_sub:'Comprada para alquilar',
+    t_step2_title:'¿Qué presupuesto, aproximadamente?',
+    t_step2_confotur:'Enséñenme solo propiedades con Confotur',
+    t_step3_title:'¿Dónde le respondemos?',
+    t_lbl0:'Nombre', t_lbl1:'Apellidos', t_lbl2:'Correo', t_lbl3:'Teléfono <span class="f-optional">opcional</span>',
+    t_back:'Atrás', t_next:'Siguiente', t_submit:'Enviar',
+    t_success_title:'Recibido',
+    t_success_msg:'Un asesor responderá en un día laborable. Si es urgente, dígalo al responder a la confirmación y le llamamos.',
+    partners_label:'Proceso', partners_title:'Cómo transcurre<br><em>una compra</em>',
+    partners_sub:'De la primera consulta al título registrado suelen pasar de tres a cinco meses. Lo lento es el deslinde y el Registro de Títulos, que no dependen de nosotros.',
+    pstep_0_title:'Encargo y preselección', pstep_0_desc:'Una llamada para fijar zona, presupuesto y uso. Enviamos de cinco a ocho propiedades, incluidas las de fuera de mercado que encajen, con sus defectos además de sus virtudes.', pstep_0_time:'Semana 1',
+    pstep_1_title:'Viaje de visitas', pstep_1_desc:'Dos o tres días sobre el terreno, unas cuatro propiedades al día. Conducimos nosotros, no los promotores. También verá las carreteras, el supermercado y el hospital, porque de eso depende que una casa funcione.', pstep_1_time:'Semanas 2 a 4',
+    pstep_2_title:'Oferta y comprobaciones', pstep_2_desc:'Promesa de venta con un 10% en depósito, condicionada a la búsqueda de título. El abogado confirma el deslinde, la ausencia de cargas y el certificado Confotur. Si algo falla, se retira y recupera el depósito.', pstep_2_time:'Semanas 4 a 8',
+    pstep_3_title:'Cierre y registro', pstep_3_desc:'Firma ante notario, transferencia del resto, entrega de llaves. El Registro de Títulos emite después el certificado a su nombre, en cuatro a ocho semanas y a veces más.', pstep_3_time:'Meses 3 a 5',
+    psvc_0_title:'Legal y fiscal', psvc_0_desc:'Firmas dominicanas para búsquedas de título, cumplimiento Confotur y estructura de tenencia. Facturan ellas, a tarifas que le indicamos antes de encargarles nada.',
+    psvc_1_title:'Gestión de alquiler', psvc_1_desc:'Anuncios, huéspedes, limpieza y mantenimiento por un 20 a 25% de los ingresos brutos. Presentamos dos o tres y usted elige.',
+    psvc_2_title:'Arquitectos y constructores', psvc_2_desc:'Para parcelas y para reformas. Construir junto al mar tiene sus exigencias — sal, viento, drenaje — y el contratista equivocado sale caro.',
+    psvc_3_title:'Residencia', psvc_3_desc:'Abogados de inmigración que tramitan la residencia por inversión. De tres a seis meses, y le dirán con honestidad si su caso es sencillo.',
+    wa_text:'Escríbanos',
+    card_beds:'hab.', card_baths:'baños',
+    pd_cta_visit:'Concertar una visita', pd_cta_whatsapp:'Pedir el dosier',
+    ft_desc:'Propiedad costera en la República Dominicana. Cap Cana, Punta Cana, Bayah&iacute;be y Saman&aacute;.',
+    ft_nav:'Sitio', ft_svc:'Servicios', ft_dest:'Zonas', ft_catalogue:'Catálogo completo',
+    ft_svc_0:'Proceso de compra', ft_svc_1:'Gestión de alquiler', ft_svc_2:'Legal y notarial', ft_svc_3:'Residencia',
+    ft_privacy:'Política de privacidad'
   }
 };
 
-// ─── DATA (fallback — overwritten by Supabase fetch) ───
-var PROPERTIES = [
-  {
-    slug:'villa-oceana',name:'Villa Oceana',location:'Cap Cana',price:'$4,200,000',tag:'Exclusive',beds:6,baths:7,sqm:850,
-    img:'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80&auto=format',featured:true,
-    lat:18.5085,lng:-68.3734,
-    year:2023,lot:2200,pool:'Infinity 25m',parking:4,
-    gallery:[
-      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1200&q=85&auto=format'
-    ],
-    description:'An architectural triumph perched on the coral cliffs of Cap Cana, Villa Oceana commands sweeping 180\u00B0 panoramas of the Caribbean Sea. Floor-to-ceiling glass walls dissolve the boundary between interior and infinity \u2014 morning light floods the Brazilian ipe terraces while the scent of frangipani drifts from the sculpture garden. Every surface speaks of uncompromising craft: Calacatta marble flows through open-plan living spaces, hand-forged bronze fixtures catch the golden hour, and the infinity pool appears to pour into the ocean below.',
-    amenities:['Infinity Pool','Private Beach','Home Cinema','Wine Cellar','Private Spa','Household Staff','24/7 Security','Helipad'],
-    roi:{rentalYield:'8-12%',occupancyRate:'82%',projectedAppreciation:'6-8% p.a.',capRate:'7.2%'},
-    confoturBenefits:'15 years tax exempt: 0% transfer tax, 0% property tax, 0% income tax on rental revenue, 0% capital gains tax.',
-    techSpecs:{construction:'Reinforced concrete + hurricane-rated glazing',energy:'100% solar-ready, Daikin VRV HVAC',water:'Reverse osmosis + 40,000L cistern',smart:'Crestron whole-home automation, Lutron lighting',security:'Biometric entry, 24/7 CCTV, panic room'},
-    conciergeServices:['Private chef placement','Yacht charter coordination','Airport VIP meet & greet','Property management','Housekeeping staff','Luxury car rental']
-  },
-  {
-    slug:'villa-palma',name:'Villa Palma Real',location:'Punta Cana',price:'$2,800,000',tag:'New',beds:5,baths:5,sqm:620,
-    img:'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80&auto=format',
-    lat:18.5601,lng:-68.3725,
-    year:2024,lot:1800,pool:'Natural Lagoon',parking:3,
-    gallery:[
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509782-20d39509f26d?w=1200&q=85&auto=format'
-    ],
-    description:'Set within the most coveted gated enclave of Punta Cana, Villa Palma Real redefines tropical elegance for the modern connoisseur. Delivered in 2024 with impeccable attention to every detail \u2014 Carrara marble countertops gleam beneath pendant lighting by Flos, while walls of local coral stone create a dialogue between contemporary architecture and Caribbean soul. Step through the oversized pivot door into a world where a private lagoon mirrors the sky and tropical gardens release the perfume of night-blooming jasmine.',
-    amenities:['Private Lagoon','Tropical Garden','Summer Kitchen','Panoramic Master Suite','Private Gym','Smart Home','Triple Garage','Staff Quarters'],
-    roi:{rentalYield:'9-11%',occupancyRate:'78%',projectedAppreciation:'7-9% p.a.',capRate:'6.8%'},
-    confoturBenefits:'15-year full tax exemption under Law 158-01. Eligible for accelerated residency program.',
-    techSpecs:{construction:'ICF walls + impact-resistant windows',energy:'Solar panels + Tesla Powerwall',water:'Well + municipal backup, greywater recycling',smart:'Control4 automation, Sonos multi-room',security:'Gated community, private patrol, smart locks'},
-    conciergeServices:['Golf tee-time reservations','Spa & wellness bookings','Private dining experiences','Excursion planning','Pet care services','Event hosting support']
-  },
-  {
-    slug:'penthouse-marina',name:'Penthouse Marina',location:'Cap Cana Marina',price:'$1,950,000',tag:'Sea View',beds:4,baths:4,sqm:380,
-    img:'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80&auto=format',
-    lat:18.5120,lng:-68.3680,
-    year:2022,lot:0,pool:'Rooftop Pool',parking:2,
-    gallery:[
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&auto=format'
-    ],
-    description:'Suspended above the most prestigious marina in the Caribbean, this crown-jewel penthouse offers a front-row seat to a life of nautical luxury. Wake to the sight of superyachts glinting in the morning sun, take your coffee on a wraparound terrace with 360\u00B0 views, then descend directly to your private berth. The rooftop \u2014 your personal sky lounge \u2014 features a cantilevered pool that appears to float above the harbour. Inside: polished terrazzo floors, Boffi kitchen, and ambient lighting that transforms with the hour.',
-    amenities:['Private Rooftop','Cantilevered Pool','360\u00B0 Marina View','Direct Dock Access','Private Elevator','24/7 Concierge','Wine Bar','Full Home Automation'],
-    roi:{rentalYield:'7-10%',occupancyRate:'75%',projectedAppreciation:'5-7% p.a.',capRate:'6.5%'},
-    confoturBenefits:'Full Confotur exemption. Ideal for short-term luxury rental with marina premium.',
-    techSpecs:{construction:'Steel frame + hurricane glass curtain wall',energy:'Building solar array, individual metering',water:'Municipal + building filtration',smart:'Savant Pro automation, motorized blinds',security:'Lobby concierge, biometric elevator, marina patrol'},
-    conciergeServices:['Berth management & yacht provisioning','Water sports & diving','Marina club membership','Helicopter transfers','Fine dining reservations','Personal shopping']
-  },
-  {
-    slug:'domaine-samana',name:'Domaine Saman\u00E1',location:'Las Terrenas',price:'$5,500,000',tag:'Private Estate',beds:8,baths:9,sqm:1200,
-    img:'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80&auto=format',
-    lat:19.3117,lng:-69.5396,
-    year:2021,lot:8500,pool:'2 Pools + Cenote',parking:6,
-    gallery:[
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600047509782-20d39509f26d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format'
-    ],
-    description:'A 8,500 m\u00B2 private estate where virgin jungle cascades to turquoise waters \u2014 Domaine Saman\u00E1 is the Caribbean\'s most exclusive retreat. Follow a botanical path through 200 species of tropical flora to reach a private beach of powdered white sand. The main villa, two guest pavilions, and a restored natural cenote create an archipelago of serenity. Bioclimatic architecture ensures every room breathes with the ocean breeze, while hand-laid river-stone walls and reclaimed teak frame views that no photograph can capture.',
-    amenities:['Private Beach','2 Pools','Natural Cenote','Guest Pavilions','Botanical Garden','Organic Farm','Private Dock','Tennis Court'],
-    roi:{rentalYield:'6-9%',occupancyRate:'70%',projectedAppreciation:'8-12% p.a.',capRate:'5.8%'},
-    confoturBenefits:'Fully Confotur-certified. Highest appreciation potential in emerging luxury corridor.',
-    techSpecs:{construction:'Bioclimatic timber frame + stone',energy:'Off-grid solar + wind micro-turbine',water:'Natural spring + rainwater harvesting',smart:'Minimal tech by design, satellite internet',security:'Private road, estate manager, perimeter sensors'},
-    conciergeServices:['Private naturalist guided tours','Whale watching excursions','Organic farm-to-table dining','Kite & surf instruction','Wellness retreat programming','Private island day trips']
-  },
-  {
-    slug:'villa-coral',name:'Villa Coral Bay',location:'Bayah\u00EDbe',price:'$3,100,000',beds:5,baths:6,sqm:720,
-    img:'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80&auto=format',
-    lat:18.3667,lng:-68.8333,
-    year:2023,lot:3200,pool:'Infinity + Jacuzzi',parking:3,
-    gallery:[
-      'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?w=1200&q=85&auto=format',
-      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=1200&q=85&auto=format'
-    ],
-    description:'Carved into the ancient coral cliffs of Bayah\u00EDbe, overlooking the protected waters of the East National Park, Villa Coral Bay is a sanctuary sculpted by nature and perfected by human vision. Terraces cascade down the cliff face like geological strata, connected by a staircase carved from living rock that leads to a hidden cove. The architecture \u2014 an award-winning fusion of organic forms and contemporary minimalism \u2014 uses exclusively local and sustainable materials: Dominican coral stone, Caribbean cedar, and hand-polished concrete that glows warm in the golden hour light.',
-    amenities:['Private Cove','Infinity Pool','Cliff Jacuzzi','Panoramic Terrace','Master Suite','Artist Studio','Gourmet Kitchen','Zen Garden'],
-    roi:{rentalYield:'7-10%',occupancyRate:'72%',projectedAppreciation:'6-8% p.a.',capRate:'6.2%'},
-    confoturBenefits:'Confotur-eligible. Adjacent to national park ensures perpetual exclusivity and value retention.',
-    techSpecs:{construction:'Coral stone + reinforced concrete',energy:'Solar array + grid backup',water:'Desalination plant + rainwater',smart:'KNX building automation',security:'Cliff-side natural barrier, electronic gates, 24/7 guard'},
-    conciergeServices:['Scuba & snorkeling expeditions','Private island hopping','Marine biologist guided tours','Cliff-side yoga sessions','Art studio access','Chef-curated tasting menus']
-  }
-];
+// Data (fallback — overwritten by supabase fetch)
+/* Catalogue data. Loaded from data.js, which config.js can override with a
+   live Supabase project. Kept in a separate file so the copy can be edited
+   without touching application code. */
+var PROPERTIES = (window.RL_PROPERTIES || []).slice();
 
-const LIFESTYLE = [
-  {title:'Golf Championship',sub:'Dents de Perro · Capcana',img:'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=80&auto=format'},
-  {title:'Yacht & Marina',sub:'Port de plaisance privé',img:'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&q=80&auto=format'},
-  {title:'Gastronomie',sub:'Chefs étoilés & terroir',img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&auto=format'},
-  {title:'Wellness & Spa',sub:'Centres de bien-être',img:'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80&auto=format'},
-];
+var LIFESTYLE = window.RL_LIFESTYLE || [];
 
-const MARQUEE_ITEMS = [
-  'Cap Cana','Punta Cana','<em>Casa de Campo</em>','Las Terrenas','<em>Samaná</em>','Bayahíbe','<em>La Romana</em>','Puerto Plata','<em>Cabarete</em>','Sosúa'
-];
+var MARQUEE_ITEMS = window.RL_PLACES || [];
 
-// ─── RENDER ───
+// Render
 function renderProperties(){
   const grid = document.getElementById('propsGrid');
   var t = I18N[currentLang] || I18N.en;
@@ -715,7 +822,7 @@ function renderMarquee(){
   document.getElementById('marqueeTrack').innerHTML = items;
 }
 
-// ─── NAVIGATION ───
+// Navigation
 function scrollToSection(id){
   var el = document.getElementById(id);
   if(!el) return;
@@ -728,9 +835,9 @@ function scrollToSection(id){
     // Refresh ScrollTrigger so sections become visible
     if(typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
     var header = document.getElementById('mainHeader');
-    var banner = document.getElementById('disclaimerBanner');
+    var notice = document.getElementById('siteNotice');
     var headerH = (header ? header.offsetHeight : 80);
-    if(banner && banner.style.display !== 'none') headerH += banner.offsetHeight || 0;
+    if(notice && !notice.hidden) headerH += notice.offsetHeight || 0;
     var y = el.getBoundingClientRect().top + window.pageYOffset - headerH - 10;
     if(typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined'){
       gsap.registerPlugin(ScrollToPlugin);
@@ -743,24 +850,32 @@ function scrollToSection(id){
   if(wasOpen){ setTimeout(doScroll, 200); } else { doScroll(); }
 }
 function toggleNav(){
-  const nav = document.getElementById('mainNav');
-  const header = document.getElementById('mainHeader');
-  const wa = document.querySelector('.wa-btn');
-  nav.classList.toggle('open');
-  const isOpen = nav.classList.contains('open');
-  if(header) header.style.zIndex = isOpen ? '9999' : '';
-  if(wa) wa.style.display = isOpen ? 'none' : '';
+  setNav(!document.getElementById('mainNav').classList.contains('open'));
 }
-function closeNav(){
+function closeNav(){ setNav(false); }
+
+/* The open menu covers the page, so the header has to be restyled for a light
+   background. The class goes on <body> because the logo precedes the nav in the
+   markup and no CSS combinator reaches backwards. */
+function setNav(open){
   const nav = document.getElementById('mainNav');
   const header = document.getElementById('mainHeader');
+  const toggle = document.getElementById('mobToggle');
   const wa = document.querySelector('.wa-btn');
-  nav.classList.remove('open');
-  if(header) header.style.zIndex = '';
-  if(wa) wa.style.display = '';
+  if(!nav) return;
+  nav.classList.toggle('open', open);
+  document.body.classList.toggle('nav-open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+  if(header) header.style.zIndex = open ? '9999' : '';
+  if(toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if(wa) wa.style.display = open ? 'none' : '';
 }
 
-// ─── HEADER SCROLL ───
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeNav();
+});
+
+// Header scroll
 let lastScroll = 0;
 window.addEventListener('scroll',()=>{
   const h = document.getElementById('mainHeader');
@@ -768,20 +883,7 @@ window.addEventListener('scroll',()=>{
   lastScroll = window.scrollY;
 },{passive:true});
 
-// ─── CUSTOM CURSOR ───
-if(window.matchMedia('(pointer:fine)').matches){
-  const dot=document.getElementById('curDot'),ring=document.getElementById('curRing');
-  let mx=0,my=0,dx=0,dy=0;
-  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.transform='translate3d('+(mx-4)+'px,'+(my-4)+'px,0)'},{ passive:true });
-  function animCursor(){dx+=(mx-dx)*.12;dy+=(my-dy)*.12;ring.style.transform='translate3d('+(dx-20)+'px,'+(dy-20)+'px,0)';requestAnimationFrame(animCursor)}
-  animCursor();
-  document.querySelectorAll('a,button,.prop-card,.life-card,.pd-thumb,.pd-amenity').forEach(el=>{
-    el.addEventListener('mouseenter',()=>ring.classList.add('hover'));
-    el.addEventListener('mouseleave',()=>ring.classList.remove('hover'));
-  });
-}
-
-// ═══ i18n SYSTEM ═══
+// I18n system
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('rl-lang', lang);
@@ -799,12 +901,7 @@ function setLang(lang) {
   });
   // Re-render properties with translated labels
   renderProperties();
-  // Update WhatsApp link
-  const waBtn = document.getElementById('waBtn');
-  if (waBtn && t.wa_text) {
-    const msg = I18N[lang] || I18N.en;
-    waBtn.href = 'https://wa.me/61436007811?text=' + encodeURIComponent(msg.hero_sub || '');
-  }
+  applyContactConfig();
 }
 function toggleLangMenu(e) {
   e && e.stopPropagation();
@@ -814,7 +911,7 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('.lang-sel')) document.getElementById('langSel')?.classList.remove('open');
 });
 
-// ═══ QUALIFICATION TUNNEL ═══
+// Qualification tunnel
 let tunnelStep = 0;
 let tunnelData = { horizon: '', budget: '1m-3m', confotur: false };
 
@@ -908,9 +1005,7 @@ function submitTunnel(e) {
     language: currentLang
   };
 
-  /* ══════════════════════════════════════════════════════════
-     LEAD GUARD TUNNEL — Enregistrement Supabase AVANT succès
-     ══════════════════════════════════════════════════════════ */
+  /* The confirmation is only shown once the enquiry is recorded. */
   insertLeadFromTunnel(leadData, function(err, result) {
     if (err) {
       console.warn('[Real Luxe] Tunnel Lead Guard : erreur Supabase, lead sauvegardé localement');
@@ -940,7 +1035,7 @@ function showTunnelSuccess() {
   gsap.from(success, {opacity: 0, y: 20, duration: 0.6, ease: 'power3.out'});
 }
 
-// ═══ VAULT ACCESS FORM ═══
+// Vault access form
 function openVaultForm() {
   document.getElementById('vaultModal').classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -986,9 +1081,7 @@ function submitVaultForm(e) {
 
   var vaultData = { name:name, email:email, phone:phone, budget:budget, message:msg, source:'vault', language:currentLang };
 
-  /* ══════════════════════════════════════════════════════════
-     LEAD GUARD VAULT — Enregistrement Supabase AVANT succès
-     ══════════════════════════════════════════════════════════ */
+  /* The confirmation is only shown once the enquiry is recorded. */
   insertLeadFromVault(vaultData, function(err, result) {
     if (err) {
       console.warn('[Real Luxe] Vault Lead Guard : erreur Supabase, lead sauvegardé localement');
@@ -1017,7 +1110,7 @@ function showVaultSuccess() {
   setTimeout(closeVaultForm, 4000);
 }
 
-// ═══ CONFOTUR CALCULATOR ═══
+// Confotur calculator
 function updateCalc() {
   const raw = document.getElementById('calcInput').value.replace(/[^0-9]/g, '');
   const price = parseInt(raw) || 0;
@@ -1038,26 +1131,54 @@ function updateCalc() {
   document.getElementById('calcTotal').textContent = fmt(total);
 }
 
-// ─── PRELOADER ───
-function initPreloader(){
-  const tl = gsap.timeline();
-  tl.to('.pre-logo',{opacity:1,y:0,duration:.8,ease:'power3.out'})
-    .to('.pre-sub',{opacity:1,duration:.5},'<+.3')
-    .to('.pre-fill',{width:'100%',duration:1.5,ease:'power2.inOut'},'<')
-    .to('#preloader', {
-      yPercent: -100,
-      duration: 0.9,
-      ease: 'power3.inOut',
-      delay: 0.3,
-      onComplete: () => {
-        document.getElementById('preloader').classList.add('done');
-        initAnimations();
-      }
-    });
+// Preloader
+/* The intro curtain.
+
+   hidePreloader is idempotent and never depends on GSAP, because the curtain
+   covers the entire page: if it fails to lift, the site is a blank screen. A
+   watchdog lifts it regardless after two seconds, and again on window load, so
+   a blocked or slow CDN costs an animation rather than the whole page. */
+var _preloaderDone = false;
+function hidePreloader() {
+  if (_preloaderDone) return;
+  _preloaderDone = true;
+  var el = document.getElementById('preloader');
+  if (el) el.classList.add('done');
+  initAnimations();
 }
 
-// ─── GSAP ANIMATIONS ───
+function initPreloader() {
+  var el = document.getElementById('preloader');
+  if (!el) { hidePreloader(); return; }
+
+  /* Watchdogs, armed before anything that could throw. */
+  setTimeout(hidePreloader, 2000);
+  window.addEventListener('load', function () { setTimeout(hidePreloader, 300); });
+
+  if (gsap.__stub || prefersReducedMotion()) { hidePreloader(); return; }
+
+  try {
+    gsap.timeline()
+      .to('.pre-logo', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+      .to('.pre-sub', { opacity: 1, duration: 0.5 }, '<+.25')
+      .to('#preloader', {
+        opacity: 0, duration: 0.7, ease: 'power2.inOut', delay: 0.35,
+        onComplete: hidePreloader
+      });
+  } catch (err) {
+    hidePreloader();
+  }
+}
+
+/* Scroll and entrance animation. Every effect here is decoration: the page is
+   fully readable with this function never running, which is what happens when
+   the animation library is blocked or the visitor asks for reduced motion. */
+var _animationsRun = false;
 function initAnimations(){
+  if (_animationsRun) return;
+  _animationsRun = true;
+  if (gsap.__stub || typeof ScrollTrigger === 'undefined' || prefersReducedMotion()) return;
+
   gsap.registerPlugin(ScrollTrigger);
   if(typeof ScrollToPlugin !== 'undefined') gsap.registerPlugin(ScrollToPlugin);
 
@@ -1176,27 +1297,35 @@ function initAnimations(){
     var selectors = ['.props-header','.prop-card','.about-img-wrap','.about-content','.about-feat','.life-card','.confotur-card','.fo-card','.testi-img','.testi-content','.contact-info','.form-card','.sec-label','.sec-title','#vault .sec-label','#vault .sec-title','#vault p','#vault .btn-primary','.partner-logo','.partner-svc'];
     selectors.forEach(function(sel){
       document.querySelectorAll(sel).forEach(function(el){
-        if(getComputedStyle(el).opacity < 0.1) {
-          gsap.to(el, {opacity:1, y:0, x:0, duration:0.3, clearProps:'all'});
+        if(parseFloat(getComputedStyle(el).opacity) < 0.1) {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
         }
       });
     });
   }, 4000);
 }
 
-// ─── FAMILY OFFICE ACCORDION ───
+// Family office accordion
 function toggleFO(n) {
   const card = document.getElementById('foCard' + n);
-  const isOpen = card.classList.contains('open');
+  if (!card) return;
+  const willOpen = !card.classList.contains('open');
 
-  // Close all
-  document.querySelectorAll('.fo-card').forEach(c => c.classList.remove('open'));
+  document.querySelectorAll('.fo-card').forEach(c => {
+    c.classList.remove('open');
+    const h = c.querySelector('.fo-card-header');
+    if (h) h.setAttribute('aria-expanded', 'false');
+  });
 
-  // Open clicked if it was closed
-  if (!isOpen) card.classList.add('open');
+  if (willOpen) {
+    card.classList.add('open');
+    const h = card.querySelector('.fo-card-header');
+    if (h) h.setAttribute('aria-expanded', 'true');
+  }
 }
 
-// ─── INIT ───
+// Init
 document.addEventListener('DOMContentLoaded',()=>{
   renderProperties();
   renderLifestyle();
@@ -1211,7 +1340,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   var propSlug = urlParams.get('property');
   if (propSlug) {
     setTimeout(async function(){
-      // Si la propriété n'est pas dans le tableau hardcodé, la chercher dans Supabase
+      // Not in the bundled catalogue: look it up in the configured project
       var found = PROPERTIES.find(function(pr){ return pr.slug === propSlug; });
       if (!found && typeof fetchPublishedProperties === 'function') {
         try {
@@ -1230,14 +1359,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }
 
-  // Nav click bounce feedback
+  // Nav click feedback (CSS transition on .clicked)
   document.querySelectorAll('.nav-link, .nav-cta').forEach(function(link) {
     link.addEventListener('click', function(){
       var el = this;
       el.classList.remove('clicked');
       void el.offsetWidth; // force reflow
       el.classList.add('clicked');
-      gsap.fromTo(el, {scale:1}, {scale:1.1, duration:0.15, ease:'power2.out', yoyo:true, repeat:1});
       setTimeout(function(){ el.classList.remove('clicked'); }, 500);
     });
   });
@@ -1245,189 +1373,112 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Init calculator
   updateCalc();
 
-  // Parallax on property images
-  document.querySelectorAll('.prop-img img').forEach(img => {
-    gsap.to(img, {
-      yPercent: -8, ease: 'none',
-      scrollTrigger: { trigger: img.closest('.prop-card'), start: 'top bottom', end: 'bottom top', scrub: 1 }
+  // Decorative scroll effects, skipped when the library is absent
+  if (!gsap.__stub && typeof ScrollTrigger !== 'undefined' && !prefersReducedMotion()) {
+    document.querySelectorAll('.prop-img img').forEach(img => {
+      gsap.to(img, {
+        yPercent: -8, ease: 'none',
+        scrollTrigger: { trigger: img.closest('.prop-card'), start: 'top bottom', end: 'bottom top', scrub: 1 }
+      });
     });
-  });
 
-  // Calculator animation
-  gsap.from('.calc-module', {
-    opacity: 0, y: 60, duration: 0.8, ease: 'power3.out',
-    scrollTrigger: { trigger: '.calc-module', start: 'top 80%' }
-  });
+    gsap.from('.calc-module', {
+      opacity: 0, y: 60, duration: 0.8, ease: 'power3.out',
+      scrollTrigger: { trigger: '.calc-module', start: 'top 80%' }
+    });
 
-  // Partners animation
-  gsap.from('.partner-logo', {
-    opacity: 0, y: 30, duration: 0.6, stagger: 0.1, ease: 'power3.out',
-    scrollTrigger: { trigger: '#partners', start: 'top 85%' }
-  });
-  gsap.from('.partner-svc', {
-    opacity: 0, y: 40, duration: 0.6, stagger: 0.12, ease: 'power3.out',
-    scrollTrigger: { trigger: '.partners-services', start: 'top 88%' }
-  });
+    gsap.from('.partner-svc', {
+      opacity: 0, y: 40, duration: 0.6, stagger: 0.12, ease: 'power3.out',
+      scrollTrigger: { trigger: '.partners-services', start: 'top 88%' }
+    });
+  }
 
 });
 
 
 } // end INDEX
 
-/* ═══════════════════════════════════════════════════════════════
-   CATALOGUE PAGE
-   ═══════════════════════════════════════════════════════════════ */
+/* CATALOGUE PAGE */
 if (PAGE_TYPE === 'catalogue') {
 
-/* ═══════════════════════════════════════════════════════════════
-   CATALOGUE — DONNÉES DYNAMIQUES VIA SUPABASE
-   ═══════════════════════════════════════════════════════════════
-   Les données ne sont plus codées en dur.
-   Elles sont récupérées via fetchPublishedProperties()
-   défini dans supabase-client.js.
+/* Catalogue data flow:
+     DOMContentLoaded -> loadPropertiesFromSupabase()
+                      -> PROPERTIES filled from the project, or from data.js
+                      -> renderCards() injects the DOM
+                      -> initAnimations() runs, after the cards exist. */
 
-   Flux d'initialisation :
-     1. DOMContentLoaded → loadPropertiesFromSupabase()
-     2. Fetch async → PROPERTIES[] rempli
-     3. renderCards(true) → injection DOM
-     4. initAnimations() → GSAP s'exécute APRÈS le DOM
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Source de données dynamique (rempli après fetch Supabase) */
+/* Filled by loadPropertiesFromSupabase, from the project or from data.js. */
 var PROPERTIES = [];
 
-/* Flag : indique si les données ont été chargées avec succès */
+/* True once the grid has been populated. */
 var _dataReady = false;
 
 /* ===================================================================
    SUPABASE DATA LOADER
    =================================================================== */
 
-/**
- * loadPropertiesFromSupabase()
- * ────────────────────────────
- * Orchestre le chargement des données :
- *   1. Affiche le loader
- *   2. Fetch les propriétés publiées
- *   3. Normalise les données pour le renderer existant
- *   4. Met à jour les stats dynamiques du hero
- *   5. Lance le premier rendu + animations GSAP
+/*
+ * Fills the catalogue grid.
  *
- * En cas d'erreur → affiche un message + bouton retry.
+ * Order of preference:
+ *   1. the Supabase project named in config.js, when one is configured;
+ *   2. the bundled catalogue in data.js.
+ *
+ * The bundled catalogue is also used whenever a configured project is
+ * unreachable, so a network problem degrades the page rather than emptying it.
  */
 async function loadPropertiesFromSupabase() {
   var grid = document.getElementById('propsGrid');
   var loader = document.getElementById('propsLoader');
-
-  /* Afficher le loader */
   if (loader) loader.style.display = 'flex';
 
-  try {
-    /* ── DIAGNOSTIC 1 : Le SDK Supabase est-il chargé ? ── */
-    if (typeof window.supabase === 'undefined') {
-      throw new Error(
-        'SDK Supabase NON CHARGÉ.\n' +
-        'window.supabase est undefined.\n' +
-        'CAUSE PROBABLE : La balise <script> du CDN Supabase n\'a pas fonctionné.\n' +
-        'SOLUTION : Ouvre catalogue.html et vérifie que cette ligne existe dans le <head> :\n' +
-        '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
-      );
-    }
+  var rows = null;
+  var configured = !!(window.RL && window.RL.has('integrations.supabase.url') &&
+                      window.RL.has('integrations.supabase.anonKey'));
 
-    /* ── DIAGNOSTIC 2 : supabase-client.js a-t-il été chargé ? ── */
-    if (typeof fetchPublishedProperties !== 'function') {
-      throw new Error(
-        'La fonction fetchPublishedProperties() n\'existe pas.\n' +
-        'CAUSE PROBABLE : supabase-client.js n\'est pas chargé ou a crashé.\n' +
-        'SOLUTION : Vérifie que <script src="supabase-client.js"></script> est dans catalogue.html AVANT script.js.'
-      );
-    }
-
-    /* ── DIAGNOSTIC 3 : Le client Supabase est-il initialisé ? ── */
-    if (typeof _supabaseReady !== 'undefined' && !_supabaseReady) {
-      var reason = (typeof _supabaseError !== 'undefined' && _supabaseError)
-        ? _supabaseError.message
-        : 'Raison inconnue — ouvre la Console pour plus de détails.';
-      throw new Error(
-        'Le client Supabase n\'a pas réussi à s\'initialiser.\n' + reason
-      );
-    }
-
-    /* ── Fetch depuis Supabase (status = 'published' filtré côté serveur) ── */
-    console.log('[Real Luxe] Lancement du fetch Supabase...');
-    var rawData = await fetchPublishedProperties();
-
-    if (!rawData || rawData.length === 0) {
-      console.warn('[Real Luxe] Requête OK mais 0 résultats.');
-      console.warn('[Real Luxe]   → Vérifie que la table "properties" contient des lignes avec status = "published"');
-      showEmptyState(grid);
-      return;
-    }
-
-    /* ── Normaliser chaque ligne pour le renderer de cartes existant ── */
-    PROPERTIES = rawData.map(normalizeProperty);
-    displayedProperties = PROPERTIES.slice();
-    _dataReady = true;
-
-    /* ── Mettre à jour la ligne de stats du hero ── */
-    updateHeroStats(PROPERTIES);
-
-    /* ── Supprimer le loader ── */
-    if (loader) loader.remove();
-
-    /* ── Premier rendu des cartes AVEC animation ── */
-    renderCards(true);
-
-    /* ── Lancer les animations GSAP (uniquement après injection DOM) ── */
-    if (typeof gsap !== 'undefined') {
-      initAnimations();
-
-      /* ── ScrollTrigger pour le footer ── */
-      if (typeof ScrollTrigger !== 'undefined') {
-        gsap.registerPlugin(ScrollTrigger);
-        gsap.from('.cat-footer', {
-          scrollTrigger: {
-            trigger: '.cat-footer',
-            start: 'top 95%',
-            toggleActions: 'play none none none'
-          },
-          opacity: 0,
-          y: 30,
-          duration: 0.8,
-          ease: 'power3.out'
-        });
+  if (configured) {
+    try {
+      if (typeof window.supabase === 'undefined') throw new Error('Supabase SDK did not load.');
+      if (typeof fetchPublishedProperties !== 'function') throw new Error('supabase-client.js did not load.');
+      if (typeof _supabaseReady !== 'undefined' && !_supabaseReady) {
+        throw new Error((typeof _supabaseError !== 'undefined' && _supabaseError)
+          ? _supabaseError.message : 'Supabase client failed to initialise.');
       }
-    } else {
-      console.warn('[Real Luxe] GSAP non chargé — les animations sont désactivées.');
+      var raw = await fetchPublishedProperties();
+      if (raw && raw.length) rows = raw.map(normalizeProperty);
+      else console.warn('[Real Luxe] Supabase returned no published rows; using the bundled catalogue.');
+    } catch (err) {
+      console.warn('[Real Luxe] Supabase unavailable (' + err.message + '); using the bundled catalogue.');
     }
+  }
 
-    console.log('[Real Luxe] ✓ ' + PROPERTIES.length + ' propriétés chargées depuis Supabase');
+  if (!rows || !rows.length) rows = (window.RL_PROPERTIES || []).slice();
 
-  } catch (err) {
-    console.error('═══════════════════════════════════════════════');
-    console.error('[Real Luxe] ✗ ÉCHEC DU CHARGEMENT DES PROPRIÉTÉS');
-    console.error('═══════════════════════════════════════════════');
-    console.error('[Real Luxe] Type :', err.name || 'Unknown');
-    console.error('[Real Luxe] Message :', err.message);
-    if (err.stack) {
-      console.error('[Real Luxe] Stack :', err.stack);
-    }
-    console.error('───────────────────────────────────────────────');
-    console.error('[Real Luxe] CHECKLIST DE DIAGNOSTIC :');
-    console.error('  1. window.supabase existe ?', typeof window.supabase);
-    console.error('  2. _supabaseReady ?', typeof _supabaseReady !== 'undefined' ? _supabaseReady : 'N/A');
-    console.error('  3. _supabaseError ?', typeof _supabaseError !== 'undefined' && _supabaseError ? _supabaseError.message : 'aucune');
-    console.error('  4. fetchPublishedProperties existe ?', typeof fetchPublishedProperties);
-    console.error('═══════════════════════════════════════════════');
-    showErrorState(grid, err.message);
+  if (!rows.length) { showEmptyState(grid); return; }
+
+  PROPERTIES = rows;
+  displayedProperties = PROPERTIES.slice();
+  _dataReady = true;
+
+  updateHeroStats(PROPERTIES);
+  buildLocationFilters(PROPERTIES);
+  if (loader) loader.remove();
+  renderCards(true);
+
+  initAnimations();
+  if (!gsap.__stub && typeof ScrollTrigger !== 'undefined' && !prefersReducedMotion()) {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.from('.cat-footer', {
+      scrollTrigger: { trigger: '.cat-footer', start: 'top 95%', toggleActions: 'play none none none' },
+      opacity: 0, y: 30, duration: 0.8, ease: 'power3.out'
+    });
   }
 }
 
 /**
  * updateHeroStats(properties)
- * ───────────────────────────
- * Met à jour dynamiquement la ligne de stats du hero
- * avec les données réelles (nombre, locations, prix min).
+ * Rewrites the hero stat line from the properties actually loaded, so it
+ * cannot claim a count or an entry price the catalogue does not have.
  */
 function updateHeroStats(properties) {
   var statsEl = document.querySelector('.cat-hero-stats');
@@ -1438,40 +1489,34 @@ function updateHeroStats(properties) {
 
   for (var i = 0; i < properties.length; i++) {
     var p = properties[i];
-    /* Comptage des locations uniques */
+    /* Distinct areas */
     if (locations.indexOf(p.location) === -1) {
       locations.push(p.location);
     }
-    /* Prix minimum */
+    /* Lowest asking price */
     var numPrice = parsePriceNumber(p.price);
     if (numPrice < minPrice) minPrice = numPrice;
   }
 
-  /* Formater le prix minimum (ex: $1.95M) */
+  /* Formatted as $1.95M */
   var priceStr = minPrice >= 1000000
     ? '$' + (minPrice / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M'
     : '$' + minPrice.toLocaleString();
 
-  var t = I18N[currentLang] || I18N.en;
-  var propWord = currentLang === 'fr' ? 'Propriétés' :
-                 currentLang === 'es' ? 'Propiedades' :
-                 'Properties';
-  var locWord  = currentLang === 'fr' ? 'Emplacements' :
-                 currentLang === 'es' ? 'Ubicaciones' :
-                 'Locations';
-  var fromWord = currentLang === 'fr' ? 'À partir de' :
-                 currentLang === 'es' ? 'Desde' :
-                 'From';
+  var words = {
+    en: { props: 'properties', areas: 'areas', from: 'from' },
+    fr: { props: 'biens', areas: 'secteurs', from: 'à partir de' },
+    es: { props: 'propiedades', areas: 'zonas', from: 'desde' }
+  }[currentLang] || { props: 'properties', areas: 'areas', from: 'from' };
 
-  statsEl.textContent = properties.length + ' ' + propWord +
-    ' · ' + locations.length + ' ' + locWord +
-    ' · ' + fromWord + ' ' + priceStr;
+  statsEl.textContent = properties.length + ' ' + words.props +
+    ' · ' + locations.length + ' ' + words.areas +
+    ' · ' + words.from + ' ' + priceStr;
 }
 
 /**
  * showEmptyState(grid)
- * ────────────────────
- * Affiche un message quand aucune propriété n'est trouvée.
+ * Shown when the catalogue is empty.
  */
 function showEmptyState(grid) {
   grid.innerHTML =
@@ -1483,8 +1528,7 @@ function showEmptyState(grid) {
 
 /**
  * showErrorState(grid, errorMsg)
- * ──────────────────────────────
- * Affiche un message d'erreur avec le détail réel + bouton retry.
+ * Shown when loading failed outright, with a retry.
  * En mode dev, l'erreur exacte est visible dans le DOM.
  */
 function showErrorState(grid, errorMsg) {
@@ -1517,8 +1561,7 @@ function showErrorState(grid, errorMsg) {
 
 /**
  * retryLoad()
- * ───────────
- * Relance le chargement après une erreur.
+ * Retries the load after a failure.
  */
 function retryLoad() {
   var grid = document.getElementById('propsGrid');
@@ -1533,91 +1576,94 @@ function retryLoad() {
 /* ===================================================================
    i18n
    =================================================================== */
+/* Translations for the catalogue. The property count and entry price in
+   cat_stats_line are recalculated from the live data by updateHeroStats. */
 var I18N = {
+  en: {
+    cat_label:'Catalogue', cat_title:'The full <em>catalogue</em>',
+    cat_sub:'Everything currently on the books, sorted and filtered however you like. Off-market properties are not shown here.',
+    card_beds:'bed', card_baths:'bath',
+    back_home:'Home',
+    filter_all:'All',
+    filter_price_asc:'Lowest first',
+    filter_price_desc:'Highest first',
+    cat_view_details:'Details',
+    cat_stats_line:'5 properties \u00B7 4 areas \u00B7 from $1.95M',
+    cat_photos:'photos',
+    cat_request_visit:'Enquire',
+    lead_title:'Enquire about this property',
+    lead_sub:'An adviser replies within one working day, with the floor plans and the title position.',
+    lead_name:'Full name',
+    lead_email:'Email',
+    lead_phone:'Telephone',
+    lead_message:'Message (optional)',
+    lead_send:'Send',
+    lead_success_title:'Received',
+    lead_success_sub:'We have your enquiry and will come back to you within one working day.',
+    lead_wa_cta:'Continue on WhatsApp',
+    lead_close:'Close',
+    pd_cta_visit:'Arrange a viewing', pd_cta_whatsapp:'Request the dossier'
+  },
   fr: {
-    cat_label:'Collection Compl\u00E8te', cat_title:'Nos <em>Propri\u00E9t\u00E9s</em>', cat_sub:'Explorez notre collection compl\u00E8te de propri\u00E9t\u00E9s de luxe en R\u00E9publique Dominicaine.',
-    card_beds:'Ch.', card_baths:'SdB',
-    back_home:'Retour',
-    filter_all:'Toutes',
+    cat_label:'Catalogue', cat_title:'Le catalogue <em>complet</em>',
+    cat_sub:'Tout ce qui est actuellement au portefeuille, tri\u00E9 et filtr\u00E9 \u00E0 votre guise. Les biens hors march\u00E9 n\u2019y figurent pas.',
+    card_beds:'ch.', card_baths:'sdb',
+    back_home:'Accueil',
+    filter_all:'Tous',
     filter_price_asc:'Prix croissant',
     filter_price_desc:'Prix d\u00E9croissant',
-    cat_view_details:'Voir les D\u00E9tails',
-    cat_stats_line:'5 Propri\u00E9t\u00E9s \u00B7 3 Emplacements \u00B7 \u00C0 partir de $1.95M',
-    footer_rights:'\u00A9 2024 Real Luxe. Tous droits r\u00E9serv\u00E9s.',
+    cat_view_details:'D\u00E9tails',
+    cat_stats_line:'5 biens \u00B7 4 secteurs \u00B7 \u00E0 partir de $1.95M',
     cat_photos:'photos',
-    cat_request_visit:'Solliciter une Visite',
-    lead_title:'Consultation Priv\u00E9e',
-    lead_sub:'Notre \u00E9quipe vous contactera sous 24h pour une exp\u00E9rience personnalis\u00E9e.',
+    cat_request_visit:'Nous \u00E9crire',
+    lead_title:'Se renseigner sur ce bien',
+    lead_sub:'Un conseiller r\u00E9pond sous un jour ouvr\u00E9, avec les plans et la situation du titre.',
     lead_name:'Nom complet',
-    lead_email:'Email',
+    lead_email:'E-mail',
     lead_phone:'T\u00E9l\u00E9phone',
-    lead_message:'Message (optionnel)',
-    lead_send:'Envoyer la Demande',
-    lead_success_title:'Demande VIP Transmise',
-    lead_success_sub:'Notre \u00E9quipe concierge a \u00E9t\u00E9 notifi\u00E9e et vous contactera dans les plus brefs d\u00E9lais.',
-    lead_wa_cta:'R\u00E9ponse Imm\u00E9diate sur WhatsApp',
-    lead_close:'Fermer'
-  },
-  en: {
-    cat_label:'Full Collection', cat_title:'Our <em>Properties</em>', cat_sub:'Explore our complete collection of luxury properties in the Dominican Republic.',
-    card_beds:'Beds', card_baths:'Baths',
-    back_home:'Back',
-    filter_all:'All',
-    filter_price_asc:'Price: Low to High',
-    filter_price_desc:'Price: High to Low',
-    cat_view_details:'View Details',
-    cat_stats_line:'5 Properties \u00B7 3 Locations \u00B7 From $1.95M',
-    footer_rights:'\u00A9 2024 Real Luxe. All rights reserved.',
-    cat_photos:'photos',
-    cat_request_visit:'Request a Visit',
-    lead_title:'Private Consultation',
-    lead_sub:'Our team will contact you within 24 hours for a personalized experience.',
-    lead_name:'Full Name',
-    lead_email:'Email',
-    lead_phone:'Phone',
-    lead_message:'Message (optional)',
-    lead_send:'Send Request',
-    lead_success_title:'VIP Request Transmitted',
-    lead_success_sub:'Our concierge team has been notified and will contact you shortly.',
-    lead_wa_cta:'Immediate Response on WhatsApp',
-    lead_close:'Close'
+    lead_message:'Message (facultatif)',
+    lead_send:'Envoyer',
+    lead_success_title:'Bien re\u00E7u',
+    lead_success_sub:'Nous avons votre demande et revenons vers vous sous un jour ouvr\u00E9.',
+    lead_wa_cta:'Continuer sur WhatsApp',
+    lead_close:'Fermer',
+    pd_cta_visit:'Organiser une visite', pd_cta_whatsapp:'Demander le dossier'
   },
   es: {
-    cat_label:'Colecci\u00F3n Completa', cat_title:'Nuestras <em>Propiedades</em>', cat_sub:'Explore nuestra colecci\u00F3n completa de propiedades de lujo en Rep\u00FAblica Dominicana.',
-    card_beds:'Hab.', card_baths:'Ba\u00F1os',
-    back_home:'Volver',
+    cat_label:'Cat\u00E1logo', cat_title:'El cat\u00E1logo <em>completo</em>',
+    cat_sub:'Todo lo que hay ahora en cartera, ordenado y filtrado como prefiera. Las propiedades fuera de mercado no aparecen aqu\u00ED.',
+    card_beds:'hab.', card_baths:'ba\u00F1os',
+    back_home:'Inicio',
     filter_all:'Todas',
-    filter_price_asc:'Precio: menor a mayor',
-    filter_price_desc:'Precio: mayor a menor',
-    cat_view_details:'Ver Detalles',
-    cat_stats_line:'5 Propiedades \u00B7 3 Ubicaciones \u00B7 Desde $1.95M',
-    footer_rights:'\u00A9 2024 Real Luxe. Todos los derechos reservados.',
+    filter_price_asc:'Menor precio primero',
+    filter_price_desc:'Mayor precio primero',
+    cat_view_details:'Detalles',
+    cat_stats_line:'5 propiedades \u00B7 4 zonas \u00B7 desde $1.95M',
     cat_photos:'fotos',
-    cat_request_visit:'Solicitar una Visita',
-    lead_title:'Consulta Privada',
-    lead_sub:'Nuestro equipo le contactar\u00E1 en 24 horas para una experiencia personalizada.',
+    cat_request_visit:'Consultar',
+    lead_title:'Consultar sobre esta propiedad',
+    lead_sub:'Un asesor responde en un d\u00EDa laborable, con los planos y la situaci\u00F3n del t\u00EDtulo.',
     lead_name:'Nombre completo',
-    lead_email:'Email',
+    lead_email:'Correo',
     lead_phone:'Tel\u00E9fono',
     lead_message:'Mensaje (opcional)',
-    lead_send:'Enviar Solicitud',
-    lead_success_title:'Solicitud VIP Transmitida',
-    lead_success_sub:'Nuestro equipo concierge ha sido notificado y le contactar\u00E1 en breve.',
-    lead_wa_cta:'Respuesta Inmediata por WhatsApp',
-    lead_close:'Cerrar'
+    lead_send:'Enviar',
+    lead_success_title:'Recibido',
+    lead_success_sub:'Tenemos su consulta y le responderemos en un d\u00EDa laborable.',
+    lead_wa_cta:'Seguir por WhatsApp',
+    lead_close:'Cerrar',
+    pd_cta_visit:'Concertar una visita', pd_cta_whatsapp:'Pedir el dosier'
   }
 };
 
-/* ===================================================================
-   PARTNER AGENCY MAPPING
-   =================================================================== */
+/* Local desk covering each area. Names only: routing an enquiry to a third
+   party requires a written agreement with them, so no address is shipped. */
 var PARTNER_AGENCIES = {
-  'Cap Cana':       { name: 'Cap Cana Real Estate', email: 'sales@capcana.com' },
-  'Punta Cana':     { name: 'Punta Cana Realty', email: 'info@puntacanarealty.com' },
-  'Las Terrenas':   { name: 'Las Terrenas Properties', email: 'contact@lasterrenasproperties.com' },
-  'Bayah\u00EDbe': { name: 'Bayah\u00EDbe Estates', email: 'info@bayahibeestates.com' },
-  'Saman\u00E1':   { name: 'Saman\u00E1 Properties', email: 'info@samanaproperties.com' },
-  'Casa de Campo':  { name: 'Casa de Campo Real Estate', email: 'realestate@casadecampo.com' }
+  'Cap Cana':     { name: 'Cap Cana desk' },
+  'Punta Cana':   { name: 'Punta Cana desk' },
+  'Las Terrenas': { name: 'Samaná desk' },
+  'Bayah\u00EDbe':  { name: 'La Romana desk' },
+  'Saman\u00E1':    { name: 'Samaná desk' }
 };
 
 /* ===================================================================
@@ -1706,7 +1752,9 @@ function renderCards(animate) {
           '</div>' +
           '<div class="cat-card-bottom">' +
             '<div class="cat-card-price">' + p.price + '</div>' +
-            '<a href="#" class="cat-card-btn" onclick="event.preventDefault();event.stopPropagation();openPropertyDetail(\'' + p.slug + '\',event)">' +
+            /* A real URL, so the card can be opened in a new tab, shared and
+               indexed; the click handler shows the overlay instead. */
+            '<a href="property.html?slug=' + encodeURIComponent(p.slug) + '" class="cat-card-btn" onclick="if(event.metaKey||event.ctrlKey||event.shiftKey)return;event.preventDefault();event.stopPropagation();openPropertyDetail(\'' + p.slug + '\',event)">' +
               '<span>' + viewLabel + '</span>' +
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
             '</a>' +
@@ -1737,21 +1785,49 @@ function renderCards(animate) {
   }
 
   // Re-bind hover for custom cursor
-  initCursorHovers();
+
 }
 
 /* ===================================================================
    FILTER & SORT
    =================================================================== */
 function filterByLocation(location, btn) {
-  // Update active chip
   var chips = document.querySelectorAll('.filter-chip');
   for (var i = 0; i < chips.length; i++) {
     chips[i].classList.remove('active');
   }
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
   activeFilter = location;
   applyFilterSort(true);
+}
+
+/* Builds the location chips from whatever is actually in the catalogue, so the
+   filters cannot drift out of step with the listings the way a hard-coded list
+   does. Chips are inserted before the separator, leaving the sort controls. */
+function buildLocationFilters(properties) {
+  var bar = document.getElementById('filterBarInner');
+  if (!bar) return;
+  var sep = bar.querySelector('.filter-separator');
+
+  bar.querySelectorAll('.filter-chip').forEach(function (c) {
+    if (c.getAttribute('data-filter') !== 'all') c.remove();
+  });
+
+  var seen = [];
+  properties.forEach(function (p) {
+    if (p.location && seen.indexOf(p.location) === -1) seen.push(p.location);
+  });
+  seen.sort();
+
+  seen.forEach(function (loc) {
+    var b = document.createElement('button');
+    b.className = 'filter-chip';
+    b.type = 'button';
+    b.setAttribute('data-filter', loc);
+    b.textContent = loc;
+    b.addEventListener('click', function () { filterByLocation(loc, b); });
+    bar.insertBefore(b, sep);
+  });
 }
 
 function sortByPrice(direction, btn) {
@@ -1877,51 +1953,6 @@ function handleScroll() {
 }
 
 /* ===================================================================
-   CUSTOM CURSOR
-   =================================================================== */
-function initCursor() {
-  if (window.matchMedia('(pointer:fine)').matches === false) return;
-
-  var dot = document.getElementById('curDot');
-  var ring = document.getElementById('curRing');
-  if (!dot || !ring) return;
-
-  var mx = -100, my = -100;
-  var dx = -100, dy = -100;
-  var rx = -100, ry = -100;
-
-  document.addEventListener('mousemove', function(e) {
-    mx = e.clientX;
-    my = e.clientY;
-  });
-
-  function render() {
-    dx += (mx - dx) * 0.2;
-    dy += (my - dy) * 0.2;
-    rx += (mx - rx) * 0.08;
-    ry += (my - ry) * 0.08;
-    dot.style.transform = 'translate(' + (dx - 4) + 'px,' + (dy - 4) + 'px)';
-    ring.style.transform = 'translate(' + (rx - 20) + 'px,' + (ry - 20) + 'px)';
-    requestAnimationFrame(render);
-  }
-  render();
-
-  initCursorHovers();
-}
-
-function initCursorHovers() {
-  var ring = document.getElementById('curRing');
-  if (!ring) return;
-  if (window.matchMedia('(pointer:fine)').matches === false) return;
-
-  var hoverEls = document.querySelectorAll('a,button,.cat-card,.filter-chip,.sort-chip,.lang-opt');
-  for (var i = 0; i < hoverEls.length; i++) {
-    hoverEls[i].addEventListener('mouseenter', function() { ring.classList.add('hover'); });
-    hoverEls[i].addEventListener('mouseleave', function() { ring.classList.remove('hover'); });
-  }
-}
-
-/* ===================================================================
    CLOSE LANG ON OUTSIDE CLICK
    =================================================================== */
 document.addEventListener('click', function(e) {
@@ -1935,6 +1966,8 @@ document.addEventListener('click', function(e) {
    GSAP ENTRANCE ANIMATIONS
    =================================================================== */
 function initAnimations() {
+  if (gsap.__stub || typeof ScrollTrigger === 'undefined' || prefersReducedMotion()) return;
+
   // Hero content
   gsap.from('.cat-hero-label', {opacity: 0, y: 20, duration: 0.8, delay: 0.2, ease: 'power3.out'});
   gsap.from('.cat-hero-title', {opacity: 0, y: 30, duration: 0.9, delay: 0.35, ease: 'power3.out'});
@@ -1954,24 +1987,20 @@ function initAnimations() {
    INIT
    =================================================================== */
 document.addEventListener('DOMContentLoaded', function() {
-  /* ── Langue (synchrone, pas besoin d'attendre Supabase) ── */
+  /* Langue (synchrone, pas besoin d'attendre supabase) */
   setLang(currentLang);
 
-  /* ── Scroll listener (synchrone) ── */
+  /* Scroll listener (synchrone) */
   window.addEventListener('scroll', handleScroll, {passive: true});
   handleScroll();
 
-  /* ── Custom cursor (synchrone) ── */
-  initCursor();
+  /* Custom cursor (synchrone) */
 
-  /* ══════════════════════════════════════════════════════════
-     POINT CLÉ : Les animations GSAP des cartes ne sont PAS
-     lancées ici. Elles sont déclenchées dans
-     loadPropertiesFromSupabase() APRÈS le fetch + DOM inject.
-     Cela garantit zéro race condition.
-     ══════════════════════════════════════════════════════════ */
 
-  /* ── Lancer le chargement async depuis Supabase ── */
+  /* Card animations are started by loadPropertiesFromSupabase once the cards
+     are in the DOM, not here, so there is no race with the fetch. */
+
+  /* Lancer le chargement async depuis supabase */
   loadPropertiesFromSupabase();
 });
 
@@ -2063,89 +2092,64 @@ function submitLeadForm(e) {
 
   // Get partner agency info
   var agency = PARTNER_AGENCIES[leadData.property_location] || null;
-  leadData.partner_agency = agency ? agency.name : 'N/A';
-  leadData.partner_email = agency ? agency.email : '';
+  leadData.partner_agency = agency ? agency.name : '';
 
-  /* ══════════════════════════════════════════════════════════
-     LEAD GUARD : WhatsApp s'active UNIQUEMENT après confirmation
-     Supabase. Pas de fuite de lead possible.
-     ══════════════════════════════════════════════════════════ */
+  /* The success panel, and the WhatsApp shortcut on it, appear only after the
+     enquiry has been recorded, so nothing is lost between the two. */
   insertLead(leadData, function(err, result) {
     if (err) {
       console.warn('[Real Luxe] Lead Guard : erreur Supabase mais lead sauvegardé localement');
     }
-    // Injecter le commission_id dans les données pour le suivi
+    // Carry the reference through for tracking
     leadData.commission_id = result ? result.commission_id : 'LOCAL';
 
     // EmailJS notification
     sendLeadEmails(leadData);
 
-    // MAINTENANT on peut afficher le succès + activer WhatsApp
+    // Only now is the enquiry recorded, so only now is success shown
     showLeadSuccess(leadData);
   });
 
   return false;
 }
 
-/* saveLeadToSupabase / storeLeadLocally → déplacés dans supabase-client.js (insertLead) */
+/* Storage lives in supabase-client.js; see insertLead. */
 
+/* Forwards an enquiry by email.
+
+   Reads its credentials from config.js. With none set, the enquiry stays in the
+   browser (see insertLead in supabase-client.js) and is logged for the
+   developer; the visitor still sees the normal confirmation, because the
+   enquiry has in fact been recorded. */
 function sendLeadEmails(data) {
-  /* ═══════════════════════════════════════════════════════════════
-     EmailJS — NOTIFICATION IMMÉDIATE
-     ─────────────────────────────────
-     CONFIGURATION (à faire UNE SEULE FOIS) :
-       1. Crée un compte sur https://emailjs.com (gratuit 200 emails/mois)
-       2. Crée un "Service" (Gmail, Outlook, etc.)
-       3. Crée un "Template" avec les variables : {{from_name}}, {{from_email}},
-          {{phone}}, {{message}}, {{property}}, {{commission_id}}, {{partner_agency}}
-       4. Remplace les 3 constantes ci-dessous par tes vraies valeurs
-     ═══════════════════════════════════════════════════════════════ */
-  var EMAILJS_PUBLIC_KEY    = 'WSlEoSspq66Rm1iN-';
-  var EMAILJS_SERVICE_ID    = 'service_hphj9bc';
-  var EMAILJS_TEMPLATE_ID   = 'template_708shzk';
-  var EMAILJS_TEMPLATE_PARTNER = 'YOUR_TEMPLATE_PARTNER_ID'; // ← Remplacer (optionnel)
-  var EMAILJS_CONFIGURED    = (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY');
+  var cfg = window.RL ? {
+    publicKey: window.RL.get('integrations.emailjs.publicKey'),
+    serviceId: window.RL.get('integrations.emailjs.serviceId'),
+    templateId: window.RL.get('integrations.emailjs.templateId'),
+    toEmail: window.RL.get('integrations.emailjs.toEmail') || window.RL.get('contact.email')
+  } : {};
 
-  if (typeof emailjs !== 'undefined' && EMAILJS_CONFIGURED) {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
+  var ready = typeof emailjs !== 'undefined' && cfg.publicKey && cfg.serviceId && cfg.templateId;
 
-    // Email à Tony (notification lead + commission_id)
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: 'anthony.adlun@gmail.com',
-      from_name: data.nom || data.name || '',
-      from_email: data.email,
-      phone: data.tel || data.phone || '',
-      message: data.message || '',
-      property: data.property_name || data.villa_interet || '',
-      commission_id: data.commission_id || 'N/A',
-      partner_agency: data.partner_agency || '',
-      source: data.source || 'website'
-    }).then(function() {
-      console.log('[Real Luxe] ✓ Email notification envoyée');
-    }).catch(function(err) {
-      console.error('[Real Luxe] ✗ EmailJS erreur :', err);
-    });
-
-    // Email à l'agence partenaire
-    if (data.partner_email && EMAILJS_TEMPLATE_PARTNER !== 'YOUR_TEMPLATE_PARTNER_ID') {
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_PARTNER, {
-        to_email: data.partner_email,
-        from_name: data.nom || data.name || '',
-        from_email: data.email,
-        phone: data.tel || data.phone || '',
-        message: data.message || '',
-        property: data.property_name || '',
-        agency_name: data.partner_agency || ''
-      });
-    }
-  } else {
-    console.log('[Real Luxe] EmailJS non configuré — notification simulée');
-    console.log('[Real Luxe] → Lead :', data.email, '| Commission ID :', data.commission_id);
-    console.log('[Real Luxe] → Villa :', data.property_name || data.villa_interet);
-    if (data.partner_email) {
-      console.log('[Real Luxe] → Agence :', data.partner_agency, data.partner_email);
-    }
+  if (!ready) {
+    console.info('[Real Luxe] No email service configured — enquiry recorded locally:',
+      { email: data.email, property: data.property_name || data.villa_interet, ref: data.commission_id });
+    return;
   }
+
+  emailjs.init(cfg.publicKey);
+  emailjs.send(cfg.serviceId, cfg.templateId, {
+    to_email: cfg.toEmail,
+    from_name: data.nom || data.name || '',
+    from_email: data.email,
+    phone: data.tel || data.phone || '',
+    message: data.message || '',
+    property: data.property_name || data.villa_interet || '',
+    commission_id: data.commission_id || '',
+    source: data.source || 'website'
+  }).catch(function (err) {
+    console.error('[Real Luxe] Email delivery failed:', err);
+  });
 }
 
 function showLeadSuccess(data) {
@@ -2153,11 +2157,19 @@ function showLeadSuccess(data) {
   var success = document.getElementById('leadSuccessState');
   success.style.display = '';
 
-  // Set WhatsApp link with pre-filled message + commission_id pour traçabilité
-  var waMsg = 'Bonjour, je viens de soumettre une demande VIP pour ' + data.property_name +
-    '. Mon nom: ' + (data.nom || data.name || '') +
-    ' | Réf: ' + (data.commission_id || 'N/A');
-  document.getElementById('leadWhatsAppLink').href = 'https://wa.me/61436007811?text=' + encodeURIComponent(waMsg);
+  // WhatsApp shortcut, only when a number is configured
+  var waLink = document.getElementById('leadWhatsAppLink');
+  if (waLink) {
+    var waNumber = window.RL ? window.RL.get('contact.whatsapp') : '';
+    if (waNumber) {
+      var waMsg = 'Hello, I have just sent an enquiry about ' + (data.property_name || 'a property') +
+        '. My name is ' + (data.nom || data.name || '') +
+        ' (reference ' + (data.commission_id || 'n/a') + ').';
+      waLink.href = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(waMsg);
+    } else {
+      waLink.style.display = 'none';
+    }
+  }
 
   // Update i18n for success state
   var t = I18N[currentLang] || I18N.en;
@@ -2190,9 +2202,7 @@ document.addEventListener('keydown', function(e) {
 
 } // end CATALOGUE
 
-/* ═══════════════════════════════════════════════════════════════
-   TESTIMONIALS CAROUSEL (shared)
-   ═══════════════════════════════════════════════════════════════ */
+/* TESTIMONIALS CAROUSEL (shared) */
 var currentTestimonial = 0;
 var totalTestimonials = 3;
 var testiAutoplayInterval = null;

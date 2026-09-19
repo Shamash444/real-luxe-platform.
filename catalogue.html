@@ -3,48 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Real Luxe Catalogue — Browse our full collection of ultra-luxury properties in the Dominican Republic.">
+<meta name="description" content="The full Real Luxe catalogue — houses, estates and apartments in Cap Cana, Punta Cana, Bayahibe, Las Terrenas and Samana.">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Real Luxe — Property Catalogue · Dominican Republic</title>
+<meta name="theme-color" content="#1A1A1A">
+<title>Real Luxe — Catalogue</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Real Luxe — Catalogue">
+<meta property="og:description" content="Houses, estates and apartments on the Dominican east and north coasts.">
+<meta name="twitter:card" content="summary_large_image">
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://images.unsplash.com">
 
-<!-- ═══════════════════════════════════════════════════════════
-     ORDRE DE CHARGEMENT CRITIQUE :
-     1. Supabase SDK   (synchrone — crée window.supabase)
-     2. GSAP + plugins (defer — UI animations)
-     3. supabase-client.js (en bas du body, après le SDK)
-     4. script.js          (en bas du body, après le client)
-     ═══════════════════════════════════════════════════════════ -->
+<!-- Same ordering as every other page: config, content, vendor, application. -->
+<script src="config.js" defer></script>
+<script src="data.js" defer></script>
 
-<!-- ① Supabase SDK v2 — DOIT charger EN PREMIER, SANS defer -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- ② EmailJS (notifications email lead) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-
-<!-- ③ GSAP (defer OK — les animations sont lancées par JS après fetch) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 
-<!-- Leaflet (for property detail map) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/></noscript>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-P9GTXJK1G6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-P9GTXJK1G6');</script>
+<script src="supabase-client.js" defer></script>
+<script src="script.js" defer></script>
 
-<!-- Global Stylesheet -->
 <link rel="stylesheet" href="style.css">
 
 <!-- Loading state CSS (pendant le fetch Supabase) -->
 <style>
-  /* ─── Skeleton loader pour le catalogue ─── */
+  /* Skeleton loader pour le catalogue */
   .props-loading {
     display: flex;
     flex-direction: column;
@@ -71,7 +67,7 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
-  /* ─── Message d'erreur ─── */
+  /* Message d'erreur */
   .props-error {
     text-align: center;
     padding: 60px 20px;
@@ -107,23 +103,19 @@
 
 </head>
 <body data-page="catalogue">
-<!-- Disclaimer Banner -->
-<div id="disclaimerBanner" style="background:#1A1A1A;color:rgba(255,255,255,0.7);text-align:center;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.5px;line-height:1.5;position:relative;z-index:10000;">
-  This website is a <strong style="color:#C6A55C;">showcase project</strong> and does not represent an active real estate agency. For inquiries, contact <a href="mailto:tony@realluxeestates.com" style="color:#C6A55C;text-decoration:underline;">tony@realluxeestates.com</a>
-  <button onclick="document.getElementById('disclaimerBanner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;margin-left:12px;vertical-align:middle;">&times;</button>
+<!-- Demonstration notice. Populated from config.notice; removed when disabled. -->
+<div id="siteNotice" class="site-notice" hidden>
+  <span id="siteNoticeText"></span>
+  <button type="button" class="site-notice-close" aria-label="Dismiss notice">&times;</button>
 </div>
 
 <!-- PAGE TRANSITION OVERLAY -->
 <div class="page-transition" id="pageTransition"></div>
 
-<!-- CUSTOM CURSOR -->
-<div class="cursor-dot" id="curDot"></div>
-<div class="cursor-ring" id="curRing"></div>
-
 <!-- HEADER -->
 <header class="cat-header" id="catHeader">
-  <a href="index.html" class="h-logo">REAL <span>Luxe</span></a>
-  <div class="cat-header-center" data-i18n="cat_label">Full Collection</div>
+  <a href="index.html" class="h-logo">Real <span>Luxe</span></a>
+  <div class="cat-header-center" data-i18n="cat_label">Catalogue</div>
   <div class="cat-header-right">
     <div class="lang-sel" id="langSel">
       <button class="lang-btn" onclick="toggleLangMenu(event)">
@@ -146,9 +138,9 @@
 <!-- HERO -->
 <section class="cat-hero" id="catHero">
   <div class="cat-hero-content">
-    <div class="cat-hero-label" data-i18n="cat_label">Full Collection</div>
-    <h1 class="cat-hero-title" data-i18n="cat_title">Our <em>Properties</em></h1>
-    <p class="cat-hero-sub" data-i18n="cat_sub">Explore our complete collection of luxury properties in the Dominican Republic.</p>
+    <p class="cat-hero-label" data-i18n="cat_label">Catalogue</p>
+    <h1 class="cat-hero-title" data-i18n="cat_title">The full <em>catalogue</em></h1>
+    <p class="cat-hero-sub" data-i18n="cat_sub">Everything currently on the books, sorted and filtered however you like. Off-market properties are not shown here.</p>
     <div class="cat-hero-stats" data-i18n="cat_stats_line">5 Properties &middot; 3 Locations &middot; From $1.95M</div>
   </div>
 </section>
@@ -156,12 +148,9 @@
 <!-- FILTER BAR -->
 <div class="filter-bar" id="filterBar">
   <div class="filter-bar-inner" id="filterBarInner">
-    <!-- Location filters -->
-    <button class="filter-chip active" data-filter="all" onclick="filterByLocation('all',this)" data-i18n-filter="filter_all">All</button>
-    <button class="filter-chip" data-filter="Cap Cana" onclick="filterByLocation('Cap Cana',this)">Cap Cana</button>
-    <button class="filter-chip" data-filter="Punta Cana" onclick="filterByLocation('Punta Cana',this)">Punta Cana</button>
-    <button class="filter-chip" data-filter="Las Terrenas" onclick="filterByLocation('Las Terrenas',this)">Las Terrenas</button>
-    <button class="filter-chip" data-filter="Bayah&iacute;be" onclick="filterByLocation('Bayah\u00EDbe',this)">Bayah&iacute;be</button>
+    <!-- Location chips are generated from the catalogue itself; see
+         buildLocationFilters in script.js. -->
+    <button class="filter-chip active" type="button" data-filter="all" onclick="filterByLocation('all',this)" data-i18n-filter="filter_all">All</button>
     <div class="filter-separator"></div>
     <!-- Sort buttons -->
     <button class="sort-chip" id="sortAsc" onclick="sortByPrice('asc',this)">
@@ -182,7 +171,7 @@
       <!-- État de chargement (remplacé par les cartes après fetch) -->
       <div class="props-loading" id="propsLoader">
         <div class="props-loading-spinner"></div>
-        <div class="props-loading-text">Loading properties...</div>
+        <div class="props-loading-text">Loading</div>
       </div>
     </div>
   </div>
@@ -200,31 +189,31 @@
       <div class="lead-modal-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       </div>
-      <h3 id="leadModalTitle" data-i18n="lead_title">Private Consultation</h3>
-      <p class="lead-modal-sub" id="leadModalSub" data-i18n="lead_sub">Our team will contact you within 24 hours for a personalized experience.</p>
+      <h3 id="leadModalTitle" data-i18n="lead_title">Enquire about this property</h3>
+      <p class="lead-modal-sub" id="leadModalSub" data-i18n="lead_sub">An adviser replies within one working day, with the floor plans and the title position.</p>
       <p class="lead-modal-property" id="leadPropertyName"></p>
 
       <form id="leadCaptureForm" onsubmit="return submitLeadForm(event)">
         <input type="hidden" id="leadPropertySlug" value="">
         <input type="hidden" id="leadPropertyLocation" value="">
         <div class="vm-field">
-          <label data-i18n="lead_name">Full Name</label>
+          <label for="leadName" data-i18n="lead_name">Full name</label>
           <input type="text" id="leadName" required autocomplete="name" placeholder="">
         </div>
         <div class="vm-field">
-          <label data-i18n="lead_email">Email</label>
+          <label for="leadEmail" data-i18n="lead_email">Email</label>
           <input type="email" id="leadEmail" required autocomplete="email" placeholder="">
         </div>
         <div class="vm-field">
-          <label data-i18n="lead_phone">Phone</label>
+          <label for="leadPhone" data-i18n="lead_phone">Telephone</label>
           <input type="tel" id="leadPhone" required autocomplete="tel" placeholder="">
         </div>
         <div class="vm-field">
-          <label data-i18n="lead_message">Message</label>
+          <label for="leadMessage" data-i18n="lead_message">Message</label>
           <textarea id="leadMessage" rows="3" placeholder=""></textarea>
         </div>
         <button type="submit" class="lead-submit" id="leadSubmitBtn">
-          <span data-i18n="lead_send">Send Request</span>
+          <span data-i18n="lead_send">Send</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         </button>
       </form>
@@ -237,9 +226,9 @@
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
           <polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
-        <h4 data-i18n="lead_success_title">VIP Request Transmitted</h4>
-        <p data-i18n="lead_success_sub">Our concierge team has been notified and will contact you shortly.</p>
-        <a id="leadWhatsAppLink" href="#" target="_blank" rel="noopener" class="lead-wa-btn">
+        <h4 data-i18n="lead_success_title">Received</h4>
+        <p data-i18n="lead_success_sub">We have your enquiry and will come back to you within one working day.</p>
+        <a id="leadWhatsAppLink" href="#" target="_blank" rel="noopener" class="lead-wa-btn" data-requires="whatsapp">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
           <span data-i18n="lead_wa_cta">Immediate Response on WhatsApp</span>
         </a>
@@ -249,7 +238,7 @@
   </div>
 </div>
 
-<!-- ════════════════ PROPERTY DETAIL OVERLAY ════════════════ -->
+<!-- PROPERTY DETAIL OVERLAY -->
 <div class="pd-overlay" id="pdOverlay">
   <div class="pd-container">
     <!-- Close button -->
@@ -319,34 +308,25 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span data-i18n="pd_cta_visit">Schedule a Private Viewing</span>
         </button>
-        <a href="https://wa.me/61436007811" target="_blank" rel="noopener" class="btn-ghost pd-cta-btn" style="color:var(--charcoal);border-color:var(--cream);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-          <span data-i18n="pd_cta_whatsapp">Contact on WhatsApp</span>
+        <a href="#" class="btn-ghost pd-cta-btn" data-contact-cta>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span data-i18n="pd_cta_whatsapp">Request the dossier</span>
         </a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer class="cat-footer">
   <div class="cat-footer-inner">
-    <div class="cat-footer-copy" data-i18n="footer_rights">&copy; 2024 Real Luxe. All rights reserved.</div>
+    <div class="cat-footer-copy">&copy; <span data-year></span> <span data-brand>Real Luxe</span>.</div>
     <div class="cat-footer-links">
-      <a href="index.html" class="cat-footer-link" data-i18n="back_home">Back</a>
-      <a href="https://wa.me/61436007811" target="_blank" rel="noopener" class="cat-footer-wa">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        WhatsApp
-      </a>
+      <a href="index.html" class="cat-footer-link" data-i18n="back_home">Home</a>
+      <a href="team.html" class="cat-footer-link">Team</a>
+      <a href="privacy.html" class="cat-footer-link">Privacy</a>
     </div>
   </div>
 </footer>
 
-
-<!-- ③ Supabase Client (connexion + helpers) — APRÈS le SDK -->
-<script src="supabase-client.js"></script>
-
-<!-- ④ Unified JavaScript (logique catalogue + GSAP) — EN DERNIER -->
-<script src="script.js"></script>
 </body>
 </html>
