@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="config.js" defer></script>
+<script src="data.js" defer></script>
 <script src="script.js" defer></script>
 
 <style>
@@ -35,6 +36,14 @@ a{text-decoration:none;color:inherit}
 
 /* Site notice — this page carries its own stylesheet, so the rule is repeated
    here rather than pulling in the whole design system for one bar. */
+.pp-header{gap:16px}
+.pp-header .lang-sel{position:relative;margin-left:auto;margin-right:16px}
+.pp-header .lang-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--mist)}
+.pp-header .lang-btn:hover{color:var(--gold);border-color:rgba(198,165,92,.5)}
+.pp-header .lang-drop{display:none;position:absolute;top:calc(100% + 6px);right:0;background:#1A1A1A;border:1px solid rgba(255,255,255,.12);border-radius:10px;overflow:hidden;min-width:64px;z-index:20}
+.pp-header .lang-sel.open .lang-drop{display:block}
+.pp-header .lang-opt{display:block;width:100%;padding:9px 14px;border:0;background:none;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:.1em;color:var(--mist);text-align:left}
+.pp-header .lang-opt:hover,.pp-header .lang-opt.active{background:rgba(198,165,92,.14);color:var(--gold)}
 .site-notice{display:flex;align-items:center;justify-content:center;gap:12px;padding:9px 20px;background:var(--charcoal);color:rgba(255,255,255,.62);font-size:11.5px;line-height:1.5;text-align:center;border-bottom:1px solid rgba(255,255,255,.07)}
 .site-notice-close{background:none;border:0;cursor:pointer;color:rgba(255,255,255,.4);font-size:17px;line-height:1;padding:2px 4px;font-family:inherit}
 .site-notice-close:hover{color:var(--gold)}
@@ -104,7 +113,7 @@ a{text-decoration:none;color:inherit}
 }
 </style>
 </head>
-<body data-page="privacy">
+<body data-page="privacy" data-lang-fixed>
 
 <!-- Demonstration notice. Populated from config.notice; removed when disabled. -->
 <div id="siteNotice" class="site-notice" hidden>
@@ -115,7 +124,7 @@ a{text-decoration:none;color:inherit}
 <!-- HEADER -->
 <div class="pp-header">
   <a href="index.html" class="pp-logo">Real <span>Luxe</span></a>
-  <a href="index.html" class="pp-back">
+  <span data-lang-mount></span><a href="index.html" class="pp-back">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     Retour
   </a>
@@ -130,6 +139,9 @@ a{text-decoration:none;color:inherit}
 
 <!-- CONTENT -->
 <div class="pp-content">
+
+  <div class="pp-note" data-t="privacy_notice"></div>
+
 
   <!-- 1. RESPONSABLE -->
   <div class="pp-section">

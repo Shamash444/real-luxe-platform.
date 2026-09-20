@@ -175,11 +175,11 @@
 <!-- HEADER -->
 <header class="cat-header" id="catHeader">
   <a href="index.html" class="h-logo">Real <span>Luxe</span></a>
-  <div class="cat-header-center" id="propHeaderName">Loading</div>
-  <div class="cat-header-right">
+  <div class="cat-header-center" id="propHeaderName" data-t="loading">Loading</div>
+  <div class="cat-header-right" data-lang-mount>
     <a href="catalogue.html" class="back-link">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      <span>All properties</span>
+      <span data-t="nav_all_props">All properties</span>
     </a>
   </div>
 </header>
@@ -188,7 +188,7 @@
 <main id="ppMain">
   <div class="pp-loading" id="ppLoader">
     <div class="pp-loading-spinner"></div>
-    <div class="pp-loading-text">Loading</div>
+    <div class="pp-loading-text" data-t="loading">Loading</div>
   </div>
 </main>
 
@@ -196,9 +196,9 @@
   <div class="cat-footer-inner">
     <div class="cat-footer-copy">&copy; <span data-year></span> <span data-brand>Real Luxe</span>.</div>
     <div class="cat-footer-links">
-      <a href="catalogue.html" class="cat-footer-link">Catalogue</a>
-      <a href="index.html" class="cat-footer-link">Home</a>
-      <a href="privacy.html" class="cat-footer-link">Privacy</a>
+      <a href="catalogue.html" class="cat-footer-link" data-t="nav_catalogue">Catalogue</a>
+      <a href="index.html" class="cat-footer-link" data-t="nav_home">Home</a>
+      <a href="privacy.html" class="cat-footer-link" data-t="nav_privacy">Privacy</a>
     </div>
   </div>
 </footer>
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* HELPERS */
   function fmtPrice(n) {
-    if (!n) return 'Price on request';
+    if (!n) return window.RL_T('pp_price_request');
     return '$' + Number(n).toLocaleString('en-US');
   }
 
@@ -234,11 +234,11 @@ document.addEventListener('DOMContentLoaded', function(){
   function showNotFound() {
     main.innerHTML = `
       <div class="pp-not-found">
-        <h2>Not found</h2>
-        <p>This property is no longer listed, or the link is wrong.</p>
+        <h2>${window.RL_T('pp_nf_title')}</h2>
+        <p>${window.RL_T('pp_nf_body')}</p>
         <a href="catalogue.html">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          See the catalogue
+          ${window.RL_T('pp_nf_cta')}
         </a>
       </div>`;
     document.getElementById('propHeaderName').textContent = 'Not found';
@@ -266,17 +266,17 @@ document.addEventListener('DOMContentLoaded', function(){
   /* BUILD SPECS */
   function buildSpecs(p) {
     const specs = [];
-    if (p.bedrooms) specs.push({ val: p.bedrooms, label: 'Bedrooms', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v11m0-4h18m0 4V11a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4m18 7H3m1-11V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3m4 0V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3"/></svg>' });
-    if (p.bathrooms) specs.push({ val: p.bathrooms, label: 'Bathrooms', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1zM6 12V5a2 2 0 0 1 2-2h1"/></svg>' });
-    if (p.area_sqm) specs.push({ val: p.area_sqm.toLocaleString(), label: 'SQM', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>' });
+    if (p.bedrooms) specs.push({ val: p.bedrooms, label: window.RL_T('pp_beds'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v11m0-4h18m0 4V11a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4m18 7H3m1-11V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3m4 0V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3"/></svg>' });
+    if (p.bathrooms) specs.push({ val: p.bathrooms, label: window.RL_T('pp_baths'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1zM6 12V5a2 2 0 0 1 2-2h1"/></svg>' });
+    if (p.area_sqm) specs.push({ val: p.area_sqm.toLocaleString(), label: window.RL_T('pp_sqm'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>' });
     if (p.area_sqft || p.area_sqm) {
       const sqft = p.area_sqft || Math.round(p.area_sqm * 10.7639);
-      specs.push({ val: sqft.toLocaleString(), label: 'SQFT', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>' });
+      specs.push({ val: sqft.toLocaleString(), label: window.RL_T('pp_sqft'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>' });
     }
-    if (p.lot_size) specs.push({ val: p.lot_size, label: 'Lot size', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21L3 3l7 4 4-4 7 4v18l-7-4-4 4-7-4z"/></svg>' });
-    if (p.year_built) specs.push({ val: p.year_built, label: 'Year built', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' });
-    if (p.pool || p.has_pool) specs.push({ val: 'Yes', label: 'Pool', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>' });
-    if (p.parking) specs.push({ val: p.parking, label: 'Parking', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>' });
+    if (p.lot_size) specs.push({ val: p.lot_size, label: window.RL_T('pp_lot'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21L3 3l7 4 4-4 7 4v18l-7-4-4 4-7-4z"/></svg>' });
+    if (p.year_built) specs.push({ val: p.year_built, label: window.RL_T('pp_year'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' });
+    if (p.pool || p.has_pool) specs.push({ val: window.RL_T('pp_yes'), label: window.RL_T('pp_pool'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>' });
+    if (p.parking) specs.push({ val: p.parking, label: window.RL_T('pp_parking'), icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>' });
 
     if (!specs.length) return '';
     return `<div class="pp-specs">${specs.map(s =>
@@ -321,23 +321,23 @@ document.addEventListener('DOMContentLoaded', function(){
       html += `<div class="pp-data-card"><h4>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Investment returns</h4>`;
-      if (p.roi_gross) html += `<div class="pp-data-item"><span class="label">Gross ROI</span><span class="value">${p.roi_gross}%</span></div>`;
-      if (p.roi_net) html += `<div class="pp-data-item"><span class="label">Net ROI</span><span class="value">${p.roi_net}%</span></div>`;
-      if (p.cap_rate) html += `<div class="pp-data-item"><span class="label">Cap rate</span><span class="value">${p.cap_rate}%</span></div>`;
-      if (p.occupancy_rate) html += `<div class="pp-data-item"><span class="label">Occupancy rate</span><span class="value">${p.occupancy_rate}%</span></div>`;
-      if (p.rental_income_monthly) html += `<div class="pp-data-item"><span class="label">Monthly revenue</span><span class="value">${fmtPrice(p.rental_income_monthly)}</span></div>`;
-      if (p.rental_income_yearly) html += `<div class="pp-data-item"><span class="label">Annual revenue</span><span class="value">${fmtPrice(p.rental_income_yearly)}</span></div>`;
+      if (p.roi_gross) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_roi_gross')}</span><span class="value">${p.roi_gross}%</span></div>`;
+      if (p.roi_net) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_roi_net')}</span><span class="value">${p.roi_net}%</span></div>`;
+      if (p.cap_rate) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_cap')}</span><span class="value">${p.cap_rate}%</span></div>`;
+      if (p.occupancy_rate) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_occ')}</span><span class="value">${p.occupancy_rate}%</span></div>`;
+      if (p.rental_income_monthly) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_rev_m')}</span><span class="value">${fmtPrice(p.rental_income_monthly)}</span></div>`;
+      if (p.rental_income_yearly) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_rev_y')}</span><span class="value">${fmtPrice(p.rental_income_yearly)}</span></div>`;
       html += '</div>';
     }
 
     if (hasTax) {
       html += `<div class="pp-data-card"><h4>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Costs and taxes</h4>`;
-      if (p.annual_taxes) html += `<div class="pp-data-item"><span class="label">Annual taxes</span><span class="value">${fmtPrice(p.annual_taxes)}</span></div>`;
-      if (p.hoa_fees) html += `<div class="pp-data-item"><span class="label">HOA / maintenance</span><span class="value">${fmtPrice(p.hoa_fees)}/mo</span></div>`;
-      if (p.transfer_tax) html += `<div class="pp-data-item"><span class="label">Transfer tax</span><span class="value">${p.transfer_tax}%</span></div>`;
-      if (p.closing_costs) html += `<div class="pp-data-item"><span class="label">Closing costs</span><span class="value">${p.closing_costs}</span></div>`;
+        ${window.RL_T('pp_costs')}</h4>`;
+      if (p.annual_taxes) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_tax_y')}</span><span class="value">${fmtPrice(p.annual_taxes)}</span></div>`;
+      if (p.hoa_fees) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_hoa')}</span><span class="value">${fmtPrice(p.hoa_fees)}/mo</span></div>`;
+      if (p.transfer_tax) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_transfer')}</span><span class="value">${p.transfer_tax}%</span></div>`;
+      if (p.closing_costs) html += `<div class="pp-data-item"><span class="label">${window.RL_T('pp_closing')}</span><span class="value">${p.closing_costs}</span></div>`;
       html += '</div>';
     }
 
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return `
       <h3 class="pp-section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        Amenities and features
+        ${window.RL_T('pp_amenities')}
       </h3>
       <div class="pp-amenities">${list.map(a =>
         `<div class="pp-amenity"><span class="pp-amenity-dot"></span>${a}</div>`
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return `
       <h3 class="pp-section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        Lifestyle concierge
+        ${window.RL_T('pp_concierge')}
       </h3>
       <div class="pp-concierge">${list.map(c =>
         `<div class="pp-concierge-item">${c}</div>`
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return `
       <h3 class="pp-section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Location
+        ${window.RL_T('pp_location')}
       </h3>
       <div class="pp-map" id="ppMap"></div>`;
   }
@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function(){
       : '#ppLeadSection';
     return `<a href="${href}" class="btn-ghost pp-cta-btn" style="color:var(--charcoal);border-color:var(--cream);">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Request the dossier
+          ${window.RL_T('pp_cta_dossier')}
         </a>`;
   }
 
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="pp-cta">
         <button class="btn-primary pp-cta-btn" onclick="document.getElementById('ppLeadSection').scrollIntoView({behavior:'smooth'})">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          Arrange a viewing
+          ${window.RL_T('pp_cta_view')}
         </button>
         ${secondaryCTA(p)}
       </div>`;
@@ -433,31 +433,31 @@ document.addEventListener('DOMContentLoaded', function(){
     return `
       <div class="pp-lead-section" id="ppLeadSection">
         <div class="pp-lead-header">
-          <h3>Enquire about this property</h3>
-          <p>An adviser replies within one working day, with the floor plans and the title position.</p>
+          <h3>${window.RL_T('pp_form_title')}</h3>
+          <p>${window.RL_T('pp_form_sub')}</p>
         </div>
         <div id="ppLeadFormWrap">
           <form class="pp-lead-form" id="ppLeadForm" onsubmit="return submitPPLead(event)">
             <input type="hidden" id="ppLeadSlug" value="${p.slug || ''}">
             <input type="hidden" id="ppLeadPropName" value="${(p.name || '').replace(/"/g,'&quot;')}">
             <div class="pp-field">
-              <label for="ppLeadName">Full name</label>
+              <label for="ppLeadName">${window.RL_T('pp_f_name')}</label>
               <input type="text" id="ppLeadName" required autocomplete="name" placeholder="">
             </div>
             <div class="pp-field">
-              <label for="ppLeadEmail">Email</label>
+              <label for="ppLeadEmail">${window.RL_T('pp_f_email')}</label>
               <input type="email" id="ppLeadEmail" required autocomplete="email" placeholder="">
             </div>
             <div class="pp-field">
-              <label for="ppLeadPhone">Telephone</label>
+              <label for="ppLeadPhone">${window.RL_T('pp_f_phone')}</label>
               <input type="tel" id="ppLeadPhone" required autocomplete="tel" placeholder="">
             </div>
             <div class="pp-field">
-              <label for="ppLeadMsg">Message (optional)</label>
+              <label for="ppLeadMsg">${window.RL_T('pp_f_msg')}</label>
               <textarea id="ppLeadMsg" rows="3" placeholder=""></textarea>
             </div>
             <button type="submit" class="pp-lead-submit" id="ppLeadSubmitBtn">
-              <span>Send</span>
+              <span>${window.RL_T('pp_send')}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             </button>
           </form>
@@ -467,8 +467,8 @@ document.addEventListener('DOMContentLoaded', function(){
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
-          <h4>Received</h4>
-          <p>We have your enquiry and will come back to you within one working day.</p>
+          <h4>${window.RL_T('pp_sent_title')}</h4>
+          <p>${window.RL_T('pp_sent_sub')}</p>
         </div>
       </div>`;
   }
@@ -643,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     if (!record) { showNotFound(); return; }
+    window._ppRecord = record;
     render(record);
   }
 
@@ -673,6 +674,12 @@ document.addEventListener('DOMContentLoaded', function(){
       tag: p.tag || ''
     };
   }
+
+  /* The page body is generated once from a template string, so changing the
+     language means rendering it again rather than swapping text nodes. */
+  window.onSharedLangChange = function () {
+    if (window._ppRecord) render(window._ppRecord);
+  };
 
   init();
 });

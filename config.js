@@ -65,6 +65,25 @@ window.RL_CONFIG = {
   },
 
   /* ---------------------------------------------------------------
+     Language
+     --------------------------------------------------------------- */
+  i18n: {
+    /* Languages the site ships. Removing one also removes its button. */
+    available: ['en', 'fr', 'es'],
+
+    /* Used when detection is off, or when the visitor's browser asks for a
+       language the site does not have. */
+    fallback: 'en',
+
+    /* On a first visit, match the language the browser asks for.
+       Note this is the browser's language setting, not the visitor's country:
+       a French speaker in Madrid gets French. Detecting the country itself
+       needs a geo-IP service, which a static site cannot do on its own.
+       Once someone picks a language by hand, their choice wins from then on. */
+    autoDetect: true
+  },
+
+  /* ---------------------------------------------------------------
      Social — empty entries are skipped
      --------------------------------------------------------------- */
   social: {

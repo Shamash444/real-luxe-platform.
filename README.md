@@ -32,6 +32,7 @@ instead of leaving a dead link:
 | `integrations.supabase` | the catalogue is served from `data.js` |
 | `integrations.emailjs` | enquiries are kept in the browser and logged to the console |
 | `brand.legalName` and the `privacy*` addresses | the privacy policy says the controller is not yet named |
+| `i18n.autoDetect` set to `false` | the site always opens in `i18n.fallback` |
 
 As shipped the site runs end to end on the bundled demo catalogue. No accounts,
 no API keys. It does still make outbound requests: Google Fonts, the Unsplash
@@ -72,13 +73,26 @@ policies are the thing doing the protecting.
 
 ## Translations
 
-English, French and Spanish on the home page and the catalogue, switched from the
-header and remembered in `localStorage` under `rl-lang`. The strings live in the
-two `I18N` objects in `script.js`, one per page, keyed by the `data-i18n`
-attributes in the markup. A key missing from a language leaves whatever the HTML
-shipped with.
+English, French and Spanish, on every page. The switcher is in the header and the
+choice is kept in `localStorage` under `rl-lang`, so it follows the visitor from
+page to page.
 
-The other pages carry no language switcher.
+On a first visit the site reads `navigator.language` and opens in that language
+if it has it, otherwise in `i18n.fallback`. Be clear about what this is: the
+browser's language setting, not the visitor's country. Someone French sitting in
+Madrid gets French. Detecting the country itself needs a geo-IP lookup, which a
+site with no server of its own cannot do. `?lang=es` on any URL overrides
+everything, which is useful for sharing a link in a particular language.
+
+Strings live in `script.js`, in three tables. The home page and the catalogue
+each have a large one keyed by `data-i18n`; the other pages share a smaller one
+keyed by `data-t`, and `data-t-ph` for input placeholders. Add a language by
+putting its code in `i18n.available` and adding a block to each table.
+
+Two things stay in one language on purpose. The property descriptions in
+`data.js` are English only, because they are your listing copy and only you can
+write them. The privacy policy is French, and shows a note in the visitor's
+language saying so; translate it once a lawyer has approved the text.
 
 ## Files
 

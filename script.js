@@ -73,6 +73,260 @@ function prefersReducedMotion() {
   window.navigateWithTransition = navigateWithTransition;
 })();
 
+/* Language.
+
+   index.html and catalogue.html each carry their own large string table. The
+   remaining pages share the smaller one below. Both go through resolveLang, so
+   a choice made anywhere holds everywhere.
+
+   Detection reads navigator.language, which is the browser's language setting
+   and not the visitor's country. Someone French in Madrid gets French. Real
+   country detection needs a geo-IP lookup, which a site with no server cannot
+   do by itself. */
+
+var RL_SHARED_I18N = {
+  en: {
+    nav_back: 'Back', nav_home: 'Home', nav_catalogue: 'Catalogue',
+    nav_team: 'Team', nav_privacy: 'Privacy', nav_all_props: 'All properties',
+    loading: 'Loading',
+
+    team_header: 'The team',
+    team_label: 'Who you deal with',
+    team_title: 'Three people, <em>not a call centre</em>',
+    team_sub: 'Whoever answers your first enquiry stays with the file to completion. There is no handover to a closing team, because there is no closing team.',
+    team_r1: 'Founder', team_r2: 'Client relations', team_r3: 'Investment',
+    team_b1: 'Fifteen years in coastal development, first in the south of France and since 2016 in Punta Cana. Handles the off-market list and anything involving a plot rather than a finished house.',
+    team_b2: 'Dominican, based in La Romana. Runs the viewing trips and the paperwork between offer and closing, which is where most purchases in this country go wrong.',
+    team_b3: 'Former tax practice, now advises on holding structures, Confotur eligibility and what a letting proposition actually returns after management fees and the two thin months.',
+    team_l1: 'French &middot; English', team_l2: 'Spanish &middot; English', team_l3: 'French &middot; English &middot; Spanish',
+    book_label: 'Talk to us', book_title: 'Half an hour, no obligation',
+    book_sub: 'Enough time to establish whether we hold anything worth your trip. If we do not, we will say so.',
+    book_cta: 'Send an enquiry',
+
+    e404_title: 'That page <em>is not here</em>',
+    e404_body: 'The link may be out of date, or the property it pointed to is no longer listed. The catalogue below has everything currently available.',
+    e404_cta1: 'See the catalogue', e404_cta2: 'Home',
+
+    pp_beds: 'Bedrooms', pp_baths: 'Bathrooms', pp_sqm: 'Sq m', pp_sqft: 'Sq ft',
+    pp_lot: 'Plot', pp_year: 'Built', pp_pool: 'Pool', pp_parking: 'Parking', pp_yes: 'Yes',
+    pp_returns: 'Returns', pp_roi_gross: 'Gross yield', pp_roi_net: 'Net yield',
+    pp_cap: 'Cap rate', pp_occ: 'Occupancy', pp_rev_m: 'Monthly revenue', pp_rev_y: 'Annual revenue',
+    pp_costs: 'Costs and taxes', pp_tax_y: 'Annual taxes', pp_hoa: 'Service charge',
+    pp_transfer: 'Transfer tax', pp_closing: 'Closing costs',
+    pp_amenities: 'Amenities and features', pp_concierge: 'Concierge', pp_location: 'Location',
+    pp_cta_view: 'Arrange a viewing', pp_cta_dossier: 'Request the dossier',
+    pp_form_title: 'Enquire about this property',
+    pp_form_sub: 'An adviser replies within one working day, with the floor plans and the title position.',
+    pp_f_name: 'Full name', pp_f_email: 'Email', pp_f_phone: 'Telephone', pp_f_msg: 'Message',
+    pp_send: 'Send', pp_sent_title: 'Received',
+    pp_sent_sub: 'We have your enquiry and will come back to you within one working day.',
+    pp_nf_title: 'Not found',
+    pp_nf_body: 'This property is no longer listed, or the link is wrong.',
+    pp_nf_cta: 'See the catalogue', pp_map_link: 'View on a map',
+    pp_price_request: 'Price on request',
+    privacy_header: 'Privacy',
+    skip: 'Skip to content',
+    privacy_notice: 'This policy is drafted in French. It is a template: have it reviewed, and complete the controller details, before the site goes live.'
+  },
+
+  fr: {
+    nav_back: 'Retour', nav_home: 'Accueil', nav_catalogue: 'Catalogue',
+    nav_team: 'Équipe', nav_privacy: 'Confidentialité', nav_all_props: 'Tous les biens',
+    loading: 'Chargement',
+
+    team_header: 'L&rsquo;équipe',
+    team_label: 'Vos interlocuteurs',
+    team_title: 'Trois personnes, <em>pas un standard</em>',
+    team_sub: 'Celui qui répond à votre première demande suit le dossier jusqu&rsquo;à la signature. Il n&rsquo;y a pas de passage de relais, parce qu&rsquo;il n&rsquo;y a pas de second service.',
+    team_r1: 'Fondateur', team_r2: 'Relation client', team_r3: 'Investissement',
+    team_b1: 'Quinze ans dans la promotion en bord de mer, d&rsquo;abord dans le sud de la France et depuis 2016 à Punta Cana. S&rsquo;occupe de la liste hors marché et de tout ce qui concerne les terrains plutôt que les maisons finies.',
+    team_b2: 'Dominicaine, installée à La Romana. Organise les voyages de visite et suit les papiers entre l&rsquo;offre et la signature, là où la plupart des achats dérapent dans ce pays.',
+    team_b3: 'Ancienne fiscaliste, conseille aujourd&rsquo;hui sur les structures de détention, l&rsquo;éligibilité Confotur et ce que rapporte réellement une location une fois déduits les frais de gestion et les deux mois creux.',
+    team_l1: 'Français &middot; anglais', team_l2: 'Espagnol &middot; anglais', team_l3: 'Français &middot; anglais &middot; espagnol',
+    book_label: 'Nous parler', book_title: 'Une demi-heure, sans engagement',
+    book_sub: 'De quoi établir si nous avons quelque chose qui vaut votre déplacement. Sinon, nous vous le dirons.',
+    book_cta: 'Envoyer une demande',
+
+    e404_title: 'Cette page <em>n&rsquo;existe pas</em>',
+    e404_body: 'Le lien est peut-être périmé, ou le bien auquel il renvoyait n&rsquo;est plus au portefeuille. Le catalogue ci-dessous contient tout ce qui est disponible.',
+    e404_cta1: 'Voir le catalogue', e404_cta2: 'Accueil',
+
+    pp_beds: 'Chambres', pp_baths: 'Salles de bain', pp_sqm: 'm²', pp_sqft: 'sq ft',
+    pp_lot: 'Terrain', pp_year: 'Construit', pp_pool: 'Piscine', pp_parking: 'Stationnement', pp_yes: 'Oui',
+    pp_returns: 'Rendement', pp_roi_gross: 'Rendement brut', pp_roi_net: 'Rendement net',
+    pp_cap: 'Taux de capitalisation', pp_occ: 'Taux d&rsquo;occupation', pp_rev_m: 'Revenu mensuel', pp_rev_y: 'Revenu annuel',
+    pp_costs: 'Coûts et fiscalité', pp_tax_y: 'Taxes annuelles', pp_hoa: 'Charges',
+    pp_transfer: 'Droit de mutation', pp_closing: 'Frais de signature',
+    pp_amenities: 'Prestations', pp_concierge: 'Conciergerie', pp_location: 'Emplacement',
+    pp_cta_view: 'Organiser une visite', pp_cta_dossier: 'Demander le dossier',
+    pp_form_title: 'Se renseigner sur ce bien',
+    pp_form_sub: 'Un conseiller répond sous un jour ouvré, avec les plans et la situation du titre.',
+    pp_f_name: 'Nom complet', pp_f_email: 'E-mail', pp_f_phone: 'Téléphone', pp_f_msg: 'Message',
+    pp_send: 'Envoyer', pp_sent_title: 'Bien reçu',
+    pp_sent_sub: 'Nous avons votre demande et revenons vers vous sous un jour ouvré.',
+    pp_nf_title: 'Introuvable',
+    pp_nf_body: 'Ce bien n&rsquo;est plus au portefeuille, ou le lien est erroné.',
+    pp_nf_cta: 'Voir le catalogue', pp_map_link: 'Voir sur une carte',
+    pp_price_request: 'Prix sur demande',
+    privacy_header: 'Confidentialité',
+    skip: 'Aller au contenu',
+    privacy_notice: 'Cette politique est un modèle. Faites-la relire et complétez les informations du responsable de traitement avant toute mise en ligne.'
+  },
+
+  es: {
+    nav_back: 'Volver', nav_home: 'Inicio', nav_catalogue: 'Catálogo',
+    nav_team: 'Equipo', nav_privacy: 'Privacidad', nav_all_props: 'Todas las propiedades',
+    loading: 'Cargando',
+
+    team_header: 'El equipo',
+    team_label: 'Con quién trata',
+    team_title: 'Tres personas, <em>no un centro de llamadas</em>',
+    team_sub: 'Quien atiende su primera consulta sigue el expediente hasta la firma. No hay traspaso a otro departamento, porque no hay otro departamento.',
+    team_r1: 'Fundador', team_r2: 'Atención al cliente', team_r3: 'Inversión',
+    team_b1: 'Quince años en promoción costera, primero en el sur de Francia y desde 2016 en Punta Cana. Lleva la lista fuera de mercado y todo lo que tiene que ver con parcelas más que con casas terminadas.',
+    team_b2: 'Dominicana, afincada en La Romana. Organiza los viajes de visita y lleva el papeleo entre la oferta y el cierre, que es donde se tuercen la mayoría de las compras en este país.',
+    team_b3: 'Viene de la práctica fiscal y hoy asesora sobre estructuras de tenencia, elegibilidad Confotur y lo que deja de verdad un alquiler una vez descontadas las comisiones de gestión y los dos meses flojos.',
+    team_l1: 'Francés &middot; inglés', team_l2: 'Español &middot; inglés', team_l3: 'Francés &middot; inglés &middot; español',
+    book_label: 'Hablemos', book_title: 'Media hora, sin compromiso',
+    book_sub: 'Lo bastante para saber si tenemos algo que merezca su viaje. Si no lo tenemos, se lo diremos.',
+    book_cta: 'Enviar una consulta',
+
+    e404_title: 'Esta página <em>no existe</em>',
+    e404_body: 'Puede que el enlace esté caducado, o que la propiedad a la que apuntaba ya no esté en cartera. El catálogo tiene todo lo disponible ahora mismo.',
+    e404_cta1: 'Ver el catálogo', e404_cta2: 'Inicio',
+
+    pp_beds: 'Dormitorios', pp_baths: 'Baños', pp_sqm: 'm²', pp_sqft: 'sq ft',
+    pp_lot: 'Parcela', pp_year: 'Construida', pp_pool: 'Piscina', pp_parking: 'Aparcamiento', pp_yes: 'Sí',
+    pp_returns: 'Rentabilidad', pp_roi_gross: 'Rentabilidad bruta', pp_roi_net: 'Rentabilidad neta',
+    pp_cap: 'Tasa de capitalización', pp_occ: 'Ocupación', pp_rev_m: 'Ingreso mensual', pp_rev_y: 'Ingreso anual',
+    pp_costs: 'Costes e impuestos', pp_tax_y: 'Impuestos anuales', pp_hoa: 'Gastos de comunidad',
+    pp_transfer: 'Impuesto de transferencia', pp_closing: 'Gastos de cierre',
+    pp_amenities: 'Prestaciones', pp_concierge: 'Conserjería', pp_location: 'Ubicación',
+    pp_cta_view: 'Concertar una visita', pp_cta_dossier: 'Pedir el dosier',
+    pp_form_title: 'Consultar sobre esta propiedad',
+    pp_form_sub: 'Un asesor responde en un día laborable, con los planos y la situación del título.',
+    pp_f_name: 'Nombre completo', pp_f_email: 'Correo', pp_f_phone: 'Teléfono', pp_f_msg: 'Mensaje',
+    pp_send: 'Enviar', pp_sent_title: 'Recibido',
+    pp_sent_sub: 'Tenemos su consulta y le responderemos en un día laborable.',
+    pp_nf_title: 'No encontrada',
+    pp_nf_body: 'Esta propiedad ya no está en cartera, o el enlace es incorrecto.',
+    pp_nf_cta: 'Ver el catálogo', pp_map_link: 'Ver en un mapa',
+    pp_price_request: 'Precio a consultar',
+    privacy_header: 'Privacidad',
+    skip: 'Ir al contenido',
+    privacy_notice: 'Esta política está redactada en francés. Es una plantilla: hágala revisar y complete los datos del responsable antes de publicar el sitio.'
+  }
+};
+
+/* The language for this page load, in order of authority:
+   an explicit ?lang=, then a previous choice, then the browser, then config. */
+function resolveLang() {
+  var available = (window.RL && window.RL.get('i18n.available', null)) || ['en', 'fr', 'es'];
+  var fallback  = (window.RL && window.RL.get('i18n.fallback', 'en')) || 'en';
+  var ok = function (l) { return l && available.indexOf(l) !== -1 ? l : null; };
+
+  var fromUrl = null;
+  try {
+    fromUrl = ok((new URLSearchParams(window.location.search).get('lang') || '').toLowerCase());
+  } catch (e) {}
+  if (fromUrl) { try { localStorage.setItem('rl-lang', fromUrl); } catch (e) {} return fromUrl; }
+
+  var chosen = null;
+  try { chosen = ok(localStorage.getItem('rl-lang')); } catch (e) {}
+  if (chosen) return chosen;
+
+  var autoDetect = !window.RL || window.RL.get('i18n.autoDetect', true) !== false;
+  if (autoDetect && navigator) {
+    var asked = navigator.languages && navigator.languages.length
+      ? navigator.languages : [navigator.language || ''];
+    for (var i = 0; i < asked.length; i++) {
+      var m = ok(String(asked[i]).slice(0, 2).toLowerCase());
+      if (m) return m;
+    }
+  }
+  return ok(fallback) || available[0];
+}
+
+/* Builds the header language selector on pages that do not hard-code one. */
+function mountLangSelector(mount, onPick) {
+  if (!mount) return;
+  var available = (window.RL && window.RL.get('i18n.available', null)) || ['en', 'fr', 'es'];
+  if (available.length < 2) return;
+  var current = resolveLang();
+
+  var wrap = document.createElement('div');
+  wrap.className = 'lang-sel';
+  wrap.id = 'langSel';
+  wrap.innerHTML =
+    '<button class="lang-btn" type="button" aria-haspopup="true" aria-label="Change language">' +
+      '<span id="currentLangText">' + current.toUpperCase() + '</span>' +
+      '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
+    '</button>' +
+    '<div class="lang-drop" id="langDrop">' +
+      available.map(function (l) {
+        return '<button class="lang-opt' + (l === current ? ' active' : '') +
+               '" type="button" data-lang="' + l + '">' + l.toUpperCase() + '</button>';
+      }).join('') +
+    '</div>';
+  mount.insertBefore(wrap, mount.firstChild);
+
+  wrap.querySelector('.lang-btn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    wrap.classList.toggle('open');
+  });
+  wrap.querySelectorAll('.lang-opt').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var l = b.getAttribute('data-lang');
+      try { localStorage.setItem('rl-lang', l); } catch (e) {}
+      wrap.classList.remove('open');
+      onPick(l);
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.lang-sel')) wrap.classList.remove('open');
+  });
+}
+
+/* Applies RL_SHARED_I18N to a page. Used by team, property and 404, which have
+   no table of their own. */
+function applySharedLang(lang) {
+  var t = RL_SHARED_I18N[lang] || RL_SHARED_I18N.en;
+  /* A page whose body is written in one language keeps that on <html lang>,
+     whatever the interface language. The privacy policy is French prose; telling
+     a screen reader it is Spanish would make it unreadable. */
+  if (!document.body.hasAttribute('data-lang-fixed')) {
+    document.documentElement.lang = lang;
+  }
+  document.querySelectorAll('[data-t]').forEach(function (el) {
+    var v = t[el.getAttribute('data-t')];
+    if (v !== undefined) el.innerHTML = v;
+  });
+  document.querySelectorAll('[data-t-ph]').forEach(function (el) {
+    var v = t[el.getAttribute('data-t-ph')];
+    if (v !== undefined) el.setAttribute('placeholder', v);
+  });
+  var badge = document.getElementById('currentLangText');
+  if (badge) badge.textContent = lang.toUpperCase();
+  document.querySelectorAll('.lang-opt').forEach(function (o) {
+    o.classList.toggle('active', o.getAttribute('data-lang') === lang);
+  });
+  window.RL_LANG = lang;
+  if (typeof window.onSharedLangChange === 'function') window.onSharedLangChange(lang);
+}
+window.RL_T = function (key) {
+  var t = RL_SHARED_I18N[window.RL_LANG || 'en'] || RL_SHARED_I18N.en;
+  return t[key] !== undefined ? t[key] : (RL_SHARED_I18N.en[key] || key);
+};
+
+/* Pages with their own table (index, catalogue) drive themselves. */
+if (PAGE_TYPE !== 'index' && PAGE_TYPE !== 'catalogue') {
+  document.addEventListener('DOMContentLoaded', function () {
+    var mount = document.querySelector('[data-lang-mount]');
+    mountLangSelector(mount, function (l) { applySharedLang(l); });
+    applySharedLang(resolveLang());
+  });
+}
+
 /* Applies config.js to the markup. Runs on every page.
 
    The rule throughout: a setting left empty removes the element it drives
@@ -501,13 +755,13 @@ function checkRateLimit() {
 }
 
 // I18n translations
-let currentLang = localStorage.getItem('rl-lang') || 'en';
+let currentLang = resolveLang();
 if (!['en','fr','es'].includes(currentLang)) { currentLang = 'en'; localStorage.setItem('rl-lang','en'); }
 /* Translations for the home page. Keys match the data-i18n attributes in
    index.html; a key missing from a language falls back to the markup. */
 const I18N = {
   en: {
-    nav_0:'Listings', nav_1:'Approach', nav_2:'Confotur', nav_3:'Contact', nav_team:'Team',
+    skip:'Skip to listings', nav_0:'Listings', nav_1:'Approach', nav_2:'Confotur', nav_3:'Contact', nav_team:'Team',
     nav_cta:'Arrange a viewing',
     hero_badge:'Cap Cana &middot; Punta Cana &middot; Bayah&iacute;be &middot; Saman&aacute;',
     hero_title:'Coastal property in the<br><em>Dominican Republic</em>',
@@ -588,7 +842,7 @@ const I18N = {
   },
 
   fr: {
-    nav_0:'Biens', nav_1:'Méthode', nav_2:'Confotur', nav_3:'Contact', nav_team:'Équipe',
+    skip:'Aller aux biens', nav_0:'Biens', nav_1:'Méthode', nav_2:'Confotur', nav_3:'Contact', nav_team:'Équipe',
     nav_cta:'Organiser une visite',
     hero_badge:'Cap Cana &middot; Punta Cana &middot; Bayah&iacute;be &middot; Saman&aacute;',
     hero_title:'Biens côtiers en<br><em>République dominicaine</em>',
@@ -669,7 +923,7 @@ const I18N = {
   },
 
   es: {
-    nav_0:'Propiedades', nav_1:'Método', nav_2:'Confotur', nav_3:'Contacto', nav_team:'Equipo',
+    skip:'Ir a las propiedades', nav_0:'Propiedades', nav_1:'Método', nav_2:'Confotur', nav_3:'Contacto', nav_team:'Equipo',
     nav_cta:'Concertar una visita',
     hero_badge:'Cap Cana &middot; Punta Cana &middot; Bayah&iacute;be &middot; Saman&aacute;',
     hero_title:'Propiedad costera en la<br><em>República Dominicana</em>',
@@ -1602,8 +1856,7 @@ var PARTNER_AGENCIES = {
 /* ===================================================================
    STATE
    =================================================================== */
-var currentLang = localStorage.getItem('rl-lang') || 'en';
-if (['ru','zh'].indexOf(currentLang) !== -1) { currentLang = 'en'; localStorage.setItem('rl-lang','en'); }
+var currentLang = resolveLang();
 var activeFilter = 'all';
 var activeSort = null;
 var displayedProperties = PROPERTIES.slice();

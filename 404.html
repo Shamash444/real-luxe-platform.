@@ -29,15 +29,25 @@
   a.ghost{border:1px solid rgba(26,26,26,.2);color:var(--charcoal)}
   a.ghost:hover{border-color:var(--gold);color:var(--gold)}
   :focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  .topbar{position:fixed;top:16px;right:20px}
+  .lang-sel{position:relative}
+  .lang-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border:1px solid rgba(26,26,26,.16);border-radius:999px;background:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--charcoal)}
+  .lang-drop{display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid rgba(26,26,26,.12);border-radius:10px;overflow:hidden;min-width:64px}
+  .lang-sel.open .lang-drop{display:block}
+  .lang-opt{display:block;width:100%;padding:9px 14px;border:0;background:none;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:.1em;color:var(--charcoal);text-align:left}
+  .lang-opt:hover,.lang-opt.active{background:rgba(198,165,92,.12);color:var(--gold)}
 </style>
+<script src="config.js" defer></script>
+<script src="script.js" defer></script>
 </head>
-<body>
+<body data-page="404">
+  <div class="topbar" data-lang-mount></div>
   <div class="mark">Real <span>Luxe</span></div>
-  <h1>That page <em>is not here</em></h1>
-  <p>The link may be out of date, or the property it pointed to is no longer listed. The catalogue below has everything currently available.</p>
+  <h1 data-t="e404_title">That page <em>is not here</em></h1>
+  <p data-t="e404_body">The link may be out of date, or the property it pointed to is no longer listed. The catalogue below has everything currently available.</p>
   <div class="actions">
-    <a class="btn solid" href="catalogue.html">See the catalogue</a>
-    <a class="btn ghost" href="index.html">Home</a>
+    <a class="btn solid" href="catalogue.html" data-t="e404_cta1">See the catalogue</a>
+    <a class="btn ghost" href="index.html" data-t="e404_cta2">Home</a>
   </div>
 </body>
 </html>
