@@ -57,6 +57,16 @@ page, and the place names in the scrolling band. A property needs `slug`, `name`
 `location`, `price`, `beds`, `baths`, `sqm` and `img`. Everything else is
 optional, and the page omits what is missing.
 
+Text fields accept a string or `{ en, fr, es }`:
+
+```js
+tag: 'New build',                                  // shown as-is in every language
+tag: { en: 'New build', fr: 'Neuf', es: 'Obra nueva' }
+```
+
+The same goes for `description`, `amenities`, `conciergeServices`,
+`confoturBenefits`, `pool` and each `techSpecs` value.
+
 Images are Unsplash URLs. Replace them with real photography before you show the
 site to a client.
 
@@ -89,10 +99,14 @@ each have a large one keyed by `data-i18n`; the other pages share a smaller one
 keyed by `data-t`, and `data-t-ph` for input placeholders. Add a language by
 putting its code in `i18n.available` and adding a block to each table.
 
-Two things stay in one language on purpose. The property descriptions in
-`data.js` are English only, because they are your listing copy and only you can
-write them. The privacy policy is French, and shows a note in the visitor's
-language saying so; translate it once a lawyer has approved the text.
+The catalogue is translated too. Any content field in `data.js` takes either a
+plain string or `{ en, fr, es }`, and the renderer picks the current language,
+falling back to English when a translation is missing. So a listing you add in
+English alone keeps working, and you can translate it field by field later.
+
+The privacy policy is the exception. It stays French and shows a note in the
+visitor's language saying so, because machine-translating a legal notice is a
+bad idea. Translate it once a lawyer has approved the text.
 
 ## Files
 

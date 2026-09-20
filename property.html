@@ -70,10 +70,6 @@
 .pp-spec-label{font-size:9px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--mist)}
 
 /* DESCRIPTION TABS */
-.pp-desc-tabs{display:flex;gap:0;margin-bottom:20px}
-.pp-desc-tab{padding:10px 24px;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--mist);border-bottom:2px solid transparent;cursor:pointer;transition:all .3s}
-.pp-desc-tab.active{color:var(--charcoal);border-bottom-color:var(--gold)}
-.pp-desc-tab:hover{color:var(--charcoal)}
 .pp-desc-content{font-size:15px;color:var(--slate);line-height:2;max-width:800px;margin-bottom:48px}
 .pp-desc-panel{display:none}
 .pp-desc-panel.active{display:block}
@@ -290,23 +286,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* BUILD DESCRIPTION TABS */
   function buildDescription(p) {
-    const en = p.description_en || p.description || '';
-    const fr = p.description_fr || '';
-    if (!en && !fr) return '';
-
-    if (!fr) {
-      return `<div class="pp-desc-content"><p>${en}</p></div>`;
-    }
-
-    return `
-      <div class="pp-desc-tabs">
-        <button class="pp-desc-tab active" onclick="switchDescTab('en',this)">English</button>
-        <button class="pp-desc-tab" onclick="switchDescTab('fr',this)">Fran\u00e7ais</button>
-      </div>
-      <div class="pp-desc-content">
-        <div class="pp-desc-panel active" id="descEn"><p>${en}</p></div>
-        <div class="pp-desc-panel" id="descFr"><p>${fr}</p></div>
-      </div>`;
+    /* The site-wide switcher decides the language; a second control here would
+       compete with it. Falls back to English when a translation is missing. */
+    const lang = window.RL_LANG || 'en';
+    const text = p['description_' + lang] || p.description_en || p.description || '';
+    if (!text) return '';
+    return `<div class="pp-desc-content"><p>${text}</p></div>`;
   }
 
   /* BUILD ROI / INVESTMENT */
@@ -562,13 +547,6 @@ document.addEventListener('DOMContentLoaded', function(){
   };
 
   /* DESCRIPTION TAB SWITCH */
-  window.switchDescTab = function(lang, btn) {
-    document.querySelectorAll('.pp-desc-tab').forEach(function(t) { t.classList.remove('active'); });
-    document.querySelectorAll('.pp-desc-panel').forEach(function(p) { p.classList.remove('active'); });
-    btn.classList.add('active');
-    var panel = document.getElementById(lang === 'fr' ? 'descFr' : 'descEn');
-    if (panel) panel.classList.add('active');
-  };
 
   /* LEAD FORM SUBMIT */
   window.submitPPLead = async function(e) {
@@ -639,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     if (!record) {
       record = (window.RL_PROPERTIES || []).filter(function (x) { return x.slug === slug; })[0] || null;
-      if (record) record = adaptBundled(record);
+      if (record) { window._ppSource = record; record = adaptBundled(record); }
     }
 
     if (!record) { showNotFound(); return; }
@@ -663,21 +641,22 @@ document.addEventListener('DOMContentLoaded', function(){
       lot_size: p.lot || null, year_built: p.year || null,
       pool: p.pool || null, parking: p.parking || null,
       images: p.gallery || (p.img ? [p.img] : []), image_url: p.img,
-      description_en: p.description || '',
-      amenities: p.amenities || [],
-      concierge_services: p.conciergeServices || [],
+      description_en: pick(p.description) || '',
+      amenities: pick(p.amenities) || [],
+      concierge_services: pick(p.conciergeServices) || [],
       latitude: p.lat, longitude: p.lng,
-      confotur: !!p.confoturBenefits, confotur_text: p.confoturBenefits || '',
+      confotur: !!p.confoturBenefits, confotur_text: pick(p.confoturBenefits) || '',
       roi_gross: pct(p.roi && p.roi.rentalYield),
       occupancy_rate: pct(p.roi && p.roi.occupancyRate),
       cap_rate: pct(p.roi && p.roi.capRate),
-      tag: p.tag || ''
+      tag: pick(p.tag) || ''
     };
   }
 
   /* The page body is generated once from a template string, so changing the
      language means rendering it again rather than swapping text nodes. */
   window.onSharedLangChange = function () {
+    if (window._ppSource) { window._ppRecord = adaptBundled(window._ppSource); }
     if (window._ppRecord) render(window._ppRecord);
   };
 

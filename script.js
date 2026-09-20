@@ -109,6 +109,8 @@ var RL_SHARED_I18N = {
 
     pp_beds: 'Bedrooms', pp_baths: 'Bathrooms', pp_sqm: 'Sq m', pp_sqft: 'Sq ft',
     pp_lot: 'Plot', pp_year: 'Built', pp_pool: 'Pool', pp_parking: 'Parking', pp_yes: 'Yes',
+    pp_appr: 'Projected growth', pp_tech: 'Construction', pp_construction: 'Structure',
+    pp_energy: 'Energy', pp_water: 'Water', pp_smart: 'Automation', pp_security: 'Security',
     pp_returns: 'Returns', pp_roi_gross: 'Gross yield', pp_roi_net: 'Net yield',
     pp_cap: 'Cap rate', pp_occ: 'Occupancy', pp_rev_m: 'Monthly revenue', pp_rev_y: 'Annual revenue',
     pp_costs: 'Costs and taxes', pp_tax_y: 'Annual taxes', pp_hoa: 'Service charge',
@@ -153,6 +155,8 @@ var RL_SHARED_I18N = {
 
     pp_beds: 'Chambres', pp_baths: 'Salles de bain', pp_sqm: 'm²', pp_sqft: 'sq ft',
     pp_lot: 'Terrain', pp_year: 'Construit', pp_pool: 'Piscine', pp_parking: 'Stationnement', pp_yes: 'Oui',
+    pp_appr: 'Progression estimée', pp_tech: 'Construction', pp_construction: 'Structure',
+    pp_energy: 'Énergie', pp_water: 'Eau', pp_smart: 'Domotique', pp_security: 'Sécurité',
     pp_returns: 'Rendement', pp_roi_gross: 'Rendement brut', pp_roi_net: 'Rendement net',
     pp_cap: 'Taux de capitalisation', pp_occ: 'Taux d&rsquo;occupation', pp_rev_m: 'Revenu mensuel', pp_rev_y: 'Revenu annuel',
     pp_costs: 'Coûts et fiscalité', pp_tax_y: 'Taxes annuelles', pp_hoa: 'Charges',
@@ -197,6 +201,8 @@ var RL_SHARED_I18N = {
 
     pp_beds: 'Dormitorios', pp_baths: 'Baños', pp_sqm: 'm²', pp_sqft: 'sq ft',
     pp_lot: 'Parcela', pp_year: 'Construida', pp_pool: 'Piscina', pp_parking: 'Aparcamiento', pp_yes: 'Sí',
+    pp_appr: 'Revalorización estimada', pp_tech: 'Construcción', pp_construction: 'Estructura',
+    pp_energy: 'Energía', pp_water: 'Agua', pp_smart: 'Domótica', pp_security: 'Seguridad',
     pp_returns: 'Rentabilidad', pp_roi_gross: 'Rentabilidad bruta', pp_roi_net: 'Rentabilidad neta',
     pp_cap: 'Tasa de capitalización', pp_occ: 'Ocupación', pp_rev_m: 'Ingreso mensual', pp_rev_y: 'Ingreso anual',
     pp_costs: 'Costes e impuestos', pp_tax_y: 'Impuestos anuales', pp_hoa: 'Gastos de comunidad',
@@ -217,6 +223,19 @@ var RL_SHARED_I18N = {
     privacy_notice: 'Esta política está redactada en francés. Es una plantilla: hágala revisar y complete los datos del responsable antes de publicar el sitio.'
   }
 };
+
+/* Content fields in data.js accept either a plain string or an object keyed by
+   language. A string is returned as-is, so a catalogue written in one language
+   keeps working and a translation can be added one field at a time. */
+function pick(value) {
+  if (value === null || value === undefined) return value;
+  if (typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map(pick);
+  var lang = window.RL_LANG || 'en';
+  if (value[lang] !== undefined) return value[lang];
+  if (value.en !== undefined) return value.en;
+  return value;
+}
 
 /* The language for this page load, in order of authority:
    an explicit ?lang=, then a previous choice, then the browser, then config. */
@@ -246,6 +265,7 @@ function resolveLang() {
   }
   return ok(fallback) || available[0];
 }
+window.RL_LANG = resolveLang();
 
 /* Builds the header language selector on pages that do not hard-code one. */
 function mountLangSelector(mount, onPick) {
@@ -504,7 +524,7 @@ function openPropertyDetail(slug, clickEvent) {
   }).join('');
 
   // Fill header
-  document.getElementById('pdTag').textContent = p.tag || p.location;
+  document.getElementById('pdTag').textContent = pick(p.tag) || p.location;
   document.getElementById('pdName').textContent = p.name;
   document.getElementById('pdLocation').querySelector('span').textContent = p.location + ', Dominican Republic';
   document.getElementById('pdPrice').textContent = p.price;
@@ -523,24 +543,24 @@ function openPropertyDetail(slug, clickEvent) {
   }).join('');
 
   // Fill description
-  document.getElementById('pdDesc').textContent = p.description;
+  document.getElementById('pdDesc').textContent = pick(p.description);
 
   // Data-rich sections: investment roi + technical specs
   var dataHtml = '';
   if (p.roi && p.roi.rentalYield) {
-    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Investment ROI</h4>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Rental Yield</span><span class="value">' + p.roi.rentalYield + '</span></div>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Occupancy Rate</span><span class="value">' + p.roi.occupancyRate + '</span></div>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Projected Appreciation</span><span class="value">' + p.roi.projectedAppreciation + '</span></div>';
-    dataHtml += '<div class="pd-data-item"><span class="label">Cap Rate</span><span class="value">' + p.roi.capRate + '</span></div>';
+    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' + RL_T('pp_returns') + '</h4>';
+    dataHtml += '<div class="pd-data-item"><span class="label">' + RL_T('pp_roi_gross') + '</span><span class="value">' + p.roi.rentalYield + '</span></div>';
+    dataHtml += '<div class="pd-data-item"><span class="label">' + RL_T('pp_occ') + '</span><span class="value">' + p.roi.occupancyRate + '</span></div>';
+    dataHtml += '<div class="pd-data-item"><span class="label">' + RL_T('pp_appr') + '</span><span class="value">' + p.roi.projectedAppreciation + '</span></div>';
+    dataHtml += '<div class="pd-data-item"><span class="label">' + RL_T('pp_cap') + '</span><span class="value">' + p.roi.capRate + '</span></div>';
     dataHtml += '</div>';
   }
   if (p.techSpecs) {
-    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Technical Specs</h4>';
-    var specKeys = {construction:'Construction',energy:'Energy',water:'Water',smart:'Smart Home',security:'Security'};
+    dataHtml += '<div class="pd-data-card"><h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' + RL_T('pp_tech') + '</h4>';
+    var specKeys = {construction:RL_T('pp_construction'),energy:RL_T('pp_energy'),water:RL_T('pp_water'),smart:RL_T('pp_smart'),security:RL_T('pp_security')};
     for (var key in specKeys) {
       if (p.techSpecs[key]) {
-        dataHtml += '<div class="pd-data-item"><span class="label">' + specKeys[key] + '</span><span class="value">' + p.techSpecs[key] + '</span></div>';
+        dataHtml += '<div class="pd-data-item"><span class="label">' + specKeys[key] + '</span><span class="value">' + pick(p.techSpecs[key]) + '</span></div>';
       }
     }
     dataHtml += '</div>';
@@ -550,21 +570,21 @@ function openPropertyDetail(slug, clickEvent) {
   // Confotur badge
   var confoturEl = document.getElementById('pdConfoturBadge');
   if (p.confoturBenefits) {
-    document.getElementById('pdConfoturText').textContent = p.confoturBenefits;
+    document.getElementById('pdConfoturText').textContent = pick(p.confoturBenefits);
     confoturEl.style.display = 'flex';
   } else {
     confoturEl.style.display = 'none';
   }
 
   // Fill amenities
-  document.getElementById('pdAmenities').innerHTML = p.amenities.map(function(a){
+  document.getElementById('pdAmenities').innerHTML = pick(p.amenities).map(function(a){
     return '<div class="pd-amenity"><div class="pd-amenity-dot"></div>' + a + '</div>';
   }).join('');
 
   // Fill concierge services
   var conciergeHtml = '';
   if (p.conciergeServices) {
-    conciergeHtml = p.conciergeServices.map(function(s){
+    conciergeHtml = pick(p.conciergeServices).map(function(s){
       return '<div class="pd-concierge-item">' + s + '</div>';
     }).join('');
   }
@@ -1046,8 +1066,8 @@ function renderProperties(){
 function renderLifestyle(){
   document.getElementById('lifeGrid').innerHTML = LIFESTYLE.map(l => `
     <div class="life-card">
-      <img src="${l.img}" alt="${l.title}" loading="lazy">
-      <div class="life-card-info"><h4>${l.title}</h4><span>${l.sub}</span></div>
+      <img src="${l.img}" alt="${pick(l.title)}" loading="lazy">
+      <div class="life-card-info"><h4>${pick(l.title)}</h4><span>${pick(l.sub)}</span></div>
     </div>
   `).join('');
 }
@@ -1121,6 +1141,7 @@ window.addEventListener('scroll',()=>{
 // I18n system
 function setLang(lang) {
   currentLang = lang;
+  window.RL_LANG = lang;
   localStorage.setItem('rl-lang', lang);
   document.documentElement.lang = lang;
   document.getElementById('currentLangText').textContent = lang.toUpperCase();
@@ -1896,7 +1917,7 @@ function renderCards(animate) {
 
     var tagHtml = '';
     if (p.tag) {
-      tagHtml = '<div class="cat-card-tag">' + p.tag + '</div>';
+      tagHtml = '<div class="cat-card-tag">' + pick(p.tag) + '</div>';
     }
 
     var lotHtml = '';
@@ -1920,7 +1941,7 @@ function renderCards(animate) {
         '<div class="cat-card-body">' +
           '<div class="cat-card-loc">' + p.location + '</div>' +
           '<h3 class="cat-card-name">' + p.name + '</h3>' +
-          '<p class="cat-card-desc">' + p.description + '</p>' +
+          '<p class="cat-card-desc">' + pick(p.description) + '</p>' +
           '<div class="cat-card-stats">' +
             '<span class="cat-card-stat">' +
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v11a2 2 0 002 2h14a2 2 0 002-2V7"/><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/></svg>' +
@@ -2074,6 +2095,7 @@ function applyFilterSort(animate) {
    =================================================================== */
 function setLang(lang) {
   currentLang = lang;
+  window.RL_LANG = lang;
   localStorage.setItem('rl-lang', lang);
   document.documentElement.lang = lang;
   document.getElementById('currentLangText').textContent = lang.toUpperCase();
