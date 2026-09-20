@@ -854,6 +854,7 @@ const I18N = {
     psvc_3_title:'Residency', psvc_3_desc:'Immigration lawyers file the investor residency applications. Three to six months is normal, and they are blunt about the awkward cases.',
     wa_text:'Enquire',
     card_beds:'bed', card_baths:'bath',
+    pd_amenities_title:'Amenities and features', pd_concierge_title:'Lifestyle concierge', pd_location_title:'Location',
     pd_cta_visit:'Arrange a viewing', pd_cta_whatsapp:'Request the dossier',
     ft_desc:'Coastal property in the Dominican Republic. Cap Cana, Punta Cana, Bayah&iacute;be and Saman&aacute;.',
     ft_nav:'Site', ft_svc:'Services', ft_dest:'Areas', ft_catalogue:'Full catalogue',
@@ -935,6 +936,7 @@ const I18N = {
     psvc_3_title:'Résidence', psvc_3_desc:'Avocats en immigration qui déposent les dossiers de résidence investisseur. Trois à six mois, et ils vous diront honnêtement si votre cas est simple.',
     wa_text:'Nous écrire',
     card_beds:'ch.', card_baths:'sdb',
+    pd_amenities_title:'Prestations', pd_concierge_title:'Conciergerie', pd_location_title:'Emplacement',
     pd_cta_visit:'Organiser une visite', pd_cta_whatsapp:'Demander le dossier',
     ft_desc:'Biens côtiers en République dominicaine. Cap Cana, Punta Cana, Bayah&iacute;be et Saman&aacute;.',
     ft_nav:'Site', ft_svc:'Services', ft_dest:'Secteurs', ft_catalogue:'Catalogue complet',
@@ -1016,6 +1018,7 @@ const I18N = {
     psvc_3_title:'Residencia', psvc_3_desc:'Abogados de inmigración que tramitan la residencia por inversión. De tres a seis meses, y le dirán con honestidad si su caso es sencillo.',
     wa_text:'Escríbanos',
     card_beds:'hab.', card_baths:'baños',
+    pd_amenities_title:'Prestaciones', pd_concierge_title:'Conserjería', pd_location_title:'Ubicación',
     pd_cta_visit:'Concertar una visita', pd_cta_whatsapp:'Pedir el dosier',
     ft_desc:'Propiedad costera en la República Dominicana. Cap Cana, Punta Cana, Bayah&iacute;be y Saman&aacute;.',
     ft_nav:'Sitio', ft_svc:'Servicios', ft_dest:'Zonas', ft_catalogue:'Catálogo completo',
@@ -1810,6 +1813,7 @@ var I18N = {
     lead_success_sub:'We have your enquiry and will come back to you within one working day.',
     lead_wa_cta:'Continue on WhatsApp',
     lead_close:'Close',
+    pd_amenities_title:'Amenities and features', pd_concierge_title:'Lifestyle concierge', pd_location_title:'Location',
     pd_cta_visit:'Arrange a viewing', pd_cta_whatsapp:'Request the dossier'
   },
   fr: {
@@ -1835,6 +1839,7 @@ var I18N = {
     lead_success_sub:'Nous avons votre demande et revenons vers vous sous un jour ouvr\u00E9.',
     lead_wa_cta:'Continuer sur WhatsApp',
     lead_close:'Fermer',
+    pd_amenities_title:'Prestations', pd_concierge_title:'Conciergerie', pd_location_title:'Emplacement',
     pd_cta_visit:'Organiser une visite', pd_cta_whatsapp:'Demander le dossier'
   },
   es: {
@@ -1860,6 +1865,7 @@ var I18N = {
     lead_success_sub:'Tenemos su consulta y le responderemos en un d\u00EDa laborable.',
     lead_wa_cta:'Seguir por WhatsApp',
     lead_close:'Cerrar',
+    pd_amenities_title:'Prestaciones', pd_concierge_title:'Conserjer\u00EDa', pd_location_title:'Ubicaci\u00F3n',
     pd_cta_visit:'Concertar una visita', pd_cta_whatsapp:'Pedir el dosier'
   }
 };
